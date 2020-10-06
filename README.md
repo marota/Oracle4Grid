@@ -5,6 +5,14 @@ It finds the best course of actions aposteriori, within a given perimeter of act
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
+## Current content
+3 steps and notebooks
+- Create_Unitary_Actions_Viz.ipynb to create a dictionnary of unitary actions that are of interest and that will be combined after
+- Prepare_for_Oracle.ipynb run the topology configurations in parallel, and save the rewards and topology configuration dataframes
+- Analyse_Policy_Oracle-Scenario_3.ipynb Create the Transition Graph and find the best course of actions
+
 ## Workflow
 ![Influence Graph](OracleProcess.png)
+
+
 
