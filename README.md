@@ -5,6 +5,17 @@ It finds the best course of actions aposteriori, within a given perimeter of act
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
+## Installation
+
+For development, please proceed as follows:
+- Create a pipenv environment with required dependencies. It will install from the requirements.txt
+``pipenv install
+``
+- [Optional] Install lightsim2grid to speed up powerflow simulation. Instructions at: https://github.com/BDonnot/lightsim2grid. Otherwise, you can use PandaPowerBackend.
+- To use generate a jupyter kernel from this environment
+``pipenv run ipython kernel install --user --name=<YourEnvName>
+``
+
 ## Current content
 3 steps and notebooks
 - Create_Unitary_Actions_Viz.ipynb to create a dictionnary of unitary actions that are of interest and that will be combined after
