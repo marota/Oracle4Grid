@@ -12,8 +12,10 @@ For development, please proceed as follows:
 ``pipenv install
 ``
 - [Optional] Install lightsim2grid to speed up powerflow simulation. Instructions at: https://github.com/BDonnot/lightsim2grid. Otherwise, you can use PandaPowerBackend.
-- To use generate a jupyter kernel from this environment
-``pipenv run ipython kernel install --user --name=<YourEnvName>
+- To generate a jupyter kernel from this environment
+``
+pipenv install ipykernel
+pipenv run ipython kernel install --user --name=<YourEnvName>
 ``
 
 ## Current content
