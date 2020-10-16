@@ -1,0 +1,1 @@
+#should output a dict with all combinations of actions based on dict of possible actions
