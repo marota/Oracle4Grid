@@ -5,6 +5,19 @@ It finds the best course of actions aposteriori, within a given perimeter of act
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
+## Run
+
+Run example
+
+``
+pipenv run python -m oracle4grid.main -d 0 -f oracle4grid/ressources/actions/unitary_actions_l2rpn_2019.json -e oracle4grid/ressources/grids/rte_case14_realistic -c 0
+``
+
+- -d/--debug: If 1, prints additional information for debugging purposes. If 0, doesn't print any info
+- -f/--file: Directory path to .json file containing all atomic actions we want to play 
+- -e/--env: Directory path or name of the Grid2op environment to load
+- -c/--chronic: Name or id of chronic scenario to consider, as stored in chronics folder. By default, the first available chronic scenario will be chosen
+
 ## Installation
 
 For development, please proceed as follows:

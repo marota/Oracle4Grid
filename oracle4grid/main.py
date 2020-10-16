@@ -4,13 +4,10 @@ __author__ = "NMegel, mjothy"
 import os
 import argparse
 import configparser
+import json
 
-import grid2op
-from grid2op.Chronics import GridStateFromFile
-from grid2op.Parameters import Parameters
-
-from core.oracle import oracle
-from core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND
+from oracle4grid.core.utils.prepare_environment import prepareParams, prepareEnv
+from oracle4grid.core.oracle import oracle
 
 
 def main():
@@ -20,55 +17,40 @@ def main():
     parser.add_argument("-d", "--debug", type=int,
                         help="If 1, prints additional information for debugging purposes. If 0, doesn't print any info", default=0)
     parser.add_argument("-f", "--file", type=str,
-                        help="File path for the dict of atomic actions")
+                        help="File path for the dict of atomic actions", default = "oracle4grid/ressources/actions/unitary_actions_l2rpn_2019.json")
     parser.add_argument("-e", "--env", type=str,
-                        help="Directory path for the environment to use")
+                        help="Directory path for the environment to use", default="oracle4grid/ressources/grids/rte_case14_realistic")
     parser.add_argument("-c", "--chronic", type=str,
-                        help="The chronic identifier to use")
+                        help="Name or id of chronic scenario to consider, as stored in chronics folder. By default, the first available chronic scenario will be chosen" , default=0)
 
     args = parser.parse_args()
     config = configparser.ConfigParser()
-    config.read("./resources/config.ini")
+    config.read("oracle4grid/ressources/config.ini")
     print("#### PARAMETERS #####")
     for key in config["DEFAULT"]:
         print("key: {} = {}".format(key, config['DEFAULT'][key]))
     print("#### ########## #####\n")
 
-    if (args.file is None) or os.path.exists(args.file):
-        raise ValueError("Could not find file provided :" + args.file)
-
-    if args.snapshot > 1:
-        raise ValueError("Input arg error, --snapshot, options are 0 or 1")
+    if (args.file is None) or not os.path.exists(args.file):
+        raise ValueError("Could not find file provided :" + str(args.file))
 
     if args.debug > 1:
         raise ValueError("Input arg error, --debug, options are 0 or 1")
 
     # ###############################################################################################################
-    #run all steps
+    # Load Grid2op Environment with Parameters
+    param = prepareParams() # Move to ini?
+    env = prepareEnv(args.env, args.chronic, param)
 
-    oracle()
+    # Load unitary actions
+    with open(args.file) as f:
+        atomic_actions = json.load(f)
+
+    # Run all steps
+    oracle(atomic_actions, env, args.debug, config['DEFAULT'])
     return 1
 
 
-def prepareParams(ini):
-    param = Parameters()
-    # TODO: from ini file
-    param.init_from_dict({'NO_OVERFLOW_DISCONNECTION': True})
-    param.init_from_dict({'MAX_LINE_STATUS_CHANGED': 999})
-    param.init_from_dict({'MAX_SUB_CHANGED': 2999})
-    return param
-
-
-def prepareEnv(env_path, param):
-    backend = BACKEND()
-    return grid2op.make(env_path,
-                        reward_class=REWARD_CLASS,
-                        backend=backend,
-                        data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
-                        param=param,
-                        gamerules_class=GAME_RULE,
-                        test=True,
-                        )
 
 if __name__ == "__main__":
     main()
