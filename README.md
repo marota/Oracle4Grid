@@ -8,14 +8,17 @@ It finds the best course of actions aposteriori, within a given perimeter of act
 ## Installation
 
 For development, please proceed as follows:
-- Create a pipenv environment with required dependencies. It will install from the requirements.txt
+- Create a pipenv environment with required dependencies. It will install from the Pipfile
 ``pipenv install
 ``
 - [Optional] Install lightsim2grid to speed up powerflow simulation. Instructions at: https://github.com/BDonnot/lightsim2grid. Otherwise, you can use PandaPowerBackend.
 - To generate a jupyter kernel from this environment
 ``
-pipenv install ipykernel
 pipenv run ipython kernel install --user --name=<YourEnvName>
+``
+- [Optional] Enable tqdm to paralelize in jupyter notebooks
+``
+jupyter nbextension enable --py widgetsnbextension
 ``
 
 ## Current content

@@ -6,13 +6,13 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-jupyter = "*"
-pandas = "*"
-numpy = "*"
-matplotlib = "*"
-networkx = "*"
 grid2op = "*"
+pandas = "*"
 psutil = "*"
+matplotlib = "*"
+pybind11 = "*"
+ipykernel = "*"
+ipywidgets = "*"
 
 [requires]
 python_version = "3.7"
