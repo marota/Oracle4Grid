@@ -5,13 +5,13 @@ from functools import reduce
 from tqdm import tqdm
 
 from oracle4grid.core.utils.actions_generator import get_atomic_actions_names
-from oracle4grid.core.utils.Action import Action
+from oracle4grid.core.utils.Action import OracleAction
 #should output a dict with all combinations of actions based on dict of possible actions
 
 
 def generate(atomic_actions, depth, env, debug) :
     ret = []
-    all_actions = generate_all(atomic_actions, depth)
+    all_actions = generate_all(atomic_actions, depth, env)
     if debug:
         print("Initial atomic actions")
         pprint(atomic_actions)
@@ -23,19 +23,19 @@ def generate(atomic_actions, depth, env, debug) :
     print(ret)
     return ret
 
-def generate_all(atomic_actions, depth) :
+def generate_all(atomic_actions, depth, env) :
     # don't generate associative actions
     depth = int(depth)
     named_atomic_actions = get_atomic_actions_names(atomic_actions)
     all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions,i)) for i in range(1, (depth + 1))])
-    all_actions = [Action([named_atomic_actions[name] for name in names_combination]) for names_combination in all_names_combinations]
+    all_actions = [OracleAction([named_atomic_actions[name] for name in names_combination], env.action_space) for names_combination in all_names_combinations]
     return all_actions
 
 
 def keep(action, env, debug = False) :
     # Successive rules applied to invalidate actions that don't need to be simulated
-    check = run_pf_check(action.grid2op_action_dict, env, debug)
-    return check
+    #check = run_pf_check(action.grid2op_action_dict, env, debug)
+    return True
 
 def run_pf_check(grid2op_action_dict,env, debug = False) :
     valid = False

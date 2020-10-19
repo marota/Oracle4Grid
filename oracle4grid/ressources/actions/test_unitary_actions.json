@@ -1,1 +1,1 @@
-{"sub_1": {"a": {"lines_id_bus": [[0, 2], [2, 2]], "loads_id_bus": [[0, 2]]}}, "line_4": {"a": {"set_line": -1}}}
+{"sub": {"1": [{"lines_id_bus": [[0, 2], [2, 2]], "loads_id_bus": [[0, 2]]}, {"lines_id_bus": [[2, 2]], "gens_id_bus": [[0, 2]]}]}, "line": {"4": [{"set_line": -1}]}}

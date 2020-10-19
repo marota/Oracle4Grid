@@ -47,8 +47,6 @@ def prepareEnv(env_path, chronic_scenario, param):
             raise ValueError("Chronic scenario name: " + str(chronic_scenario) + " not found in folder")
     return env
 
-
-
 def search_chronic_name_from_num(num, env):
     for id, sp in enumerate(env.chronics_handler.real_data.subpaths):
         chronic_scenario = os.path.basename(sp)
