@@ -12,8 +12,13 @@ from oracle4grid.core.utils.Action import Action
 def generate(atomic_actions, depth, env, debug) :
     ret = []
     all_actions = generate_all(atomic_actions, depth)
+    if debug:
+        print("Initial atomic actions")
+        pprint(atomic_actions)
+        print('\nExample of stored combination in Action class')
+        pprint(all_actions[-2].atomic_actions)
     for action in all_actions :
-        if keep(action, env):
+        if keep(action, env, debug):
             ret.append(action)
     print(ret)
     return ret
@@ -27,12 +32,29 @@ def generate_all(atomic_actions, depth) :
     return all_actions
 
 
-def keep(action, env) :
-    check = run_pf_check(action, env)
+def keep(action, env, debug = False) :
+    # Successive rules applied to invalidate actions that don't need to be simulated
+    check = run_pf_check(action.grid2op_action_dict, env, debug)
     return check
 
-def run_pf_check(action,env) :
-    return True
+def run_pf_check(grid2op_action_dict,env, debug = False) :
+    valid = False
+
+    # First step simulation
+    observation, reward, done, info = env.step(env.action_space({}))
+    #         obs, reward, done, info = observation.simulate(env.action_space(s), time_step=0)#env.step(env.action_space(s))
+    obs, reward, done, info = observation.simulate(env.action_space(grid2op_action_dict), time_step=0)
+    env.reset() # For next action !
+
+    # Valid action?
+    if (not done) and (len(info["exception"]) == 0):
+        valid = True
+
+    if debug:
+        print(action.atomic_actions)
+        print(info)
+        print('\n')
+    return valid
 
 
 

@@ -15,7 +15,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Oracle4Grid")
     parser.add_argument("-d", "--debug", type=int,
-                        help="If 1, prints additional information for debugging purposes. If 0, doesn't print any info", default=0)
+                        help="If 1, prints additional information for debugging purposes. If 0, doesn't print any info", default=1)
     parser.add_argument("-f", "--file", type=str,
                         help="File path for the dict of atomic actions", default = "oracle4grid/ressources/actions/unitary_actions_l2rpn_2019.json")
     parser.add_argument("-e", "--env", type=str,
@@ -36,6 +36,8 @@ def main():
 
     if args.debug > 1:
         raise ValueError("Input arg error, --debug, options are 0 or 1")
+    else:
+        args.debug = bool(args.debug)
 
     # ###############################################################################################################
     # Load Grid2op Environment with Parameters
