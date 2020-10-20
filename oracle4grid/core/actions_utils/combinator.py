@@ -28,7 +28,9 @@ def generate_all(atomic_actions, depth, env) :
     depth = int(depth)
     named_atomic_actions = get_atomic_actions_names(atomic_actions)
     all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions,i)) for i in range(1, (depth + 1))])
-    all_actions = [OracleAction([named_atomic_actions[name] for name in names_combination], env.action_space) for names_combination in all_names_combinations]
+    init_topo_vect = [0,0,0,0,0]
+    # TODO: fonction qui extrait ce topo vect complet initial, qu'il soit en statique
+    all_actions = [OracleAction([named_atomic_actions[name] for name in names_combination], env.action_space, init_topo_vect) for names_combination in all_names_combinations]
     return all_actions
 
 

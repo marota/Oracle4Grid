@@ -8,12 +8,12 @@ from oracle4grid.core.utils.actions_generator import get_valid_sub_action, get_v
 
 class OracleAction:
 
-    def __init__(self, atomic_actions, action_space, debug = False):
+    def __init__(self, atomic_actions, action_space, init_topot_vect, debug = False):
         self.debug = debug
-        self.action_space = action_space
         self.atomic_actions = atomic_actions
         self.subs, self.lines = self.compute_subs_and_lines()
-        #self.grid2op_action_dict = self.get_valid_grid2op_action()
+        #self.grid2op_action_dict = self.get_valid_grid2op_action(action_space, init_topo_vect)
+        # On ne veut pas stocker action_space et init_topo_vect mais juste les utiliser une fois dans la méthode qui formatte l'action en grid2Op
 
     def compute_subs_and_lines(self):
         subs = set(atomic_action[1] for atomic_action in self.atomic_actions if atomic_action[0]=='sub')
@@ -56,10 +56,10 @@ class OracleAction:
                 dico[int(line_id)] = [atomic_action[2] for atomic_action in self.atomic_actions if (atomic_action[0]=='line' and atomic_action[1]==line_id)]
         return dico
 
-    def get_valid_grid2op_action(self):
+    def get_valid_grid2op_action(self, action_space, init_topo_vect):
         if len(self.subs) > 0:
             sub_dict = self.get_staged_dictionary(sub_line='sub')
-            proper_sub_action = get_valid_sub_action(self.action_space, sub_dict)
+            proper_sub_action = get_valid_sub_action(action_space, sub_dict, init_topo_vect)
         else:
             proper_sub_action = {}
         if len(self.lines) > 0:

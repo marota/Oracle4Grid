@@ -61,7 +61,7 @@ def append_unitary_actions(states, elem, ut):
 
 
 
-def get_valid_sub_action(action_space, dict_,):
+def get_valid_sub_action(action_space, dict_, init_topo_vect):
 
     set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
 
