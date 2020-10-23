@@ -3,10 +3,12 @@ import os
 
 from grid2op.Agent import OneChangeThenNothing
 from grid2op.Runner import Runner
+from grid2op.Environment import Environment
+from oracle4grid.core.utils.Action import OracleAction
 
 
-def run_one(action, env, max_iter):
-    agent_class = OneChangeThenNothing.gen_next(action)
+def run_one(action: OracleAction, env: Environment, max_iter: int):
+    agent_class = OneChangeThenNothing.gen_next(action.get_valid_grid2op_action())
     runner = Runner(**env.get_params_for_runner(), agentClass=agent_class)
     res = runner.run_detailed(nb_episode=1,
                               nb_process=1,
@@ -16,7 +18,7 @@ def run_one(action, env, max_iter):
 
 
 class Run:
-    def __init__(self, action, res):
+    def __init__(self, action: OracleAction, res: list):
         """
 
         :type action: oracle4grid.core.utils.Action
