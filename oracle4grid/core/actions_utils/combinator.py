@@ -16,7 +16,7 @@ def generate(atomic_actions, depth, env, debug) :
         print("Initial atomic actions")
         pprint(atomic_actions)
         print('\nExample of stored combination in Action class')
-        pprint(all_actions[-2].atomic_actions)
+        all_actions[-1].print()
     for action in all_actions :
         if keep(action, env, debug):
             ret.append(action)
@@ -28,9 +28,10 @@ def generate_all(atomic_actions, depth, env) :
     depth = int(depth)
     named_atomic_actions = get_atomic_actions_names(atomic_actions)
     all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions,i)) for i in range(1, (depth + 1))])
-    init_topo_vect = [0,0,0,0,0]
-    # TODO: fonction qui extrait ce topo vect complet initial, qu'il soit en statique
-    all_actions = [OracleAction([named_atomic_actions[name] for name in names_combination], env.action_space, init_topo_vect) for names_combination in all_names_combinations]
+    init_topo_vect = env.get_obs().topo_vect
+    all_actions = [OracleAction([named_atomic_actions[name] for name in names_combination],
+                                env.action_space, init_topo_vect)
+                   for names_combination in all_names_combinations]
     return all_actions
 
 

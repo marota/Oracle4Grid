@@ -8,11 +8,30 @@ LINE_ON_SUB_ERR = "Line id {} is not connected to sub id {}"
 GEN_ON_SUB_ERR = "Generator id {} is not connected to sub id {}"
 LOAD_ON_SUB_ERR = "Load id {} is not connected to sub id {}"
 
+def get_first_key(d):
+    return list(d.keys())[0]
+
+def merge_list_of_dict(list_of_dict):
+    d = {}
+    for elt in list_of_dict:
+        first_key = get_first_key(elt)
+        if first_key in d.keys(): # Substation ID already present
+            for k, l in elt[first_key].items():
+                if k in d[first_key].keys(): # lines_id_bus, loads_id_bus or gens_id_bus already present under this sub id
+                    d[first_key][k] = d[first_key][k]+l # Concatenation of sub actions lists
+                else: # new sub action (lines_id_bus, loads_id_bus or gens_id_bus)
+                    d[first_key][k] = l
+        else: # New substation ID
+            d[first_key] = elt[first_key].copy()
+    return d
+
 def get_atomic_actions_names(atomic_actions) :
     # Name of each target configuration
     named_atomic_actions = {}
     for key in atomic_actions:
-        dict_sub = {f'{key}_{c}_{i}': [key, c, atomic_actions[key][c][i]] for c in atomic_actions[key] for i,_ in enumerate(atomic_actions[key][c])}
+        dict_sub = {f'{key}_{c}_{i}': {key: {int(c): atomic_actions[key][c][i]}}
+                    for c in atomic_actions[key]
+                    for i,_ in enumerate(atomic_actions[key][c])}
         named_atomic_actions.update(dict_sub)
     return  named_atomic_actions
 
@@ -63,7 +82,8 @@ def append_unitary_actions(states, elem, ut):
 
 def get_valid_sub_action(action_space, dict_, init_topo_vect):
 
-    set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
+    # set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
+    set_bus_vect = init_topo_vect.copy()
 
     assert isinstance(dict_, dict)
     # assert "sub_elems" in dict_
