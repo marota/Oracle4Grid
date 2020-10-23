@@ -1,12 +1,35 @@
 # outputs a dataframe with rewards for each run (run = N actions) and each timestep
 # takes a dict of all combinations of actions
+from multiprocessing import Pool
+
+import pandas
+from tqdm import tqdm
+
+from oracle4grid.core.reward_computation.run_one import run_one
 
 
 def run_all(actions, ini, env):
-    df = parallel(env, actions, ini)
+    all_res = parallel(env, actions, ini)
+    df = make_df_from_res(all_res)
+    return df
+
+
+def make_df_from_res(all_res):
+    cols = ["action", "id", "cum_reward", "nb_timesteps", "episode_data"]
+    df = pandas.DataFrame(all_res, columns=cols)
     return df
 
 
 def parallel(env, actions, ini):
-    # run in parallel all actions and return df of rewards indexed by timestep, atomic actions and subs
-    # ["time", "Action", "reward"]
+    max_iter = ini["max_iter"]
+    nb_process = ini["nb_process"]
+    all_res = []
+    with tqdm(total=len(actions)) as pbar:
+
+        with Pool(nb_process) as p:
+            runs = p.starmap(run_one,
+                            [(action, env, max_iter) for action in actions])
+            for run in runs:
+                all_res.append(run)
+            pbar.update(1)
+    return all_res
