@@ -6,9 +6,10 @@ from grid2op.Exceptions import AmbiguousAction
 
 from oracle4grid.core.utils.actions_generator import get_valid_sub_action, get_valid_line_action, get_first_key, merge_list_of_dict
 
+
 class OracleAction:
 
-    def __init__(self, atomic_actions, action_space, init_topo_vect, debug = False):
+    def __init__(self, atomic_actions, action_space, init_topo_vect, debug=False):
         self.debug = debug
         self.atomic_actions = atomic_actions
         self.subs, self.lines = self.compute_subs_and_lines()
@@ -18,10 +19,10 @@ class OracleAction:
     def compute_subs_and_lines(self):
         subs = set(get_first_key(atomic_action['sub'])
                    for atomic_action in self.atomic_actions
-                   if get_first_key(atomic_action)=='sub')
+                   if get_first_key(atomic_action) == 'sub')
         lines = set(get_first_key(atomic_action['line'])
-                   for atomic_action in self.atomic_actions
-                   if get_first_key(atomic_action)=='line')
+                    for atomic_action in self.atomic_actions
+                    if get_first_key(atomic_action) == 'line')
         return subs, lines
 
     def get_subs(self):
@@ -31,27 +32,26 @@ class OracleAction:
         return self.lines
 
     def get_atomic_actions(self):
-        return self.atomic_actions # The list of atomic actions that define this combination
+        return self.atomic_actions  # The list of atomic actions that define this combination
 
     def get_depth(self):
-        return len(self.atomic_actions) # Number of atomic actions combined
+        return len(self.atomic_actions)  # Number of atomic actions combined
 
     def print(self):
-        print("Action of depth "+str(self.get_depth()))
-        print("Acting on "+str(len(self.subs))+" substations and "+str(len(self.lines))+" lines")
+        print("Action of depth " + str(self.get_depth()))
+        print("Acting on " + str(len(self.subs)) + " substations and " + str(len(self.lines)) + " lines")
         pprint(self.atomic_actions)
         print("Grid2op resulting topology:")
         pprint(self.grid2op_action_dict)
         return
 
-
     def get_valid_grid2op_action(self, action_space, init_topo_vect):
         # Get proper action combination on substations if relevant
         if len(self.subs) > 0:
 
-            sub_actions= [atomic_action['sub']
-                          for atomic_action in self.atomic_actions
-                          if get_first_key(atomic_action) == 'sub']
+            sub_actions = [atomic_action['sub']
+                           for atomic_action in self.atomic_actions
+                           if get_first_key(atomic_action) == 'sub']
             sub_actions_merged = merge_list_of_dict(sub_actions)
             proper_sub_action = get_valid_sub_action(action_space, sub_actions_merged, init_topo_vect)
         else:
@@ -85,5 +85,5 @@ class OracleAction:
         action_g2op_2 = action.grid2op_action_dict
 
         # Compute difference in bus topologies
-        diff_topo = [a2 if a1 != a1 else 0 for a1, a2 in zip(action_g2op_1['set_bus'],action_g2op_2['set_bus'])]
-        return {'set_bus':np.array(diff_topo)}
+        diff_topo = [a2 if a1 != a1 else 0 for a1, a2 in zip(action_g2op_1['set_bus'], action_g2op_2['set_bus'])]
+        return {'set_bus': np.array(diff_topo)}

@@ -8,8 +8,8 @@ from tqdm import tqdm
 from oracle4grid.core.reward_computation.run_one import run_one
 
 
-def run_all(actions, ini, env):
-    all_res = parallel(env, actions, ini)
+def run_all(actions, env, max_iter=1, nb_process=1):
+    all_res = parallel(env, actions, max_iter, nb_process)
     df = make_df_from_res(all_res)
     return df
 
@@ -20,15 +20,12 @@ def make_df_from_res(all_res):
     return df
 
 
-def parallel(env, actions, ini):
-    max_iter = int(ini["max_iter"])
-    nb_process = int(ini["nb_process"])
+def parallel(env, actions, max_iter, nb_process):
     all_res = []
     with tqdm(total=len(actions)) as pbar:
-
         with Pool(nb_process) as p:
             runs = p.starmap(run_one,
-                            [(action, env, max_iter) for action in actions])
+                             [(action, env, max_iter) for action in actions])
             for run in runs:
                 all_res.append(run)
             pbar.update(1)

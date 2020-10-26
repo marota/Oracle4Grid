@@ -4,21 +4,23 @@ from grid2op.Chronics import GridStateFromFile
 from grid2op.Parameters import Parameters
 from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS
 
-def prepareParams():
+
+def prepare_params():
     param = Parameters()
     param.init_from_dict(DICT_GAME_PARAMETERS)
     return param
 
-def prepareEnv(env_path, chronic_scenario, param):
+
+def prepare_env(env_path, chronic_scenario, param):
     backend = BACKEND()
     env = grid2op.make(env_path,
-                        reward_class=REWARD_CLASS,
-                        backend=backend,
-                        data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
-                        param=param,
-                        gamerules_class=GAME_RULE,
-                        test=True,
-                        )
+                       reward_class=REWARD_CLASS,
+                       backend=backend,
+                       data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
+                       param=param,
+                       gamerules_class=GAME_RULE,
+                       test=True,
+                       )
     # If an int is provided, chronic_scenario is string by default, so it has to be converted
     try:
         chronic_scenario = int(chronic_scenario)
@@ -47,12 +49,14 @@ def prepareEnv(env_path, chronic_scenario, param):
             raise ValueError("Chronic scenario name: " + str(chronic_scenario) + " not found in folder")
     return env
 
+
 def search_chronic_name_from_num(num, env):
     for id, sp in enumerate(env.chronics_handler.real_data.subpaths):
         chronic_scenario = os.path.basename(sp)
         if id == num:
             break
     return chronic_scenario
+
 
 def search_chronic_num_from_name(scenario_name, env):
     found_id = None
