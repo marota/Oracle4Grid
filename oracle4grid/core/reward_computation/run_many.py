@@ -21,8 +21,8 @@ def make_df_from_res(all_res):
 
 
 def parallel(env, actions, ini):
-    max_iter = ini["max_iter"]
-    nb_process = ini["nb_process"]
+    max_iter = int(ini["max_iter"])
+    nb_process = int(ini["nb_process"])
     all_res = []
     with tqdm(total=len(actions)) as pbar:
 

@@ -1,7 +1,7 @@
 from grid2op.Reward import L2RPNReward
 from grid2op.Rules import AlwaysLegal
 try:
-    from lightsim2grid import LightSimBackend
+    from lightsim2mgrid import LightSimBackend
     BACKEND = LightSimBackend
 except:
     from grid2op.Backend import PandaPowerBackend
