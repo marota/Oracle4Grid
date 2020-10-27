@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from oracle4grid.core.utils.actions_generator import get_atomic_actions_names
 from oracle4grid.core.utils.Action import OracleAction
-
+# from oracle4grid.core.reward_computation.run_one import run_one
 
 # should output a dict with all combinations of actions based on dict of possible actions
 
@@ -20,9 +20,11 @@ def generate(atomic_actions, depth, env, debug):
         print('\nExample of stored combination in Action class')
         all_actions[-1].print()
     for action in all_actions:
+        env.reset()
         if keep(action, env, debug):
             ret.append(action)
-    print(ret)
+    if debug:
+        print(str(len(all_actions)-len(ret))+" actions out of "+str(len(all_actions))+" have been filtered")
     return ret
 
 
@@ -37,27 +39,25 @@ def generate_all(atomic_actions, depth, env):
     return all_actions
 
 
-def keep(action, env, debug=False):
+def keep(oracle_action, env, debug=False):
     # Successive rules applied to invalidate actions that don't need to be simulated
-    # check = run_pf_check(action.grid2op_action_dict, env, debug)
+    check = run_pf_check(oracle_action, env, debug)
     return True
 
 
-def run_pf_check(grid2op_action_dict, env, debug=False):
+def run_pf_check(oracle_action, env, debug=False):
     valid = False
 
-    # First step simulation
-    observation, reward, done, info = env.step(env.action_space({}))
-    #         obs, reward, done, info = observation.simulate(env.action_space(s), time_step=0)#env.step(env.action_space(s))
-    obs, reward, done, info = observation.simulate(env.action_space(grid2op_action_dict), time_step=0)
-    env.reset()  # For next action !
+    # First step simulation with Runner
+    # run = run_one(oracle_action, env, max_iter=1)
+    obs, reward, done, info = env.step(oracle_action.grid2op_action)
 
     # Valid action?
     if (not done) and (len(info["exception"]) == 0):
         valid = True
 
     if debug:
-        print(action.atomic_actions)
+        print(oracle_action.atomic_actions)
         print(info)
         print('\n')
     return valid

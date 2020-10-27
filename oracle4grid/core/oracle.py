@@ -17,7 +17,7 @@ def oracle(atomic_actions, env, debug, config):
     if debug:
         print(reward_df)
     # 3 - Graph generation
-    graph = graph_generator.generate(reward_df, config, env)
+    graph = graph_generator.generate(reward_df, config, env, actions)
     if debug:
         print(graph)
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)

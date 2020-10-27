@@ -86,4 +86,20 @@ class OracleAction:
 
         # Compute difference in bus topologies
         diff_topo = [a2 if a1 != a1 else 0 for a1, a2 in zip(action_g2op_1['set_bus'], action_g2op_2['set_bus'])]
-        return {'set_bus': np.array(diff_topo)}
+
+        # Calculer nb sub + nb lines concernées
+        modified_subs = {} # TODO: a laide de la méthode topo_sub: tout ce qui a bougé on prend sa sub id !!!
+        return {'set_bus': np.array(diff_topo)}, modified_subs
+
+    def get_topo_subids(self, action_space): # TODO: vecteur topo avec les subs concernées [1,1,1,2,2...] taille 56
+        n = action_space.dim_topo
+        sub_topo = np.zeros(n)
+
+        # Generators
+        gens_pos = action_space.gen_pos_topo_vect
+        gens_subids = action_space.gen_to_subid
+        for i, pos in enumerate(gens_pos):
+            sub_topo[pos] = gens_subids[i]
+        # TODO: ... pareil pour load, line_or, line_ex
+        return sub_topo
+
