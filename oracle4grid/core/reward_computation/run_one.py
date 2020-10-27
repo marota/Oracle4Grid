@@ -8,7 +8,7 @@ from oracle4grid.core.utils.Action import OracleAction
 
 
 def run_one(action: OracleAction, env: Environment, max_iter: int):
-    agent_class = OneChangeThenNothing.gen_next(action.grid2op_action)
+    agent_class = OneChangeThenNothing.gen_next(action.grid2op_action_dict)
     runner = Runner(**env.get_params_for_runner(), agentClass=agent_class)
     res = runner.run_detailed(nb_episode=1,
                               nb_process=1,
@@ -25,9 +25,11 @@ class Run:
         :type res: list
         """
         self.action = action
-        i, cum_reward, nb_timestep, episode_data = res.pop()
-        self.id = i
+        # We should always only have one res (because we only use one chronic)
+        id_chron, name_chron, cum_reward, nb_timestep, max_ts, episode_data = res.pop()
+        self.id_chron = id_chron
+        self.name_chron = name_chron
         self.cum_reward = cum_reward
         self.nb_timestep = nb_timestep
-        # TODO : Change that to df with timestep and reward
-        self.episode_data = episode_data
+        self.max_ts = max_ts
+        self.rewards = episode_data.rewards
