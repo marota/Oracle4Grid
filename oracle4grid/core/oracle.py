@@ -13,13 +13,26 @@ def oracle(atomic_actions, env, debug, config):
     if debug:
         print(actions)
     # 2 - Actions rewards simulation
-    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]))
-    if debug:
-        print(reward_df)
+    #reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]))
+    #if debug:
+     #   print(reward_df)
+
     # 3 - Graph generation
-    graph = graph_generator.generate(reward_df, config, env, actions)
+    # TODO: avant - traiter les actions qui ne sont pas allées au bout des timesteps
+        # =========================================================================================================
+        ## TEST
+        import pandas as pd
+        timesteps = [0, 1, 2, 0, 1, 2, 0, 1, 2]
+        actions = [actions[0], actions[0], actions[0], actions[6], actions[6], actions[6], actions[8], actions[8],
+                   actions[8]]
+        rewards = [10, 12, 6, 1, 2, 36, 16, 16, 16]
+        reward_df = pd.DataFrame({'action': actions, 'timestep': timesteps, 'reward': rewards})
+        ##
+        # =========================================================================================================
+    graph = graph_generator.generate(reward_df, config, env)
     if debug:
         print(graph)
+
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     best_path = compute_trajectory.best_path(graph, config)
     if debug:
