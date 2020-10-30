@@ -18,8 +18,12 @@ def run_all(actions, env, max_iter=1, nb_process=1):
 
 
 def make_df_from_res(all_res):
-    cols = ["action", "id", "cum_reward", "nb_timesteps", "episode_data"]
-    df = pandas.DataFrame(all_res, columns=cols)
+    cols = ["action", "timestep", "reward"]
+    data = []
+    for run in all_res:
+        for t in range(run.rewards.shape[0]):
+            data.append({"action": run.action, "timestep": t, "reward": run.rewards[t]})
+    df = pandas.DataFrame(data, columns=cols)
     return df
 
 

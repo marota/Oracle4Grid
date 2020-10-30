@@ -12,7 +12,7 @@ def run_one(action: OracleAction, env: Environment, max_iter: int):
     runner = Runner(**env.get_params_for_runner(), agentClass=agent_class)
     res = runner.run_detailed(nb_episode=1,
                               nb_process=1,
-                              max_iter=max_iter,
+                              max_iter=max_iter,force_detail=True
                               )
     return Run(action, res)
 
