@@ -11,9 +11,9 @@ from oracle4grid.core.utils.Action import OracleAction
 # should output a dict with all combinations of actions based on dict of possible actions
 
 
-def generate(atomic_actions, depth, env, debug):
+def generate(atomic_actions, depth, env, debug, init_topo_vect, init_line_status):
     ret = []
-    all_actions = generate_all(atomic_actions, depth, env)
+    all_actions = generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status)
     if debug:
         print("Initial atomic actions")
         pprint(atomic_actions)
@@ -28,13 +28,13 @@ def generate(atomic_actions, depth, env, debug):
     return ret
 
 
-def generate_all(atomic_actions, depth, env):
+def generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status):
     # don't generate associative actions
     named_atomic_actions = get_atomic_actions_names(atomic_actions)
     all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions, i)) for i in range(1, (depth + 1))])
-    init_topo_vect = env.get_obs().topo_vect
+
     all_actions = [OracleAction(names_combination, [named_atomic_actions[name] for name in names_combination],
-                                env.action_space, init_topo_vect)
+                                env.action_space, init_topo_vect, init_line_status)
                    for names_combination in all_names_combinations]
     return all_actions
 

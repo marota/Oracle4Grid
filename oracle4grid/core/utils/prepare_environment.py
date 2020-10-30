@@ -1,4 +1,6 @@
 import os
+import numpy as np
+
 import grid2op
 from grid2op.Chronics import GridStateFromFile
 from grid2op.Parameters import Parameters
@@ -66,3 +68,9 @@ def search_chronic_num_from_name(scenario_name, env):
         if sp_end == scenario_name:
             found_id = id
     return found_id
+
+def get_initial_configuration(env):
+    init_topo_vect = env.get_obs().topo_vect
+    init_line_status = env.get_obs().line_status * 1
+    init_line_status = np.where(init_line_status == 0, -1, init_line_status)
+    return init_topo_vect, init_line_status

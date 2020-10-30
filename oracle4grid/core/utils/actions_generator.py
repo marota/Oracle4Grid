@@ -145,5 +145,9 @@ def get_valid_sub_action(action_space, dict_, init_topo_vect):
     return {"set_bus": set_bus_vect}
 
 
-def get_valid_line_action(line_dict):
-    return {"set_line_status": [(k, v['set_line']) for k, v in line_dict.items()]}
+def get_valid_line_action(line_dict, init_line_status):
+    line_status = init_line_status.copy()
+    for key in line_dict:
+        line_status[key] = line_dict[key]['set_line']
+    # {"set_line_status": [(k, v['set_line']) for k, v in line_dict.items()]}
+    return {'set_line_status':line_status}
