@@ -9,20 +9,14 @@ from oracle4grid.core.utils.actions_generator import get_valid_sub_action, get_v
 
 class OracleAction:
 
-    def __init__(self, names_combination, atomic_actions, action_space, init_topo_vect, init_line_status, debug=False):
-        self.name = self.compute_name(names_combination)
+    def __init__(self, id_, atomic_actions, action_space, init_topo_vect, init_line_status, debug=False):
+        self.name = id_
         self.debug = debug
         self.atomic_actions = atomic_actions
         self.subs, self.lines = self.compute_subs_and_lines()
         self.grid2op_action, self.grid2op_action_dict = self.get_valid_grid2op_action(action_space, init_topo_vect, init_line_status)
         self.topo_subids = self.get_topo_subids(action_space)
         # On ne veut pas stocker action_space et init_topo_vect mais juste les utiliser une fois dans la méthode qui formatte l'action en grid2Op
-
-    def compute_name(self, names_combination):
-        name = ""
-        for elt in names_combination:
-            name = name + "__" + elt
-        return name
 
     def compute_subs_and_lines(self):
         subs = set(get_first_key(atomic_action['sub'])

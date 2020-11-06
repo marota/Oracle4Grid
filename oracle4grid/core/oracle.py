@@ -1,6 +1,7 @@
 import os
-from datetime import datetime
 import pickle
+import matplotlib.pyplot as plt
+import networkx as nx
 
 from oracle4grid.core.graph import graph_generator, compute_trajectory
 from oracle4grid.core.utils.prepare_environment import get_initial_configuration
@@ -28,6 +29,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
         print(reward_df)
         serialize(reward_df, name='reward_df', dir=debug_directory)
         # TODO: ligne de commande qui permet de charger à partir d'ici
+    # reward_df = load_serialized_object('reward_df', debug_directory)
 
     # 3 - Graph generation
     # TODO: traiter les actions qui ne sont pas allées au bout des timesteps
@@ -35,6 +37,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
     if debug:
         print(graph)
         serialize(graph, name="graphe", dir=debug_directory)
+        # TODO: plot graph with good layout
+        draw_graph(graph, layout = None)
 
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     best_path = compute_trajectory.best_path(graph, config["best_path_type"])
@@ -50,3 +54,14 @@ def serialize(obj, name, dir):
     outfile = open(os.path.join(dir, name + ".pkl"), 'wb')
     pickle.dump(obj, outfile)
     outfile.close()
+
+def load_serialized_object(name, dir):
+    infile = open(os.path.join(dir, name + ".pkl"), 'rb')
+    obj = pickle.load(infile)
+    infile.close()
+    return obj
+
+def draw_graph(graph, layout):
+    # TODO: COMPUTE LAYOUT (sinon graphe illibile)
+    nx.draw_networkx(graph)
+    plt.show()

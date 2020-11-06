@@ -11,6 +11,9 @@ except ModuleNotFoundError:
 # Grid2Op Env constants
 REWARD_CLASS = L2RPNReward  # L2RPNSandBoxScore
 GAME_RULE = AlwaysLegal
-DICT_GAME_PARAMETERS = {'NO_OVERFLOW_DISCONNECTION': True,
+DICT_GAME_PARAMETERS_SIMULATION = {'NO_OVERFLOW_DISCONNECTION': True,
                         'MAX_LINE_STATUS_CHANGED': 999,
                         'MAX_SUB_CHANGED': 2999}
+DICT_GAME_PARAMETERS_GRAPH = {'NO_OVERFLOW_DISCONNECTION': True,
+                        'MAX_LINE_STATUS_CHANGED': 1,
+                        'MAX_SUB_CHANGED': 1}

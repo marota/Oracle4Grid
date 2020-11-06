@@ -4,12 +4,12 @@ import numpy as np
 import grid2op
 from grid2op.Chronics import GridStateFromFile
 from grid2op.Parameters import Parameters
-from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS
+from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS_SIMULATION
 
 
 def prepare_params():
     param = Parameters()
-    param.init_from_dict(DICT_GAME_PARAMETERS)
+    param.init_from_dict(DICT_GAME_PARAMETERS_SIMULATION)
     return param
 
 
