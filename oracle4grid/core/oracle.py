@@ -1,5 +1,6 @@
 import os
 import pickle
+import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -29,16 +30,16 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
         print(reward_df)
         serialize(reward_df, name='reward_df', dir=debug_directory)
         # TODO: ligne de commande qui permet de charger à partir d'ici
-    # reward_df = load_serialized_object('reward_df', debug_directory)
+    #reward_df = load_serialized_object('reward_df', debug_directory)
 
     # 3 - Graph generation
     # TODO: traiter les actions qui ne sont pas allées au bout des timesteps
-    graph = graph_generator.generate(reward_df, int(config['max_depth']), init_topo_vect, init_line_status)
+    graph = graph_generator.generate(reward_df, int(config['max_iter']), init_topo_vect, init_line_status)
     if debug:
         print(graph)
         serialize(graph, name="graphe", dir=debug_directory)
         # TODO: plot graph with good layout
-        draw_graph(graph, layout = None)
+        draw_graph(graph, int(config['max_iter']), save = debug_directory)
 
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     best_path = compute_trajectory.best_path(graph, config["best_path_type"])
@@ -61,7 +62,33 @@ def load_serialized_object(name, dir):
     infile.close()
     return obj
 
-def draw_graph(graph, layout):
-    # TODO: COMPUTE LAYOUT (sinon graphe illibile)
-    nx.draw_networkx(graph)
-    plt.show()
+def draw_graph(graph, max_iter, save = None):
+    layout = {}
+    fig, ax = plt.subplots(1,1, figsize = (15,10))
+
+    # Each unique prefix (Action) is given a y
+    prefixes = {node.split('_t')[0] for node in graph.nodes}
+    y_axis = np.linspace(start = -1, stop = 1, num = len(prefixes))
+    y_axis = {prefix:y for prefix,y in zip(prefixes,y_axis)}
+
+    # Each timestep is given a x
+    x_axis = np.linspace(start = -1, stop = 1, num = (max_iter+2))
+
+    # Each node of the graph is given a x and y
+    for node in graph.nodes:
+        if node == 'init':
+            x = -1
+            y = 0
+        elif node == 'end':
+            x = 1
+            y = 0
+        else:
+            prefix = node.split('_t')[0]
+            timestep = int(node.split('_t')[1])
+            x = x_axis[timestep+1]
+            y = y_axis[prefix]
+        layout[node] = np.array([x,y])
+
+    nx.draw_networkx(graph, pos = layout, with_labels=True, ax = ax)
+    if save is not None:
+        fig.savefig(os.path.join(save,"graphe.png"))

@@ -106,13 +106,13 @@ def create_end_nodes(final_edges, fake_reward = 0.1):
     return or_end, ex_end, weights_end
 
 
-def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_depth, reachable_topologies_from_init):
+def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init):
     """
     Builds a networkx.digraph with all possible transitions and their rewards at each timestep
     :param reachable_topologies: all reachable topologies from all topologies
     :param ordered_names: names of all origin topologies of reachable_topologies, in the same order
     :param reward_df: dataframe with actions and their simulated reward at each timestep. Columns are 'action', 'timestep', reward'
-    :param max_depth: maximum simulated timestep
+    :param max_iter: maximum simulated timestep
     :return: networkx.digraph with all possible transitions and their rewards at each timestep
     """
     # or_structure, ex_structure = create_edge_structure(reachable_topologies, ordered_names)
@@ -124,7 +124,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_d
     edges_ex_t = edges_ex.copy()
 
     # Reachable transitions for each timestep and associated rewards
-    for t in range(max_depth):
+    for t in range(max_iter-1):
         # Extremities should be treated once each
         edges_ex_t = pd.unique(edges_ex_t).tolist()
 
