@@ -64,7 +64,6 @@ def load_serialized_object(name, dir):
 
 def draw_graph(graph, max_iter, save = None):
     layout = {}
-    fig, ax = plt.subplots(1,1, figsize = (15,10))
 
     # Each unique prefix (Action) is given a y
     prefixes = {node.split('_t')[0] for node in graph.nodes}
@@ -89,6 +88,14 @@ def draw_graph(graph, max_iter, save = None):
             y = y_axis[prefix]
         layout[node] = np.array([x,y])
 
-    nx.draw_networkx(graph, pos = layout, with_labels=True, ax = ax)
+    ## Plot graph with its layout
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    # Graph structure
+    nx.draw_networkx(graph, pos = layout, ax = ax)
+    # Rounded labels
+    labels = nx.get_edge_attributes(graph, 'weight')
+    for k, v in labels.items():
+        labels[k] = round(v, 2)
+    nx.draw_networkx_edge_labels(graph, pos = layout, edge_labels=labels, font_size = 9, alpha = 0.6)
     if save is not None:
-        fig.savefig(os.path.join(save,"graphe.png"))
+       fig.savefig(os.path.join(save,"graphe.png"))
