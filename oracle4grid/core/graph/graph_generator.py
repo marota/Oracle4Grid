@@ -1,22 +1,62 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import networkx as nx
 
-from oracle4grid.core.utils.constants import DICT_GAME_PARAMETERS_GRAPH
+from oracle4grid.core.utils.constants import DICT_GAME_PARAMETERS_GRAPH, END_NODE_REWARD
 
 
-def generate(reward_df, max_depth, init_topo_vect, init_line_status, debug = False):
+def generate(reward_df, init_topo_vect, init_line_status, max_iter = None, debug = False):
+    if debug:
+        print('\n')
+        print("============== 3 - Graph generation ==============")
+
+    # Parameters and DataFrame preprocessing
+    reward_df = preprocessing(reward_df, max_iter)
+
     # Compute possible transitions list for each action
-    reward_df['name'] = [action.name for action in reward_df['action']]
     reachable_topologies_from_init = get_reachable_topologies_from_init(reward_df, init_topo_vect, init_line_status,
                                                                         explicit_node_names=debug)
     reachable_topologies, ordered_names = get_reachable_topologies(reward_df, init_topo_vect, init_line_status,
                                                                    explicit_node_names=debug)
 
     # Build graph
-    graph = build_transition_graph(reachable_topologies, ordered_names, reward_df, max_depth, reachable_topologies_from_init)
+    graph = build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init)
+    # graph = add_nodes_action(graph)
     return graph
 
+
+def add_nodes_action(graph):
+    """
+    Add an attribute to the graph representing the action played
+    :param graph:
+    :return: id of the action played
+    """
+    dict_ids = {node:(node.split('_t')[0] if node not in ['init','end'] else None) for node in graph.nodes}
+    nx.set_node_attributes(graph, dict_ids, name = 'action_id')
+
+
+def preprocessing(reward_df, max_iter):
+    # Extract name column
+    reward_df['name'] = [action.name for action in reward_df['action']]
+
+    # Maximum timestep to consider for graph
+    max_iter_df = reward_df['timestep'].max() + 1
+    if max_iter is None:
+        max_iter = max_iter_df
+    elif max_iter > max_iter_df:
+        raise ValueError("max iteration should be <= than simulated timesteps")
+
+    # Filter actions that did not converge until last timestep and raise warning
+    simulated_timesteps_per_action = reward_df.groupby('name', as_index=False).agg({'timestep': 'max'})
+    divergent_actions = simulated_timesteps_per_action.loc[
+        simulated_timesteps_per_action['timestep'] < (max_iter_df - 1), "name"].values
+    if len(divergent_actions) > 0:
+        reward_df = reward_df[~(reward_df['name'].isin(divergent_actions))]
+        warnings.warn("There are " + str(len(
+            divergent_actions)) + " actions that have not been simulated until last timestep (diverging simulation)")
+    return reward_df
 
 def get_reachable_topologies(reward_df, init_topo_vect, init_line_status, explicit_node_names = False):
     # Ordered names of actions
@@ -44,11 +84,11 @@ def get_reachable_topologies(reward_df, init_topo_vect, init_line_status, explic
 
 def get_reachable_topologies_from_init(reward_df, init_topo_vect, init_line_status, explicit_node_names = False):
     actions = reward_df['action'].unique()
-    if not explicit_node_names:
-        reachable_topologies_from_init = [action.name
-                                          for action in actions
-                                          if len(action.subs) <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <= DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
-    # TODO: else: pareil avec fonction qui crée un nom explicite
+
+    reachable_topologies_from_init = [action.name
+                                      for action in actions
+                                      if len(action.subs) <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <= DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
+    # TODO: else: pareil avec fonction qui crée un nom explicite if explicit_node_names:
     return reachable_topologies_from_init
 
 def create_edges_at_t(edges_ex_previous, ordered_names, reachable_topologies, t):
@@ -138,7 +178,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
         edges_weights += edges_weights_t.copy()
 
     # Symbolic end node
-    or_end, ex_end, weights_end = create_end_nodes(edges_ex_t)
+    or_end, ex_end, weights_end = create_end_nodes(edges_ex_t, fake_reward=END_NODE_REWARD)
     edges_or += or_end
     edges_ex += ex_end
     edges_weights += weights_end

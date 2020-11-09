@@ -2,26 +2,21 @@ import operator
 from pprint import pprint
 from itertools import combinations
 from functools import reduce
-from tqdm import tqdm
 
 from oracle4grid.core.utils.actions_generator import get_atomic_actions_names
 from oracle4grid.core.utils.Action import OracleAction
-# from oracle4grid.core.reward_computation.run_one import run_one
 
-# should output a dict with all combinations of actions based on dict of possible actions
 
 
 def generate(atomic_actions, depth, env, debug, init_topo_vect, init_line_status):
+    if debug:
+        print('\n')
+        print("============== 1 - Generation of action combinations ==============")
     ret = []
     all_actions = generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status)
-    if debug:
-        print("Initial atomic actions")
-        pprint(atomic_actions)
-        print('\nExample of stored combination in Action class')
-        all_actions[-1].print()
     for action in all_actions:
         env.reset()
-        if keep(action, env, debug):
+        if keep(action, env):
             ret.append(action)
     if debug:
         print(str(len(all_actions)-len(ret))+" actions out of "+str(len(all_actions))+" have been filtered")
@@ -41,13 +36,13 @@ def generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status):
     return all_actions
 
 
-def keep(oracle_action, env, debug=False):
+def keep(oracle_action, env):
     # Successive rules applied to invalidate actions that don't need to be simulated
-    check = run_pf_check(oracle_action, env, debug)
+    check = run_pf_check(oracle_action, env)
     return True
 
 
-def run_pf_check(oracle_action, env, debug=False):
+def run_pf_check(oracle_action, env):
     valid = False
 
     # First step simulation with Runner
@@ -57,9 +52,4 @@ def run_pf_check(oracle_action, env, debug=False):
     # Valid action?
     if (not done) and (len(info["exception"]) == 0):
         valid = True
-
-    if debug:
-        print(oracle_action.atomic_actions)
-        print(info)
-        print('\n')
     return valid

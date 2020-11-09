@@ -18,6 +18,18 @@ class OracleAction:
         self.topo_subids = self.get_topo_subids(action_space)
         # On ne veut pas stocker action_space et init_topo_vect mais juste les utiliser une fois dans la méthode qui formatte l'action en grid2Op
 
+    def __str__(self):
+        # TODO: use id of "unitary" OracleAction
+        result = str(self.name)
+        for sub in self.subs:
+            result += '_sub_'+str(sub)
+        for line in self.lines:
+            result += '_line_'+str(line)
+        return result
+
+    def __repr__(self):
+        return self.__str__()
+
     def compute_subs_and_lines(self):
         subs = set(get_first_key(atomic_action['sub'])
                    for atomic_action in self.atomic_actions
