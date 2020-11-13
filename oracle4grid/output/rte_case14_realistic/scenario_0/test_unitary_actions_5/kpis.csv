@@ -1,0 +1,7 @@
+Indicator name;Reward value
+Do Nothing in ref topo;0.0
+Best path with only one-action transitions;0.0
+Apply sub-1-1_sub-5-2 then do nothing;71.96863460540771
+Best path without transition constraint;71.96863460540771
+Best possible path with game rules;72.53358364105225
+Apply sub-5-2 then do nothing;75.20589065551758

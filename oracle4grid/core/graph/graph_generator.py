@@ -13,7 +13,7 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter = None, debug
         print("============== 3 - Graph generation ==============")
 
     # Parameters and DataFrame preprocessing
-    reward_df = preprocessing(reward_df, max_iter)
+    reward_df = preprocessing(reward_df, max_iter, explicit_node_names=debug)
 
     # Compute possible transitions list for each action
     reachable_topologies_from_init = get_reachable_topologies_from_init(reward_df, init_topo_vect, init_line_status,
@@ -37,9 +37,12 @@ def add_nodes_action(graph):
     nx.set_node_attributes(graph, dict_ids, name = 'action_id')
 
 
-def preprocessing(reward_df, max_iter):
+def preprocessing(reward_df, max_iter, explicit_node_names = False):
     # Extract name column
-    reward_df['name'] = [action.name for action in reward_df['action']]
+    if not explicit_node_names:
+        reward_df['name'] = [action.name for action in reward_df['action']]
+    else:
+        reward_df['name'] = [str(action) for action in reward_df['action']]
 
     # Maximum timestep to consider for graph
     max_iter_df = reward_df['timestep'].max() + 1
@@ -78,17 +81,24 @@ def get_reachable_topologies(reward_df, init_topo_vect, init_line_status, explic
     # Formattage
     reachable_topologies = []
     for action in actions:
-        reachable_topologies_from_action = [action_couple[1].name for action_couple in valid_action_couples if action_couple[0].name == action.name]
+        if explicit_node_names:
+            reachable_topologies_from_action = [action_couple[1].repr for action_couple in valid_action_couples if action_couple[0].repr == action.repr]
+        else:
+            reachable_topologies_from_action = [action_couple[1].name for action_couple in valid_action_couples if
+                                                action_couple[0].name == action.name]
         reachable_topologies.append(reachable_topologies_from_action)
     return reachable_topologies, ordered_names
 
 def get_reachable_topologies_from_init(reward_df, init_topo_vect, init_line_status, explicit_node_names = False):
     actions = reward_df['action'].unique()
-
-    reachable_topologies_from_init = [action.name
+    if not explicit_node_names:
+        reachable_topologies_from_init = [action.name
                                       for action in actions
                                       if len(action.subs) <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <= DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
-    # TODO: else: pareil avec fonction qui crée un nom explicite if explicit_node_names:
+    else:
+        reachable_topologies_from_init = [action.repr
+                                          for action in actions
+                                          if len(action.subs) <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <= DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
     return reachable_topologies_from_init
 
 def create_edges_at_t(edges_ex_previous, ordered_names, reachable_topologies, t):
@@ -106,7 +116,10 @@ def create_edges_at_t(edges_ex_previous, ordered_names, reachable_topologies, t)
     edges_ex_t = []
     for or_ in edges_ex_previous:
         # Find possible transitions of each origin node
-        or_name = int(or_.replace(old_suffix, ''))
+        try:
+            or_name = int(or_.replace(old_suffix, ''))
+        except:
+            or_name = or_.replace(old_suffix, '')
         or_position = np.where(ordered_names==or_name)[0][0]
         new_edges_ex = [str(ex_name)+new_suffix for ex_name in reachable_topologies[or_position]]
         # Append to edges
@@ -125,7 +138,10 @@ def get_transition_rewards_from_t(reward_df, edges_ex_t, t):
     """
     edges_weights_t = []
     for action_name in edges_ex_t:
-        action_name = int(action_name.replace("_t"+str(t+1), ""))
+        try:
+            action_name = int(action_name.replace("_t"+str(t+1), ""))
+        except:
+            action_name = action_name.replace("_t"+str(t+1), "")
         reward = reward_df.loc[(reward_df['name']==action_name)&(reward_df['timestep']==(t+1)), 'reward'].values[0]
         edges_weights_t.append(reward)
     return edges_weights_t

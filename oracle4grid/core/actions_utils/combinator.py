@@ -28,7 +28,7 @@ def generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status):
     named_atomic_actions = get_atomic_actions_names(atomic_actions)
     all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions, i)) for i in range(1, (depth + 1))])
 
-    all_actions = [OracleAction(i, [named_atomic_actions[name] for name in names_combination],
+    all_actions = [OracleAction(i, names_combination, [named_atomic_actions[name] for name in names_combination],
                                 env.action_space,
                                 init_topo_vect,
                                 init_line_status)

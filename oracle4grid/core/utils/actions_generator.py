@@ -28,11 +28,18 @@ def merge_list_of_dict(list_of_dict):
 def get_atomic_actions_names(atomic_actions) :
     # Name of each target configuration
     named_atomic_actions = {}
+    i = 0 # General counter, will serve as id to combinations of one action and as reference to all combinations next
     for key in atomic_actions:
-        dict_sub = {f'{key}_{c}_{i}': {key: {int(c): atomic_actions[key][c][i]}}
-                    for c in atomic_actions[key]
-                    for i,_ in enumerate(atomic_actions[key][c])}
-        named_atomic_actions.update(dict_sub)
+        # dict_sub = {f'{key}-{c}-{i}': {key: {int(c): atomic_actions[key][c][i]}}
+        #             for c in atomic_actions[key]
+        #             for i,_ in enumerate(atomic_actions[key][c])}
+        for c in atomic_actions[key]:
+            for action in atomic_actions[key][c]:
+                dict_sub = {f'{key}-{c}-{i}': {key: {int(c): action}
+                                               }
+                            }
+                i = i +1
+                named_atomic_actions.update(dict_sub)
     return  named_atomic_actions
 
 

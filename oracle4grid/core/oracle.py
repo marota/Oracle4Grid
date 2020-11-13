@@ -88,7 +88,7 @@ def draw_graph(graph, max_iter, save = None):
         layout[node] = np.array([x,y])
 
     ## Plot graph with its layout
-    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    fig, ax = plt.subplots(1, 1, figsize=(25, 15))
     # Graph structure
     nx.draw_networkx(graph, pos = layout, ax = ax)
     # Rounded labels

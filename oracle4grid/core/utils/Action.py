@@ -9,8 +9,9 @@ from oracle4grid.core.utils.actions_generator import get_valid_sub_action, get_v
 
 class OracleAction:
 
-    def __init__(self, id_, atomic_actions, action_space, init_topo_vect, init_line_status, debug=False):
+    def __init__(self, id_, atomic_actions_names, atomic_actions, action_space, init_topo_vect, init_line_status, debug=False):
         self.name = id_
+        self.repr = self.get_action_representation(atomic_actions_names)
         self.debug = debug
         self.atomic_actions = atomic_actions
         self.subs, self.lines = self.compute_subs_and_lines()
@@ -19,16 +20,19 @@ class OracleAction:
         # On ne veut pas stocker action_space et init_topo_vect mais juste les utiliser une fois dans la méthode qui formatte l'action en grid2Op
 
     def __str__(self):
-        # TODO: use id of "unitary" OracleAction
-        result = str(self.name)
-        for sub in self.subs:
-            result += '_sub_'+str(sub)
-        for line in self.lines:
-            result += '_line_'+str(line)
-        return result
+        # # TODO: use id of "unitary" OracleAction
+        # result = str(self.name)
+        # for sub in self.subs:
+        #     result += '_sub_'+str(sub)
+        # for line in self.lines:
+        #     result += '_line_'+str(line)
+        return self.repr
 
     def __repr__(self):
-        return self.__str__()
+        return self.repr
+
+    def get_action_representation(self, atomic_action_names):
+        return "_".join(atomic_action_names)
 
     def compute_subs_and_lines(self):
         subs = set(get_first_key(atomic_action['sub'])
