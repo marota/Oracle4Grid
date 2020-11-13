@@ -8,7 +8,7 @@ from oracle4grid.core.graph import graph_generator, compute_trajectory, indicato
 from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.actions_utils import combinator
-from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS
+from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS
 
 
 # runs all steps one by one
@@ -42,9 +42,10 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
         print(best_path)
 
     # 5 - Indicators computation
-    kpis = indicators.generate(graph, reward_df, debug = debug)
+    kpis = indicators.generate(best_path, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug = debug)
     if debug:
         print(kpis)
+        kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
 
     return best_path
 

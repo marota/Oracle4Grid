@@ -63,7 +63,7 @@ def init_debug_directory(args):
     action_file = os.path.split(args.file)[len(os.path.split(args.file))-1].replace(".json","")
     grid_file = os.path.split(args.env)[len(os.path.split(args.env)) - 1]
     scenario = "scenario_"+str(args.chronic)
-    debug_directory = os.path.join("oracle4grid/ressources/debug/", grid_file, scenario, action_file)
+    debug_directory = os.path.join("oracle4grid/output/", grid_file, scenario, action_file)
     os.makedirs(debug_directory, exist_ok=True)
     return debug_directory
 
