@@ -7,6 +7,7 @@ from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS
 from oracle4grid.core.utils.serialization import draw_graph
 
+
 # runs all steps one by one
 # handles visualisation in each step
 

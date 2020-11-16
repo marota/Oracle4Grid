@@ -6,7 +6,7 @@ SHORTEST = "shortest"
 LONGEST = "longest"
 
 
-def best_path(graph, best_path_type, actions, debug = False):
+def best_path(graph, best_path_type, actions, debug=False):
     if debug:
         print('\n')
         print("============== 4 - Computation of best action path ==============")
@@ -21,7 +21,8 @@ def best_path(graph, best_path_type, actions, debug = False):
     action_path = return_action_path(path, actions, debug=debug)
     return action_path
 
-def return_action_path(path, actions, debug = False):
+
+def return_action_path(path, actions, debug=False):
     if debug:
         names = [str(action) for action in actions]
     else:

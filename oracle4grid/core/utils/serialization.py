@@ -1,6 +1,5 @@
 import os
 import pickle
-import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -45,7 +44,7 @@ def draw_graph(graph, max_iter, save=None):
             y = y_axis[prefix]
         layout[node] = np.array([x, y])
 
-    ## Plot graph with its layout
+    # Plot graph with its layout
     fig, ax = plt.subplots(1, 1, figsize=(25, 15))
     # Graph structure
     nx.draw_networkx(graph, pos=layout, ax=ax)
