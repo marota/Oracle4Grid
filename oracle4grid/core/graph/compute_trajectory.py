@@ -22,7 +22,8 @@ def best_path(graph, best_path_type, actions, init_topo_vect, init_line_status, 
     grid2op_action_path = get_grid2op_action_path(action_path, init_topo_vect, init_line_status)
     return action_path, grid2op_action_path
 
-def return_action_path(path, actions, debug = False):
+
+def return_action_path(path, actions, debug=False):
     if debug:
         names = [str(action) for action in actions]
     else:

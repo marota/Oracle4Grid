@@ -39,33 +39,37 @@ def main():
         raise ValueError("Input arg error, --debug, options are 0 or 1")
     else:
         args.debug = bool(args.debug)
+    load_and_run(args.env, args.chronic, args.file, args.debug, config['DEFAULT'])
+    return 1
 
-    # ###############################################################################################################
+
+def load_and_run(env_dir, chronic, action_file, debug, config):
     # Load Grid2op Environment with Parameters
     param = prepare_params()  # Move to ini?
-    env = prepare_env(args.env, args.chronic, param)
+    env = prepare_env(env_dir, chronic, param)
 
     # Load unitary actions
-    with open(args.file) as f:
+    with open(action_file) as f:
         atomic_actions = json.load(f)
 
     # Init debug mode if necessary
-    if args.debug:
-        debug_directory = init_debug_directory(args)
+    if debug:
+        debug_directory = init_debug_directory(env_dir, action_file, chronic)
     else:
         debug_directory = None
 
     # Run all steps
-    oracle(atomic_actions, env, args.debug, config['DEFAULT'], debug_directory=debug_directory)
-    return 1
+    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory)
 
-def init_debug_directory(args):
-    action_file = os.path.split(args.file)[len(os.path.split(args.file))-1].replace(".json","")
-    grid_file = os.path.split(args.env)[len(os.path.split(args.env)) - 1]
-    scenario = "scenario_"+str(args.chronic)
-    debug_directory = os.path.join("oracle4grid/output/", grid_file, scenario, action_file)
+
+def init_debug_directory(env_dir, action_file, chronic):
+    action_file_os = os.path.split(action_file)[len(os.path.split(action_file)) - 1].replace(".json", "")
+    grid_file_os = os.path.split(env_dir)[len(os.path.split(env_dir)) - 1]
+    scenario = "scenario_" + str(chronic)
+    debug_directory = os.path.join("oracle4grid/output/", grid_file_os, scenario, action_file_os)
     os.makedirs(debug_directory, exist_ok=True)
     return debug_directory
+
 
 if __name__ == "__main__":
     main()
