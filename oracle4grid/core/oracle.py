@@ -37,9 +37,11 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
         draw_graph(graph, int(config[MAX_ITER]), save = debug_directory)
 
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
-    best_path = compute_trajectory.best_path(graph, config["best_path_type"], actions, debug = debug)
+    best_path, grid2op_action_path = compute_trajectory.best_path(graph, config["best_path_type"], actions,
+                                             init_topo_vect, init_line_status, debug = debug)
     if debug:
         print(best_path)
+        # print(grid2op_action_path) # le print est lourd
 
     # 5 - Indicators computation
     kpis = indicators.generate(best_path, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug = debug)
@@ -47,7 +49,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
         print(kpis)
         kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
 
-    return best_path
+    return best_path, grid2op_action_path
 
 
 def serialize(obj, name, dir):

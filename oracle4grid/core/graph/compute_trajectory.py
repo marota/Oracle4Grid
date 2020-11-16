@@ -6,7 +6,7 @@ SHORTEST = "shortest"
 LONGEST = "longest"
 
 
-def best_path(graph, best_path_type, actions, debug = False):
+def best_path(graph, best_path_type, actions, init_topo_vect, init_line_status, debug = False):
     if debug:
         print('\n')
         print("============== 4 - Computation of best action path ==============")
@@ -19,7 +19,8 @@ def best_path(graph, best_path_type, actions, debug = False):
 
     # Traduce path in terms of OracleActions
     action_path = return_action_path(path, actions, debug=debug)
-    return action_path
+    grid2op_action_path = get_grid2op_action_path(action_path, init_topo_vect, init_line_status)
+    return action_path, grid2op_action_path
 
 def return_action_path(path, actions, debug = False):
     if debug:
@@ -37,3 +38,25 @@ def return_action_path(path, actions, debug = False):
         pos = names.index(id_)
         action_path.append(actions[pos])
     return action_path
+
+def get_grid2op_action_path(action_path, init_topo_vect, init_line_status):
+    """
+    Compute the grid2op actions equivalent to a given list of OracleAction
+    :param action_path: list of OracleAction that define path
+    :param init_topo_vect:
+    :param init_line_status:
+    :return: list of dict representing all grid2op actions that need to be done for optimal path
+    """
+    grid2op_action_path = []
+
+    # At timestep 0
+    grid2op_action = action_path[0].grid2op_action_dict
+    grid2op_action_path.append(grid2op_action)
+
+    # At other timesteps: get grid2op transition actions
+    for i in range(len(action_path)-1):
+        action = action_path[i]
+        next_action = action_path[i+1]
+        grid2op_action = action.transition_action_to(next_action, init_topo_vect, init_line_status)
+        grid2op_action_path.append(grid2op_action)
+    return grid2op_action_path
