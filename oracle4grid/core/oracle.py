@@ -1,6 +1,8 @@
 import os
+import json
 import pickle
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -12,9 +14,6 @@ from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROC
 from oracle4grid.core.utils.serialization import draw_graph
 
 
-# runs all steps one by one
-# handles visualisation in each step
-
 def oracle(atomic_actions, env, debug, config, debug_directory=None):
     # 0 - Preparation : Get initial topo and line status
     init_topo_vect, init_line_status = get_initial_configuration(env)
@@ -23,10 +22,10 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
     actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, debug, init_topo_vect, init_line_status)
 
     # 2 - Actions rewards simulation
-    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]))
+    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]), debug=debug)
     if debug:
         print(reward_df)
-        reward_df.to_csv(os.path.join(debug_directory, "reward_df.csv"), sep=';', index=False)
+        serialize_reward_df(reward_df, debug_directory)
         # serialize(reward_df, name='reward_df', dir=debug_directory)
         # reward_df = load_serialized_object('reward_df', debug_directory)
 
@@ -42,7 +41,13 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
 
     if debug:
         print(best_path)
-        # print(grid2op_action_path) # le print est lourd
+        # Serialization for agent replay
+        serialize(grid2op_action_path, 'best_path_grid2op_action',
+                  dir=debug_directory, format='pickle')
+        topo_count = display_topo_count(best_path, dir = debug_directory)
+        print('10 best topologies in optimal path')
+        print(topo_count)
+
 
     # 5 - Indicators computation
     kpis = indicators.generate(best_path, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug=debug)
@@ -52,11 +57,29 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
 
     return best_path, grid2op_action_path
 
+def display_topo_count(best_path, dir, n_best = 10):
+    best_path_df = pd.Series(best_path)
+    topo_count = best_path_df.value_counts().head(n_best)
+    fig, ax = plt.subplots(1, 1, figsize=(22, 15))
+    topo_count.plot.bar(ax = ax)
+    fig.savefig(os.path.join(dir, "best_path_topologies_count.png"))
+    return topo_count
 
-def serialize(obj, name, dir):
-    outfile = open(os.path.join(dir, name + ".pkl"), 'wb')
-    pickle.dump(obj, outfile)
-    outfile.close()
+def serialize_reward_df(reward_df, dir):
+    df = reward_df.copy()
+    df = df.set_index(['action','timestep'])
+    df = df.unstack(level=0)['reward']
+    df.to_csv(os.path.join(dir, "reward_df.csv"), sep=';', index=True)
+
+def serialize(obj, name, dir, format = 'pickle'):
+    if format == 'pickle':
+        outfile = open(os.path.join(dir, name + ".pkl"), 'wb')
+        pickle.dump(obj, outfile)
+        outfile.close()
+    elif format == 'json':
+        outfile = open(os.path.join(dir, name + ".json"), 'w')
+        json.dump(obj, outfile)
+        outfile.close()
 
 def load_serialized_object(name, dir):
     infile = open(os.path.join(dir, name + ".pkl"), 'rb')
@@ -91,14 +114,14 @@ def draw_graph(graph, max_iter, save = None):
         layout[node] = np.array([x,y])
 
     ## Plot graph with its layout
-    fig, ax = plt.subplots(1, 1, figsize=(25, 15))
+    fig, ax = plt.subplots(1, 1, figsize=(22, 12))
     # Graph structure
-    nx.draw_networkx(graph, pos = layout, ax = ax)
+    nx.draw_networkx(graph, pos = layout, ax = ax, font_size = 11, alpha = 0.8)
     # Rounded labels
     labels = nx.get_edge_attributes(graph, 'weight')
     for k, v in labels.items():
         labels[k] = round(v, 2)
-    nx.draw_networkx_edge_labels(graph, pos = layout, edge_labels=labels, font_size = 9, alpha = 0.6)
+    nx.draw_networkx_edge_labels(graph, pos = layout, edge_labels=labels, font_size = 7, alpha = 0.6)
     if save is not None:
        fig.savefig(os.path.join(save,"graphe.png"))
 

@@ -20,12 +20,6 @@ class OracleAction:
         # On ne veut pas stocker action_space et init_topo_vect mais juste les utiliser une fois dans la méthode qui formatte l'action en grid2Op
 
     def __str__(self):
-        # # TODO: use id of "unitary" OracleAction
-        # result = str(self.name)
-        # for sub in self.subs:
-        #     result += '_sub_'+str(sub)
-        # for line in self.lines:
-        #     result += '_line_'+str(line)
         return self.repr
 
     def __repr__(self):
