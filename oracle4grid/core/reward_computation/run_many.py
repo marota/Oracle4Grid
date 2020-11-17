@@ -8,7 +8,7 @@ from tqdm import tqdm
 from oracle4grid.core.reward_computation.run_one import run_one
 
 
-def run_all(actions, env, max_iter=1, nb_process=1, debug = False):
+def run_all(actions, env, max_iter=1, nb_process=1, debug=False):
     if debug:
         print('\n')
         print("============== 2 - Rewards simulation ==============")
