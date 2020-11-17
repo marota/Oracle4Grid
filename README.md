@@ -34,6 +34,17 @@ pipenv run ipython kernel install --user --name=<YourEnvName>
 jupyter nbextension enable --py widgetsnbextension
 ``
 
+- [TEMPORARY]  Install the forked grid2op
+Checkout the forked grid2op version, NOT in the oracle4grid repository
+
+`git clone https://github.com/mjothy/Grid2Op.git`
+
+`git checkout -b mj-devs`
+
+`cd Grid2Op/`
+
+`pip install -U .`
+
 ## Current content
 3 steps and notebooks
 - Create_Unitary_Actions_Viz.ipynb to create a dictionnary of unitary actions that are of interest and that will be combined after

@@ -1,5 +1,5 @@
 import unittest
-from oracle4grid.main import load_and_run
+from oracle4grid.core.utils.launch_utils import load_and_run
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_game_params, prepare_env
 
@@ -13,7 +13,7 @@ CONFIG = {
     "max_iter": 6,
     "nb_process": 1,
     "best_path_type": "shortest",
-    "n_best_topos" : 2
+    "n_best_topos": 2
 }
 
 
@@ -22,7 +22,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
-        action_path, grid2op_action_path = load_and_run(env_dir, chronic, file, False, CONFIG)
+        action_path, grid2op_action_path, kpis = load_and_run(env_dir, chronic, file, False, CONFIG)
         self.assertNotEqual(action_path, None)
         return 1
 
@@ -30,8 +30,8 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators= load_and_run(env_dir, chronic, file, False, CONFIG)
-        best_path_actual = list(map(lambda x : x.__str__(), action_path))
+        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
+        best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
         self.assertListEqual(best_path_actual, best_path_expected)
 
@@ -41,7 +41,7 @@ class IntegrationTest(unittest.TestCase):
         chronic = 0
         env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
-        best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL]==BEST_PATH_NAME,INDICATORS_REWARD_COL].values[0])
+        best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL] == BEST_PATH_NAME, INDICATORS_REWARD_COL].values[0])
 
         # Replay path with OracleAgent as standard gym episode replay (OracleAgent not compatible with Grid2op Runner yet)
         param = prepare_game_params()
