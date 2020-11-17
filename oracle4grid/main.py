@@ -6,7 +6,7 @@ import argparse
 import configparser
 import json
 
-from oracle4grid.core.utils.prepare_environment import prepare_params, prepare_env
+from oracle4grid.core.utils.prepare_environment import prepare_simulation_params, prepare_env
 from oracle4grid.core.oracle import oracle
 
 
@@ -45,7 +45,7 @@ def main():
 
 def load_and_run(env_dir, chronic, action_file, debug, config):
     # Load Grid2op Environment with Parameters
-    param = prepare_params()  # Move to ini?
+    param = prepare_simulation_params()  # Move to ini?
     env = prepare_env(env_dir, chronic, param)
 
     # Load unitary actions

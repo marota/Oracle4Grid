@@ -55,7 +55,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
         print(kpis)
         kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
 
-    return best_path, grid2op_action_path
+    return best_path, grid2op_action_path, kpis
 
 def display_topo_count(best_path, dir, n_best = 10):
     best_path_df = pd.Series(best_path)
