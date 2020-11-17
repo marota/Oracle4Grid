@@ -38,7 +38,7 @@ class IntegrationTest(unittest.TestCase):
     def test_agent_rewards(self):
         # Compute best path with Oracle
         file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
-        chronic = "000"
+        chronic = 0
         env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
         best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL]==BEST_PATH_NAME,INDICATORS_REWARD_COL].values[0])
@@ -46,19 +46,17 @@ class IntegrationTest(unittest.TestCase):
         # Replay path with OracleAgent as standard gym episode replay (OracleAgent not compatible with Grid2op Runner yet)
         param = prepare_game_params()
         env = prepare_env(env_dir, chronic, param)
+        env.set_id(chronic)
+        obs = env.reset()
         agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
                             observation_space=None, name=None)
         agent_reward = 0.
         done = False
-        obs = env.reset()
         for t in range(CONFIG['max_iter']):
             if not done:
                 action = agent.act(obs, reward=0., done=False)
                 obs, reward, done, info = env.step(action)
                 agent_reward += reward
-
-        # TODO: actions are correct (at least the first one) but impossible to get same reward as Runner(reward_df)...
-        # TODO: Careful with 0.1 at the end of scenario?
 
         # Check if we get expected reward
         self.assertEqual(best_path_reward, agent_reward)

@@ -13,7 +13,7 @@ class OracleAgent(BaseAgent):
         super().__init__(action_space)
         self.name = name
         self.action_path = action_path.copy()
-        self.actions_left = action_path
+        self.actions_left = action_path.copy()
 
     def act(self, observation, reward, done):
         action_dict = self.actions_left.pop(0)
