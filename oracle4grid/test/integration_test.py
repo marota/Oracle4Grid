@@ -1,7 +1,15 @@
 import unittest
-from oracle4grid.core.utils.launch_utils import load_and_run
+
+from oracle4grid.core.actions_utils import combinator
+from oracle4grid.core.reward_computation import run_many
+from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_ITER
+from oracle4grid.core.utils.launch_utils import load_and_run, load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
-from oracle4grid.core.utils.prepare_environment import prepare_game_params, prepare_env
+from oracle4grid.core.utils.prepare_environment import prepare_game_params, prepare_env, get_initial_configuration
+
+from pandas.testing import assert_frame_equal
+import pandas as pd
+import os
 
 
 BEST_PATH_NAME = "Best possible path with game rules"
@@ -60,6 +68,42 @@ class IntegrationTest(unittest.TestCase):
 
         # Check if we get expected reward
         self.assertEqual(best_path_reward, agent_reward)
+
+    def test_actions_combination(self):
+        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        chronic = "000"
+        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
+        # 0 - Preparation : Get initial topo and line status
+        init_topo_vect, init_line_status = get_initial_configuration(env)
+
+        # 1 - Action generation step
+        actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False, init_topo_vect, init_line_status)
+        self.assertEqual(len(actions), 15)
+
+    def test_kpi(self):
+        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        chronic = "000"
+        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
+        expected = pd.read_csv('./oracle4grid/test_resourses/test_kpi.csv', sep=',', index_col=0)
+        assert_frame_equal(indicators, expected)
+
+    def test_reward_df(self):
+        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        chronic = "000"
+        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
+        # 0 - Preparation : Get initial topo and line status
+        init_topo_vect, init_line_status = get_initial_configuration(env)
+
+        # 1 - Action generation step
+        actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False, init_topo_vect, init_line_status)
+        # 2 - Actions rewards simulation
+        reward_df = run_many.run_all(actions, env, int(CONFIG[MAX_ITER]), int(CONFIG[NB_PROCESS]), debug=False)
+        reward_df["action"] = reward_df["action"].astype(str)
+        expected = pd.read_csv('./oracle4grid/test_resourses/test_reward.csv', sep=',', index_col=0)
+        assert_frame_equal(reward_df, expected)
 
 
 if __name__ == '__main__':

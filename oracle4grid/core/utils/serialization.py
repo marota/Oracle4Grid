@@ -1,21 +1,9 @@
+import json
 import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-
-
-def serialize(obj, name, dir):
-    outfile = open(os.path.join(dir, name + ".pkl"), 'wb')
-    pickle.dump(obj, outfile)
-    outfile.close()
-
-
-def load_serialized_object(name, dir):
-    infile = open(os.path.join(dir, name + ".pkl"), 'rb')
-    obj = pickle.load(infile)
-    infile.close()
-    return obj
 
 
 def draw_graph(graph, max_iter, save=None):
@@ -55,3 +43,37 @@ def draw_graph(graph, max_iter, save=None):
     nx.draw_networkx_edge_labels(graph, pos=layout, edge_labels=labels, font_size=9, alpha=0.6)
     if save is not None:
         fig.savefig(os.path.join(save, "graphe.png"))
+
+
+def display_topo_count(best_path, dir, n_best=10):
+    best_path_df = pd.Series(best_path)
+    topo_count = best_path_df.value_counts().head(n_best)
+    fig, ax = plt.subplots(1, 1, figsize=(22, 15))
+    topo_count.plot.bar(ax=ax)
+    fig.savefig(os.path.join(dir, "best_path_topologies_count.png"))
+    return topo_count
+
+
+def serialize_reward_df(reward_df, dir):
+    df = reward_df.copy()
+    df = df.set_index(['action', 'timestep'])
+    df = df.unstack(level=0)['reward']
+    df.to_csv(os.path.join(dir, "reward_df.csv"), sep=';', index=True)
+
+
+def serialize(obj, name, dir, format='pickle'):
+    if format == 'pickle':
+        outfile = open(os.path.join(dir, name + ".pkl"), 'wb')
+        pickle.dump(obj, outfile)
+        outfile.close()
+    elif format == 'json':
+        outfile = open(os.path.join(dir, name + ".json"), 'w')
+        json.dump(obj, outfile)
+        outfile.close()
+
+
+def load_serialized_object(name, dir):
+    infile = open(os.path.join(dir, name + ".pkl"), 'rb')
+    obj = pickle.load(infile)
+    infile.close()
+    return obj

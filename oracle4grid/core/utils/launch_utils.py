@@ -6,7 +6,12 @@ from oracle4grid.core.oracle import oracle
 
 
 def load_and_run(env_dir, chronic, action_file, debug, config):
-    # Load Grid2op Environment with Parameters
+    atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug)
+    # Run all steps
+    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory)
+
+
+def load(env_dir, chronic, action_file, debug):
     param = prepare_simulation_params()  # Move to ini?
     env = prepare_env(env_dir, chronic, param)
 
@@ -19,9 +24,7 @@ def load_and_run(env_dir, chronic, action_file, debug, config):
         debug_directory = init_debug_directory(env_dir, action_file, chronic)
     else:
         debug_directory = None
-
-    # Run all steps
-    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory)
+    return atomic_actions, env, debug_directory
 
 
 def init_debug_directory(env_dir, action_file, chronic):
