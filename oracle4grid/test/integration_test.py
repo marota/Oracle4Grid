@@ -27,17 +27,17 @@ CONFIG = {
 
 class IntegrationTest(unittest.TestCase):
     def test_base_run(self):
-        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
-        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, kpis = load_and_run(env_dir, chronic, file, False, CONFIG)
         self.assertNotEqual(action_path, None)
         return 1
 
     def test_best_path_equal(self):
-        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
-        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
@@ -45,9 +45,9 @@ class IntegrationTest(unittest.TestCase):
 
     def test_agent_rewards(self):
         # Compute best path with Oracle
-        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = 0
-        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
         best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL] == BEST_PATH_NAME, INDICATORS_REWARD_COL].values[0])
 
@@ -70,9 +70,9 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(best_path_reward, agent_reward)
 
     def test_actions_combination(self):
-        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
-        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
         # 0 - Preparation : Get initial topo and line status
         init_topo_vect, init_line_status = get_initial_configuration(env)
@@ -82,17 +82,17 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(len(actions), 15)
 
     def test_kpi(self):
-        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
-        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, CONFIG)
         expected = pd.read_csv('./oracle4grid/test_resourses/test_kpi.csv', sep=',', index_col=0)
         assert_frame_equal(indicators, expected)
 
     def test_reward_df(self):
-        file = "./oracle4grid/ressources/actions/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
-        env_dir = "./oracle4grid/ressources/grids/rte_case14_realistic"
+        env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
         # 0 - Preparation : Get initial topo and line status
         init_topo_vect, init_line_status = get_initial_configuration(env)
