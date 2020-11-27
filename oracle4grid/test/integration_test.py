@@ -69,6 +69,11 @@ class IntegrationTest(unittest.TestCase):
         # Check if we get expected reward
         self.assertEqual(best_path_reward, agent_reward)
 
+    expected_actions = ["sub-1-0", "sub-1-1", "sub-5-2", "line-4-3", "sub-1-0_sub-1-1",
+                        "sub-1-0_sub-5-2", "sub-1-0_line-4-3", "sub-1-1_sub-5-2", "sub-1-1_line-4-3",
+                        "sub-5-2_line-4-3", "sub-1-0_sub-1-1_sub-5-2", "sub-1-0_sub-1-1_line-4-3",
+                        "sub-1-0_sub-5-2_line-4-3", "sub-1-1_sub-5-2_line-4-3", "donothing-0"]
+
     def test_actions_combination(self):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
@@ -79,7 +84,8 @@ class IntegrationTest(unittest.TestCase):
 
         # 1 - Action generation step
         actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False, init_topo_vect, init_line_status)
-        self.assertEqual(len(actions), 15)
+        actions = map(lambda x: str(x), actions)
+        self.assertListEqual(list(actions), self.expected_actions)
 
     def test_kpi(self):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"

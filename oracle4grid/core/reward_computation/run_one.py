@@ -7,6 +7,7 @@ from grid2op.Environment import Environment
 from oracle4grid.core.reward_computation.Run import Run
 from oracle4grid.core.utils.Action import OracleAction
 from oracle4grid.core.agent.OneChangeThenOnlyReconnect import OneChangeThenOnlyReconnect
+from oracle4grid.core.utils.constants import ENV_SEEDS, AGENT_SEEDS
 
 
 def run_one(action: OracleAction, env: Environment, max_iter: int):
@@ -14,6 +15,8 @@ def run_one(action: OracleAction, env: Environment, max_iter: int):
     runner = Runner(**env.get_params_for_runner(), agentClass=agent_class)
     res = runner.run_detailed(nb_episode=1,
                               nb_process=1,
-                              max_iter=max_iter, force_detail=True
+                              max_iter=max_iter, force_detail=True,
+                              env_seed=ENV_SEEDS,
+                              agent_seeds=AGENT_SEEDS
                               )
     return Run(action, res)
