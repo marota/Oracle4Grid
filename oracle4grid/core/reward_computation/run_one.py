@@ -16,7 +16,7 @@ def run_one(action: OracleAction, env: Environment, max_iter: int):
     res = runner.run_detailed(nb_episode=1,
                               nb_process=1,
                               max_iter=max_iter, force_detail=True,
-                              env_seed=ENV_SEEDS,
+                              env_seeds=ENV_SEEDS,
                               agent_seeds=AGENT_SEEDS
                               )
     return Run(action, res)

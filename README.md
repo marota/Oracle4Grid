@@ -10,7 +10,7 @@ It finds the best course of actions aposteriori, within a given perimeter of act
 Run example
 
 ``
-pipenv run python -m oracle4grid.main -d 0 -f oracle4grid/ressources/actions/unitary_actions_l2rpn_2019.json -e oracle4grid/ressources/grids/rte_case14_realistic -c 0
+pipenv run python -m main -d 1 -f oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json -e data/rte_case14_realistic -c 0
 ``
 
 - -d/--debug: If 1, prints additional information for debugging purposes. If 0, doesn't print any info
