@@ -1,4 +1,5 @@
 import warnings
+import time
 
 import numpy as np
 import pandas as pd
@@ -187,23 +188,39 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     edges_or, edges_ex, edges_weights = create_init_nodes(reachable_topologies_from_init, reward_df)
 
     # Initialize
-    edges_ex_t = edges_ex.copy()
+    #edges_ex_t = edges_ex.copy()
+#
+    ## Reachable transitions for each timestep and associated rewards
+#
+    #for t in range(max_iter - 1):
+    #    # Extremities should be treated once each
+    #    print(t)
+    #    start_time = time.time()
+    #    edges_ex_t = pd.unique(edges_ex_t).tolist()
+    #    # Compute edges and their weights. These edges connect timesteps t and t+1 with all possible ways
+    #    edges_or_t, edges_ex_t = create_edges_at_t(edges_ex_t, ordered_names, reachable_topologies, t)
+    #    edges_weights_t = get_transition_rewards_from_t(reward_df, edges_ex_t, t)
+    #    # Append to other edges from other timesteps
+    #    edges_or += edges_or_t.copy()
+    #    edges_ex += edges_ex_t.copy()
+    #    edges_weights += edges_weights_t.copy()
+    #    elapsed_time = time.time() - start_time
+    #    print(elapsed_time)
 
-    # Reachable transitions for each timestep and associated rewards
-    for t in range(max_iter - 1):
-        # Extremities should be treated once each
-        edges_ex_t = pd.unique(edges_ex_t).tolist()
+    edges_or += [str(ordered_names[i]) + '_t' + str(int(t)) for t in range(max_iter - 1) for i in
+                  range(len(reachable_topologies))
+                  for reachable_topo in reachable_topologies[i]]
+    edges_ex+= [str(reachable_topo) + '_t' + str(int(t + 1)) for t in range(max_iter - 1) for i in
+                  range(len(reachable_topologies))
+                  for reachable_topo in reachable_topologies[i]]
 
-        # Compute edges and their weights. These edges connect timesteps t and t+1 with all possible ways
-        edges_or_t, edges_ex_t = create_edges_at_t(edges_ex_t, ordered_names, reachable_topologies, t)
-        edges_weights_t = get_transition_rewards_from_t(reward_df, edges_ex_t, t)
-
-        # Append to other edges from other timesteps
-        edges_or += edges_or_t.copy()
-        edges_ex += edges_ex_t.copy()
-        edges_weights += edges_weights_t.copy()
+    reward_table = reward_df[['timestep', 'reward', 'name']].pivot(index='timestep', columns='name', values='reward')
+    edges_weights+= [reward_table[reachable_topo][int(t + 1)] for t in range(max_iter - 1) for i in
+                 range(len(reachable_topologies))
+                 for reachable_topo in reachable_topologies[i]]
 
     # Symbolic end node
+    edges_ex_t = [str(name) + '_t' + str(max_iter-1) for name in ordered_names]#edges_ex.copy()
     or_end, ex_end, weights_end = create_end_nodes(edges_ex_t, fake_reward=END_NODE_REWARD)
     edges_or += or_end
     edges_ex += ex_end
