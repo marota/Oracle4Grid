@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import networkx as nx
+import itertools
 
 from oracle4grid.core.utils.constants import DICT_GAME_PARAMETERS_GRAPH, END_NODE_REWARD
 
@@ -207,17 +208,23 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     #    elapsed_time = time.time() - start_time
     #    print(elapsed_time)
 
-    edges_or += [str(ordered_names[i]) + '_t' + str(int(t)) for t in range(max_iter - 1) for i in
-                  range(len(reachable_topologies))
-                  for reachable_topo in reachable_topologies[i]]
-    edges_ex+= [str(reachable_topo) + '_t' + str(int(t + 1)) for t in range(max_iter - 1) for i in
-                  range(len(reachable_topologies))
-                  for reachable_topo in reachable_topologies[i]]
+    start_time = time.time()
+    edges_or += [str(ordered_names[i]) + '_t' + str(int(t)) for i in range(len(reachable_topologies))
+                 for reachable_topo in reachable_topologies[i]
+                 for t in range(max_iter - 1)]
+    edges_ex += [str(reachable_topo) + '_t' + str(int(t + 1)) for i in range(len(reachable_topologies))
+                 for reachable_topo in reachable_topologies[i]
+                 for t in range(max_iter - 1)]
 
     reward_table = reward_df[['timestep', 'reward', 'name']].pivot(index='timestep', columns='name', values='reward')
-    edges_weights+= [reward_table[reachable_topo][int(t + 1)] for t in range(max_iter - 1) for i in
-                 range(len(reachable_topologies))
-                 for reachable_topo in reachable_topologies[i]]
+
+   #edges_weights += [reward_table[reachable_topo][int(t + 1)] for i in range(len(reachable_topologies))
+   #                  for reachable_topo in reachable_topologies[i]
+   #                  for t in range(max_iter - 1)]
+    edges_weights +=list(itertools.chain(*[reward_table[reachable_topologies[i]].loc[1:max_iter].values.flatten(order='F')
+                                           for i in range(len(reachable_topologies))]))
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
 
     # Symbolic end node
     edges_ex_t = [str(name) + '_t' + str(max_iter-1) for name in ordered_names]#edges_ex.copy()
@@ -228,5 +235,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
     # Finally create graph object from DataFrame
     edge_df = pd.DataFrame({'or': edges_or, 'ex': edges_ex, 'weight': edges_weights})
+    edge_df.to_csv("edge_df.csv",index=False)
+    print("edge_df done - creating graph")
     graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight'], create_using=nx.DiGraph())
     return graph
