@@ -5,12 +5,12 @@ from oracle4grid.core.utils.prepare_environment import prepare_simulation_params
 from oracle4grid.core.oracle import oracle
 
 
-def load_and_run(env_dir, chronic, action_file, debug, config):
+def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config):
     atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug)
     # Parse atomic_actions format
     atomic_actions = parse(atomic_actions,env)
     # Run all steps
-    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory)
+    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed)
 
 
 def load(env_dir, chronic, action_file, debug):

@@ -21,6 +21,12 @@ def main():
     parser.add_argument("-c", "--chronic", type=str,
                         help="Name or id of chronic scenario to consider, as stored in chronics folder. By default, the first available chronic scenario will be chosen",
                         default=0)
+    parser.add_argument("-as", "--agent_seed", type=int,
+                        help="Agent seed to be used by the grid2op runner",
+                        default=None)
+    parser.add_argument("-es", "--env_seed", type=int,
+                        help="Environment seed to be used by the grid2op runner",
+                        default=None)
 
     args = parser.parse_args()
     config = configparser.ConfigParser()
@@ -33,11 +39,16 @@ def main():
     if (args.file is None) or not os.path.exists(args.file):
         raise ValueError("Could not find file provided :" + str(args.file))
 
+    if(args.agent_seed is not None):#Grid2op runner expect a list of seeds
+        args.agent_seed=[args.agent_seed]
+    if(args.env_seed is not None):
+        args.env_seed=[args.env_seed]
+
     if args.debug > 1:
         raise ValueError("Input arg error, --debug, options are 0 or 1")
     else:
         args.debug = bool(args.debug)
-    load_and_run(args.env, args.chronic, args.file, args.debug, config['DEFAULT'])
+    load_and_run(args.env, args.chronic, args.file, args.debug,args.agent_seed,args.env_seed, config['DEFAULT'])
     return 1
 
 
