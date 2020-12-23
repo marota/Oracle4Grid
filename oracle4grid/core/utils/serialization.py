@@ -61,6 +61,9 @@ def serialize_reward_df(reward_df, dir):
     df = df.unstack(level=0)['reward']
     df.to_csv(os.path.join(dir, "reward_df.csv"), sep=';', index=True)
 
+def serialize_graph(graph, dir):
+    edge_list = nx.to_pandas_edgelist(graph)
+    edge_list.to_csv(os.path.join(dir, "edge_list.csv"), sep=';', index=False)
 
 def serialize(obj, name, dir, format='pickle'):
     if format == 'pickle':

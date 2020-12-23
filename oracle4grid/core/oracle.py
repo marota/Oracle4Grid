@@ -6,10 +6,10 @@ from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS
-from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df, serialize, display_topo_count
+from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df, serialize, display_topo_count,serialize_graph
 
 
-def oracle(atomic_actions, env, debug, config, debug_directory=None):
+def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None):
     # 0 - Preparation : Get initial topo and line status
     init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -21,7 +21,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
 
     # 2 - Actions rewards simulation
     start_time = time.time()
-    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]), debug=debug)
+    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]), debug=debug,
+                                 agent_seed=agent_seed,env_seed=env_seed)
     elapsed_time = time.time() - start_time
     print("elapsed_time for simulation is:"+str(elapsed_time))
 
@@ -36,9 +37,13 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None):
     graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER]), debug=debug)
     elapsed_time = time.time() - start_time
     print("elapsed_time for graph creation is:"+str(elapsed_time))
-    if debug and len(graph.nodes)<100:
-        serialize(graph, name="graphe", dir=debug_directory)
-        draw_graph(graph, int(config[MAX_ITER]), save=debug_directory)
+    if debug:
+        if len(graph.nodes)<100:
+            serialize(graph, name="graphe", dir=debug_directory)
+            draw_graph(graph, int(config[MAX_ITER]), save=debug_directory)
+        serialize_graph(graph, debug_directory)
+
+
 
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     start_time = time.time()
