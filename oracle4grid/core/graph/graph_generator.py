@@ -9,7 +9,7 @@ import itertools
 from oracle4grid.core.utils.constants import DICT_GAME_PARAMETERS_GRAPH, END_NODE_REWARD
 
 
-def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=False):
+def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=False,reward_significant_digit=None):
     if debug:
         print('\n')
         print("============== 3 - Graph generation ==============")
@@ -24,7 +24,7 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
                                                                    explicit_node_names=debug)
 
     # Build graph
-    graph = build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init)
+    graph = build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init,reward_significant_digit)
     # graph = add_nodes_action(graph)
     return graph
 
@@ -174,7 +174,7 @@ def create_end_nodes(final_edges, fake_reward=0.1):
     return or_end, ex_end, weights_end
 
 
-def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init):
+def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init,reward_significant_digit=None):
     """
     Builds a networkx.digraph with all possible transitions and their rewards at each timestep
     :param reachable_topologies: all reachable topologies from all topologies
@@ -235,7 +235,14 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
     # Finally create graph object from DataFrame
     edge_df = pd.DataFrame({'or': edges_or, 'ex': edges_ex, 'weight': edges_weights})
-    edge_df.to_csv("edge_df.csv",index=False)
+    edge_df=edge_df.dropna()
+
     print("edge_df done - creating graph")
+    print("if it takes too long to create, you might change the number of significant digits to consider in config.ini")
+    if (reward_significant_digit is not None):
+        reward_significant_digit = int(reward_significant_digit)
+        edge_df.weight=(edge_df.weight*(10**(reward_significant_digit))).astype('int64')
+        print("currently the number of signficant digits considered is:"+str(reward_significant_digit))
     graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight'], create_using=nx.DiGraph())
+    print("graph created")
     return graph

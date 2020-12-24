@@ -5,11 +5,11 @@ from oracle4grid.core.graph import graph_generator, compute_trajectory, indicato
 from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.actions_utils import combinator
-from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS
+from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS,REWARD_SIGNIFICANT_DIGIT
 from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df, serialize, display_topo_count,serialize_graph
 
 
-def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None):
+def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,reward_significant_digit=None):
     # 0 - Preparation : Get initial topo and line status
     init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -34,7 +34,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 3 - Graph generation
     start_time = time.time()
-    graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER]), debug=debug)
+    graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER]), debug=debug,reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT])
     elapsed_time = time.time() - start_time
     print("elapsed_time for graph creation is:"+str(elapsed_time))
     if debug:
