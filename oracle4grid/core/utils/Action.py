@@ -14,7 +14,7 @@ class OracleAction:
         self.repr = self.get_action_representation(atomic_actions_names)
         self.debug = debug
         self.atomic_actions = atomic_actions
-        self.subs, self.lines = self.compute_subs_and_lines()
+        self.subs, self.lines = self.compute_subs_and_lines(atomic_actions_names)
         self.grid2op_action, self.grid2op_action_dict = self.get_valid_grid2op_action(action_space, init_topo_vect, init_line_status)
         self.topo_subids = self.get_topo_subids(action_space)
         # On ne veut pas stocker action_space et init_topo_vect mais juste les utiliser une fois dans la méthode qui formatte l'action en grid2Op
@@ -28,13 +28,20 @@ class OracleAction:
     def get_action_representation(self, atomic_action_names):
         return "_".join(atomic_action_names)
 
-    def compute_subs_and_lines(self):
-        subs = set(get_first_key(atomic_action['sub'])
-                   for atomic_action in self.atomic_actions
-                   if get_first_key(atomic_action) == 'sub')
-        lines = set(get_first_key(atomic_action['line'])
-                    for atomic_action in self.atomic_actions
-                    if get_first_key(atomic_action) == 'line')
+    def compute_subs_and_lines(self,atomic_actions_names):
+        #subs = set(get_first_key(atomic_action['sub'])
+        #           for atomic_action in self.atomic_actions
+        #           if get_first_key(atomic_action) == 'sub')
+        subs = {get_first_key(self.atomic_actions[i]['sub']): atomic_actions_names[i]
+                for i in range(len(self.atomic_actions))
+                if get_first_key(self.atomic_actions[i]) == 'sub'}
+        print(subs)
+       #lines = set(get_first_key(atomic_action['line'])
+       #            for atomic_action in self.atomic_actions
+       #            if get_first_key(atomic_action) == 'line')
+        lines = {get_first_key(self.atomic_actions[i]['line']): atomic_actions_names[i]
+                for i in range(len(self.atomic_actions))
+                if get_first_key(self.atomic_actions[i]) == 'line'}
         return subs, lines
 
     def get_subs(self):
@@ -107,6 +114,24 @@ class OracleAction:
         diff_lines = [a2 if a1 != a2 else 0 for a1, a2 in zip(action_g2op_1['set_line_status'], action_g2op_2['set_line_status'])]
 
         return {'set_bus': np.array(diff_topo), 'set_line_status':np.array(diff_lines)}
+
+    def number_of_modified_subs_to(self, action):
+        subs_1=set(self.subs.keys())
+        subs_2=set(action.subs.keys())
+        different_Subs=subs_1.symmetric_difference(subs_2)
+        same_subs=subs_1.intersection(subs_2)
+        same_subs_different_topo=[sub for sub in same_subs if self.subs[sub]!=action.subs[sub]]
+
+        return len(different_Subs)+len(same_subs_different_topo)
+
+    def number_of_modified_lines_to(self, action):
+        lines_1=set(self.lines.keys())
+        lines_2=set(action.lines.keys())
+        different_lines=lines_1.symmetric_difference(lines_2)
+        same_lines=lines_1.intersection(lines_2)
+        same_lines_different_status=[line for line in same_lines if self.lines[line]!=action.lines[line]]
+
+        return len(different_lines)+len(same_lines_different_status)
 
     def modified_subs_to(self, action, init_topo_vect):
         # Computes modified subs to go from action1 to action2 with initial topo
