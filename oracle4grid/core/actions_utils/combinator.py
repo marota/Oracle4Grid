@@ -1,6 +1,7 @@
 import operator
 from pprint import pprint
 from itertools import combinations
+from itertools import product
 from functools import reduce
 
 from oracle4grid.core.utils.actions_generator import get_atomic_actions_names
@@ -25,8 +26,13 @@ def generate(atomic_actions, depth, env, debug, init_topo_vect, init_line_status
 
 def generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status):
     # don't generate associative actions
-    named_atomic_actions = get_atomic_actions_names(atomic_actions)
-    all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions, i)) for i in range(1, (depth + 1))])
+    named_atomic_actions,atomic_action_asset_dic = get_atomic_actions_names(atomic_actions)
+    #all_names_combinations = reduce(operator.concat, [list(combinations(named_atomic_actions, i)) for i in range(1, (depth + 1))])
+
+    all_asset_combinations = reduce(operator.concat, [list(combinations(atomic_action_asset_dic.keys(), i))
+                                                      for i in range(1, (depth + 1))])
+    all_names_combinations=reduce(operator.concat,[list(product(*[atomic_action_asset_dic[asset] for asset in all_asset_combinations[i]]))
+            for i in range(len(all_asset_combinations))])
 
     all_actions = [OracleAction(i+1, names_combination, [named_atomic_actions[name] for name in names_combination],
                                 env.action_space,
