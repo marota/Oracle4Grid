@@ -29,7 +29,7 @@ def main():
                         default=None)
 
     args = parser.parse_args()
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(allow_no_value=True)
     config.read("oracle4grid/ressources/config.ini")
     print("#### PARAMETERS #####")
     for key in config["DEFAULT"]:
