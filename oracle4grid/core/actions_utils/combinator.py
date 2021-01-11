@@ -47,7 +47,7 @@ def generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status):
 def keep(oracle_action, env):
     # Successive rules applied to invalidate actions that don't need to be simulated
     check = run_pf_check(oracle_action, env)
-    return True
+    return check
 
 
 def run_pf_check(oracle_action, env):
