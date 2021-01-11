@@ -71,17 +71,12 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(best_path_reward, agent_reward)
 
     expected_actions = ['sub-1-0',
-     'sub-1-1',
-     'sub-5-2',
-     'line-4-3',
-     'sub-1-0_sub-5-2',
-     'sub-1-1_sub-5-2',
-     'sub-1-0_line-4-3',
-     'sub-1-1_line-4-3',
-     'sub-5-2_line-4-3',
-     'sub-1-0_sub-5-2_line-4-3',
-     'sub-1-1_sub-5-2_line-4-3',
-     'donothing-0']
+                        'sub-1-1',
+                        'sub-5-2',
+                        'line-4-3',
+                        'sub-1-0_sub-5-2',
+                        'sub-1-1_sub-5-2',
+                        'donothing-0']
 
     def test_actions_combination(self):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"

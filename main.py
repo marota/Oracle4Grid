@@ -15,7 +15,7 @@ def main():
     parser.add_argument("-d", "--debug", type=int,
                         help="If 1, prints additional information for debugging purposes. If 0, doesn't print any info", default=1)
     parser.add_argument("-f", "--file", type=str,
-                        help="File path for the dict of atomic actions", default="oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions_3.json")
+                        help="File path for the dict of atomic actions", default="oracle4grid/ressources/actions/Ieee14_Sandbox_test/unitary_actions_l2rpn_2019.json")
     parser.add_argument("-e", "--env", type=str,
                         help="Directory path for the environment to use", default="data/rte_case14_realistic")
     parser.add_argument("-c", "--chronic", type=str,
@@ -23,10 +23,10 @@ def main():
                         default=0)
     parser.add_argument("-as", "--agent_seed", type=int,
                         help="Agent seed to be used by the grid2op runner",
-                        default=None)
+                        default=100)
     parser.add_argument("-es", "--env_seed", type=int,
                         help="Environment seed to be used by the grid2op runner",
-                        default=None)
+                        default=10)
 
     args = parser.parse_args()
     config = configparser.ConfigParser(allow_no_value=True)
