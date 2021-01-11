@@ -15,9 +15,9 @@ def main():
     parser.add_argument("-d", "--debug", type=int,
                         help="If 1, prints additional information for debugging purposes. If 0, doesn't print any info", default=1)
     parser.add_argument("-f", "--file", type=str,
-                        help="File path for the dict of atomic actions", default="oracle4grid/ressources/actions/test_unitary_actions_3.json")
+                        help="File path for the dict of atomic actions", default="oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions_3.json")
     parser.add_argument("-e", "--env", type=str,
-                        help="Directory path for the environment to use", default="oracle4grid/ressources/grids/rte_case14_realistic")
+                        help="Directory path for the environment to use", default="data/rte_case14_realistic")
     parser.add_argument("-c", "--chronic", type=str,
                         help="Name or id of chronic scenario to consider, as stored in chronics folder. By default, the first available chronic scenario will be chosen",
                         default=0)

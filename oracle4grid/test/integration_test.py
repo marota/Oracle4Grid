@@ -28,7 +28,7 @@ CONFIG = {
 
 class IntegrationTest(unittest.TestCase):
     def test_base_run(self):
-        file = "./ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, kpis = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
@@ -36,7 +36,7 @@ class IntegrationTest(unittest.TestCase):
         return 1
 
     def test_best_path_equal(self):
-        file = "./ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
@@ -46,7 +46,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_agent_rewards(self):
         # Compute best path with Oracle
-        file = "./ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = 0
         env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
@@ -70,13 +70,21 @@ class IntegrationTest(unittest.TestCase):
         # Check if we get expected reward
         self.assertEqual(best_path_reward, agent_reward)
 
-    expected_actions = ["sub-1-0", "sub-1-1", "sub-5-2", "line-4-3", "sub-1-0_sub-1-1",
-                        "sub-1-0_sub-5-2", "sub-1-0_line-4-3", "sub-1-1_sub-5-2", "sub-1-1_line-4-3",
-                        "sub-5-2_line-4-3", "sub-1-0_sub-1-1_sub-5-2", "sub-1-0_sub-1-1_line-4-3",
-                        "sub-1-0_sub-5-2_line-4-3", "sub-1-1_sub-5-2_line-4-3", "donothing-0"]
+    expected_actions = ['sub-1-0',
+     'sub-1-1',
+     'sub-5-2',
+     'line-4-3',
+     'sub-1-0_sub-5-2',
+     'sub-1-1_sub-5-2',
+     'sub-1-0_line-4-3',
+     'sub-1-1_line-4-3',
+     'sub-5-2_line-4-3',
+     'sub-1-0_sub-5-2_line-4-3',
+     'sub-1-1_sub-5-2_line-4-3',
+     'donothing-0']
 
     def test_actions_combination(self):
-        file = "./ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
@@ -89,15 +97,15 @@ class IntegrationTest(unittest.TestCase):
         self.assertListEqual(list(actions), self.expected_actions)
 
     def test_kpi(self):
-        file = "./ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
-        expected = pd.read_csv('./test_resourses/test_kpi.csv', sep=',', index_col=0)
+        expected = pd.read_csv('./oracle4grid/test_resourses/test_kpi.csv', sep=',', index_col=0)
         assert_frame_equal(indicators, expected)
 
     def test_reward_df(self):
-        file = "./ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
@@ -109,7 +117,7 @@ class IntegrationTest(unittest.TestCase):
         # 2 - Actions rewards simulation
         reward_df = run_many.run_all(actions, env, int(CONFIG[MAX_ITER]), int(CONFIG[NB_PROCESS]), debug=False)
         reward_df["action"] = reward_df["action"].astype(str)
-        expected = pd.read_csv('./test_resourses/test_reward.csv', sep=',', index_col=0)
+        expected = pd.read_csv('./oracle4grid/test_resourses/test_reward.csv', sep=',', index_col=0)
         assert_frame_equal(reward_df, expected)
 
 
