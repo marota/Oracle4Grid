@@ -4,7 +4,7 @@ import numpy as np
 import grid2op
 from grid2op.Chronics import GridStateFromFile
 from grid2op.Parameters import Parameters
-from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS_SIMULATION, DICT_GAME_PARAMETERS_GRAPH
+from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS_SIMULATION, DICT_GAME_PARAMETERS_GRAPH, DICT_GAME_PARAMETERS_REPLAY
 
 
 def prepare_simulation_params():
@@ -15,6 +15,11 @@ def prepare_simulation_params():
 def prepare_game_params():
     param = Parameters()
     param.init_from_dict(DICT_GAME_PARAMETERS_GRAPH)
+    return param
+
+def prepare_replay_params():
+    param = Parameters()
+    param.init_from_dict(DICT_GAME_PARAMETERS_REPLAY)
     return param
 
 def prepare_env(env_path, chronic_scenario, param):

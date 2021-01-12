@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.reward_computation import run_many
@@ -9,6 +10,7 @@ from oracle4grid.core.utils.prepare_environment import prepare_game_params, prep
 
 from pandas.testing import assert_frame_equal
 import pandas as pd
+import numpy as np
 import os
 
 
@@ -114,6 +116,18 @@ class IntegrationTest(unittest.TestCase):
         reward_df["action"] = reward_df["action"].astype(str)
         expected = pd.read_csv('./oracle4grid/test_resourses/test_reward.csv', sep=',', index_col=0)
         assert_frame_equal(reward_df, expected)
+
+    def test_action_divergence(self):
+        # Compute best path with Oracle
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        chronic = 0
+        env_dir = "./data/rte_case14_realistic"
+
+        # Check that replay returns warning because of non convergence of one action
+        with warnings.catch_warnings(record=True) as w:
+            action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+            boolvec_msg = ["During replay - oracle agent has game over before max iter" in str(w_.message) for w_ in w]
+            self.assertTrue(np.any(boolvec_msg))
 
 
 if __name__ == '__main__':

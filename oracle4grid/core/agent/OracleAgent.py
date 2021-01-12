@@ -30,3 +30,14 @@ class OracleAgent(BaseAgent):
     def save(self, path):
         # Nothing to save
         pass
+
+    @classmethod
+    def gen_next(cls, action_path):
+        """
+        This function allows to change the list of action dictionaries that the agent will perform.
+
+        See the class level documentation for an example on how to use this.
+
+        """
+        cls.action_path = action_path
+        return cls

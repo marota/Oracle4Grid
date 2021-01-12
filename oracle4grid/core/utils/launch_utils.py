@@ -10,7 +10,8 @@ def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, confi
     # Parse atomic_actions format
     atomic_actions = parse(atomic_actions,env)
     # Run all steps
-    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed)
+    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
+                  grid_path=env_dir, chronic_id=chronic)
 
 
 def load(env_dir, chronic, action_file, debug):
