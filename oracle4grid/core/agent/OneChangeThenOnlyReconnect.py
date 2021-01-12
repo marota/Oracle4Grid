@@ -11,11 +11,12 @@ class OneChangeThenOnlyReconnect(BaseAgent):
 
          # Check if action concerns a line
         impact = self.action_space(self._get_dict_act()).impact_on_objects()
-        try:
-            self.untouchable_line_id = impact['force_line']['disconnections']['powerlines'][0]
-        except:
-            self.untouchable_line_id = None
-        self.touchable_line_id_vec = numpy.array([i != self.untouchable_line_id for i in range(self.action_space.n_line)])
+
+        # Find ids of untouchable lines because they are disconnected on purpose and sould not be disconnected
+        self.untouchable_line_ids = impact['force_line']['disconnections']['powerlines']
+        if len(self.untouchable_line_ids)>0:
+            self.untouchable_line_ids = self.untouchable_line_ids.tolist()
+        self.touchable_line_id_vec = numpy.array([i not in self.untouchable_line_ids for i in range(self.action_space.n_line)])
 
     def get_reconnect(self, observation):
         res = {}  # add the do nothing
