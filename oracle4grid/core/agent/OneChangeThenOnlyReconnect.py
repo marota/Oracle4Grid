@@ -9,11 +9,19 @@ class OneChangeThenOnlyReconnect(BaseAgent):
         BaseAgent.__init__(self, action_space)
         self.has_changed = False
 
+         # Check if action concerns a line
+        impact = self.action_space(self._get_dict_act()).impact_on_objects()
+        try:
+            self.untouchable_line_id = impact['force_line']['disconnections']['powerlines'][0]
+        except:
+            self.untouchable_line_id = None
+        self.touchable_line_id_vec = numpy.array([i != self.untouchable_line_id for i in range(self.action_space.n_line)])
+
     def get_reconnect(self, observation):
         res = {}  # add the do nothing
         line_stat_s = observation.line_status
         cooldown = observation.time_before_cooldown_line
-        can_be_reco = ~line_stat_s & (cooldown == 0)
+        can_be_reco = ~line_stat_s & (cooldown == 0) & self.touchable_line_id_vec
         if numpy.any(can_be_reco):
             res = {"set_line_status": [(id_, +1) for id_ in numpy.where(can_be_reco)[0]]}
         return self.action_space(res)
