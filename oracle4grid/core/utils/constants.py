@@ -1,5 +1,6 @@
 from grid2op.Reward import L2RPNReward
 from grid2op.Rules import AlwaysLegal
+from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
 
 
 try:
@@ -15,6 +16,9 @@ except ModuleNotFoundError:
 
 # Grid2Op Env constants
 REWARD_CLASS = L2RPNReward  # L2RPNSandBoxScore
+OTHER_REWARDS = {
+    "overload_reward": OracleOverloadReward
+}
 GAME_RULE = AlwaysLegal
 DICT_GAME_PARAMETERS_SIMULATION = {'NO_OVERFLOW_DISCONNECTION': True,
                                    'MAX_LINE_STATUS_CHANGED': 999,

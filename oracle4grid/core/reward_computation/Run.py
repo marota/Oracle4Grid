@@ -17,3 +17,4 @@ class Run:
         self.nb_timestep = nb_timestep
         self.max_ts = max_ts
         self.rewards = episode_data.rewards
+        self.other_rewards = episode_data.other_rewards

@@ -16,16 +16,15 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False,agent_seed=None,
         all_res = serie(env, actions, max_iter,agent_seed,env_seed)
     else:
         all_res = parallel(env, actions, max_iter,agent_seed,env_seed, nb_process)
-    df = make_df_from_res(all_res)
-    return df
+    return make_df_from_res(all_res)
 
 
 def make_df_from_res(all_res):
-    cols = ["action", "timestep", "reward"]
+    cols = ["action", "timestep", "reward", "overload_reward"]
     data = []
     for run in all_res:
         for t in range(run.rewards.shape[0]):
-            data.append({"action": run.action, "timestep": t, "reward": run.rewards[t]})
+            data.append({"action": run.action, "timestep": t, "reward": run.rewards[t], "overload_reward": run.other_rewards[t]["overload_reward"]})
     df = pandas.DataFrame(data, columns=cols)
     return df
 

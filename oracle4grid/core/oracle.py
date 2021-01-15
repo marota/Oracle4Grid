@@ -31,8 +31,6 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     if debug:
         print(reward_df)
         serialize_reward_df(reward_df, debug_directory)
-        # serialize(reward_df, name='reward_df', dir=debug_directory)
-        # reward_df = load_serialized_object('reward_df', debug_directory)
 
     # 3 - Graph generation
     start_time = time.time()
@@ -50,6 +48,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     start_time = time.time()
     best_path, grid2op_action_path = compute_trajectory.best_path(graph, config["best_path_type"], actions,
+                                                                  init_topo_vect, init_line_status, debug=debug)
+    best_path_no_overload, grid2op_action_path_no_overload = compute_trajectory.best_path_no_overload(graph, config["best_path_type"], actions,
                                                                   init_topo_vect, init_line_status, debug=debug)
     elapsed_time = time.time() - start_time
     print("elapsed_time for best_path computation is:"+str(elapsed_time))

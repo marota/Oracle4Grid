@@ -4,7 +4,8 @@ import numpy as np
 import grid2op
 from grid2op.Chronics import GridStateFromFile
 from grid2op.Parameters import Parameters
-from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS_SIMULATION, DICT_GAME_PARAMETERS_GRAPH, DICT_GAME_PARAMETERS_REPLAY
+from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS_SIMULATION, DICT_GAME_PARAMETERS_GRAPH, \
+    DICT_GAME_PARAMETERS_REPLAY, OTHER_REWARDS
 
 
 def prepare_simulation_params():
@@ -31,6 +32,7 @@ def prepare_env(env_path, chronic_scenario, param):
                        param=param,
                        gamerules_class=GAME_RULE,
                        test=True,
+                       other_rewards=OTHER_REWARDS
                        )
     # If an int is provided, chronic_scenario is string by default, so it has to be converted
     try:
