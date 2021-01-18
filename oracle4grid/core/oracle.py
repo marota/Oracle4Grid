@@ -17,7 +17,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 1 - Action generation step
     start_time = time.time()
-    actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, debug, init_topo_vect, init_line_status)
+    actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, debug, init_topo_vect, init_line_status, nb_process=int(config[NB_PROCESS]))
     elapsed_time = time.time() - start_time
     print("elapsed_time for action generation is:"+str(elapsed_time))
 
