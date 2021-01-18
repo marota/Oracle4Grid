@@ -1,9 +1,13 @@
 import unittest
 import warnings
 
+from Reward import L2RPNReward
+from Rules import AlwaysLegal
 from oracle4grid.core.actions_utils import combinator
+from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_ITER
+from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.launch_utils import load_and_run, load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_game_params, prepare_env, get_initial_configuration
@@ -28,12 +32,22 @@ CONFIG = {
 }
 
 
+class EnvConstantsTest(EnvConstants):
+    def __init__(self):
+        super().__init__()
+        self.reward_class = L2RPNReward
+        self.other_rewards = {
+            "overload_reward": OracleOverloadReward
+        }
+        self.game_rule = AlwaysLegal
+
+
 class IntegrationTest(unittest.TestCase):
     def test_base_run(self):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, kpis = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
+        action_path, grid2op_action_path, kpis = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         self.assertNotEqual(action_path, None)
         return 1
 
@@ -41,7 +55,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
+        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
         self.assertListEqual(best_path_actual, best_path_expected)
@@ -51,12 +65,12 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = 0
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
+        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL] == BEST_PATH_NAME, INDICATORS_REWARD_COL].values[0])
 
         # Replay path with OracleAgent as standard gym episode replay (OracleAgent not compatible with Grid2op Runner yet)
         param = prepare_game_params()
-        env = prepare_env(env_dir, chronic, param)
+        env = prepare_env(env_dir, chronic, param, EnvConstantsTest())
         env.set_id(chronic)
         obs = env.reset()
         agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
@@ -97,7 +111,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False,None,None, CONFIG)
+        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         expected = pd.read_csv('./oracle4grid/test_resourses/test_kpi.csv', sep=',', index_col=0)
         assert_frame_equal(indicators, expected)
 

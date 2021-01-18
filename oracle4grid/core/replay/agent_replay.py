@@ -11,11 +11,6 @@ from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.constants import ENV_SEEDS, AGENT_SEEDS
 from oracle4grid.core.utils.prepare_environment import prepare_replay_params, prepare_env, prepare_game_params, prepare_simulation_params
 
-def set_replay_parameters(env):
-    params = prepare_replay_params()
-    env.parameters = params
-    return env
-
 
 def replay(action_path: list, max_iter: int,
            kpis, grid_path, chronic_id, debug = False):

@@ -4,8 +4,8 @@ import numpy as np
 import grid2op
 from grid2op.Chronics import GridStateFromFile
 from grid2op.Parameters import Parameters
-from oracle4grid.core.utils.constants import REWARD_CLASS, GAME_RULE, BACKEND, DICT_GAME_PARAMETERS_SIMULATION, DICT_GAME_PARAMETERS_GRAPH, \
-    DICT_GAME_PARAMETERS_REPLAY, OTHER_REWARDS
+from oracle4grid.core.utils.constants import EnvConstants, BACKEND, DICT_GAME_PARAMETERS_REPLAY, DICT_GAME_PARAMETERS_SIMULATION, \
+    DICT_GAME_PARAMETERS_GRAPH
 
 
 def prepare_simulation_params():
@@ -13,26 +13,29 @@ def prepare_simulation_params():
     param.init_from_dict(DICT_GAME_PARAMETERS_SIMULATION)
     return param
 
+
 def prepare_game_params():
     param = Parameters()
     param.init_from_dict(DICT_GAME_PARAMETERS_GRAPH)
     return param
+
 
 def prepare_replay_params():
     param = Parameters()
     param.init_from_dict(DICT_GAME_PARAMETERS_REPLAY)
     return param
 
-def prepare_env(env_path, chronic_scenario, param):
+
+def prepare_env(env_path, chronic_scenario, param, env_constants=EnvConstants()):
     backend = BACKEND()
     env = grid2op.make(env_path,
-                       reward_class=REWARD_CLASS,
+                       reward_class=env_constants.reward_class,
                        backend=backend,
                        data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
                        param=param,
-                       gamerules_class=GAME_RULE,
+                       gamerules_class=env_constants.game_rule,
                        test=True,
-                       other_rewards=OTHER_REWARDS
+                       other_rewards=env_constants.other_rewards
                        )
     # If an int is provided, chronic_scenario is string by default, so it has to be converted
     try:
@@ -79,6 +82,7 @@ def search_chronic_num_from_name(scenario_name, env):
         if sp_end == scenario_name:
             found_id = id
     return found_id
+
 
 def get_initial_configuration(env):
     init_topo_vect = env.get_obs().topo_vect
