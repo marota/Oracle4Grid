@@ -1,8 +1,8 @@
 import unittest
 import warnings
 
-from Reward import L2RPNReward
-from Rules import AlwaysLegal
+from grid2op.Reward import L2RPNReward
+from grid2op.Rules import AlwaysLegal
 from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
 from oracle4grid.core.reward_computation import run_many
