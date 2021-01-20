@@ -47,7 +47,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, kpis = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         self.assertNotEqual(action_path, None)
         return 1
 
@@ -55,7 +55,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
         self.assertListEqual(best_path_actual, best_path_expected)
@@ -65,7 +65,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = 0
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL] == BEST_PATH_NAME, INDICATORS_REWARD_COL].values[0])
 
         # Replay path with OracleAgent as standard gym episode replay (OracleAgent not compatible with Grid2op Runner yet)
@@ -111,7 +111,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         expected = pd.read_csv('./oracle4grid/test_resourses/test_kpi.csv', sep=',', index_col=0)
         assert_frame_equal(indicators, expected)
 
@@ -139,7 +139,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Check that replay returns warning because of non convergence of one action
         with warnings.catch_warnings(record=True) as w:
-            action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+            action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
             boolvec_msg = ["During replay - oracle agent has game over before max iter" in str(w_.message) for w_ in w]
             self.assertTrue(np.any(boolvec_msg))
 
