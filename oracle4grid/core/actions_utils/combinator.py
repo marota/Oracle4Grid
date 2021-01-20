@@ -8,7 +8,6 @@ from oracle4grid.core.utils.actions_generator import get_atomic_actions_names
 from oracle4grid.core.utils.Action import OracleAction
 
 
-
 def generate(atomic_actions, depth, env, debug, init_topo_vect, init_line_status):
     if debug:
         print('\n')
