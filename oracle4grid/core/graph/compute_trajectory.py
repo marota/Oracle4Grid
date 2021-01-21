@@ -31,10 +31,10 @@ def best_path_no_overload(graph, best_path_type, actions, init_topo_vect, init_l
 
     path = None
     graph_no_overload = graph.copy()
-    nodes = graph_no_overload.nodes()
+    nodes = list(graph_no_overload.nodes())
     for node in nodes:
-        if node.endswith("_overload"):
-            graph_no_overload.remove(node)
+        if node is not "init" and node is not "end" and "overload_reward" in graph.nodes[node] and graph.nodes[node]["overload_reward"] == 0:
+            graph_no_overload.remove_node(node)
 
     return best_path(graph_no_overload, best_path_type, actions, init_topo_vect, init_line_status, debug)
 
