@@ -252,7 +252,7 @@ def post_processing_rewards(graph, reward_df):
             continue
         action = node.split("_t")[0]
         timestep = node.split("_t")[1]
-        line = reward_df.loc[(reward_df['name'] == int(action)) & (reward_df['timestep'] == int(timestep))]
+        line = reward_df.loc[(reward_df['name'].astype(str) == str(action)) & (reward_df['timestep'] == int(timestep))]
         graph.nodes[node]["overload_reward"] = line.iloc[0]["overload_reward"]
     return graph
 

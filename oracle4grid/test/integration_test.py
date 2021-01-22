@@ -51,14 +51,32 @@ class IntegrationTest(unittest.TestCase):
         self.assertNotEqual(action_path, None)
         return 1
 
-    def test_best_path_equal(self):
+    def test_best_path_equal_shortest(self):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
-        best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
+        best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
+        best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1']
+        best_path_expected_no_overload = ["sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-0"]
         self.assertListEqual(best_path_actual, best_path_expected)
+        self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
+
+    def test_best_path_equal_longest(self):
+        config_longest = CONFIG.copy()
+        config_longest["best_path_type"] = "longest"
+
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        chronic = "000"
+        env_dir = "./data/rte_case14_realistic"
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, config_longest)
+        best_path_actual = list(map(lambda x: x.__str__(), action_path))
+        best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
+        best_path_expected = ["line-4-3", "line-4-3", "line-4-3", "line-4-3", "line-4-3", "sub-1-0"]
+        best_path_expected_no_overload = best_path_expected
+        self.assertListEqual(best_path_actual, best_path_expected)
+        self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
 
     def test_agent_rewards(self):
         # Compute best path with Oracle

@@ -63,6 +63,13 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
         print('10 best topologies in optimal path')
         print(topo_count)
 
+        # Serialization for path with no overload
+        serialize(grid2op_action_path_no_overload, 'best_path_grid2op_action_no_overload',
+                  dir=debug_directory, format='pickle')
+        topo_count = display_topo_count(best_path_no_overload, dir=debug_directory, name="best_path_no_overload_topologies_count.png")
+        print('10 best topologies in optimal path')
+        print(topo_count)
+
     # 5 - Indicators computation
     kpis = indicators.generate(best_path, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug=debug)
     if debug:
