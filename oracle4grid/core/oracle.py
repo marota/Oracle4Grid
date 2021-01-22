@@ -74,4 +74,4 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
                                          kpis, grid_path, chronic_id, debug=debug)
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
-    return best_path, grid2op_action_path, kpis
+    return best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis

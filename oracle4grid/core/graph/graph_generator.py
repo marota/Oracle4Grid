@@ -204,11 +204,11 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
     ## Reachable transitions for each timestep and associated rewards
     start_time = time.time()
-    edges_or += [str(ordered_names[i]) + '_t' + str(int(t)) + get_overload_suffix(ordered_names[i], t, reward_df)
+    edges_or += [str(ordered_names[i]) + '_t' + str(int(t))
                  for i in range(len(reachable_topologies))
                  for reachable_topo in reachable_topologies[i]
                  for t in range(max_iter - 1)]
-    edges_ex += [str(reachable_topo) + '_t' + str(int(t + 1)) + get_overload_suffix(ordered_names[i], t, reward_df)
+    edges_ex += [str(reachable_topo) + '_t' + str(int(t + 1))
                  for i in range(len(reachable_topologies))
                  for reachable_topo in reachable_topologies[i]
                  for t in range(max_iter - 1)]
@@ -241,12 +241,18 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
         edge_df.weight = (edge_df.weight * (10 ** (reward_significant_digit))).astype('int64')
         print("currently the number of signficant digits considered is:" + str(reward_significant_digit))
     graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight'], create_using=nx.DiGraph())
+    graph = post_processing_rewards(graph, reward_df)
     print("graph created")
     return graph
 
 
-def get_overload_suffix(ordered_name, t, reward_df):
-    line = reward_df.loc[(reward_df['name'] == ordered_name) & (reward_df['timestep'] == t)]
-    if (line["overload_reward"] == 0).any():
-        return "_overflow"
-    return ""
+def post_processing_rewards(graph, reward_df):
+    for node in graph.nodes:
+        if node is "init" or node is "end":
+            continue
+        action = node.split("_t")[0]
+        timestep = node.split("_t")[1]
+        line = reward_df.loc[(reward_df['name'] == int(action)) & (reward_df['timestep'] == int(timestep))]
+        graph.nodes[node]["overload_reward"] = line.iloc[0]["overload_reward"]
+    return graph
+
