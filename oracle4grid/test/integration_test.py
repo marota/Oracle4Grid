@@ -143,6 +143,23 @@ class IntegrationTest(unittest.TestCase):
             boolvec_msg = ["During replay - oracle agent has game over before max iter" in str(w_.message) for w_ in w]
             self.assertTrue(np.any(boolvec_msg))
 
+    def test_action_convergence(self):
+        config_longest = CONFIG.copy()
+        config_longest["best_path_type"] = "longest"
+
+        # Compute best path with Oracle
+        file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        chronic = 0
+        env_dir = "./data/rte_case14_realistic"
+
+        # Check that replay returns warning because of non convergence of one action
+        with warnings.catch_warnings(record=True) as w:
+            action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None,
+                                                                        config_longest)
+            boolvec_msg = ["During replay - oracle agent has game over before max iter" in str(w_.message) for w_ in w]
+            if len(boolvec_msg) == 0:  # Test is OK if no warning
+                boolvec_msg = [False]
+            self.assertFalse(np.all(boolvec_msg))
 
 if __name__ == '__main__':
     unittest.main()
