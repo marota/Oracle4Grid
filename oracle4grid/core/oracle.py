@@ -3,6 +3,7 @@ import time
 
 from oracle4grid.core.graph import graph_generator, compute_trajectory, indicators
 from oracle4grid.core.replay import agent_replay
+from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.actions_utils import combinator
@@ -11,7 +12,7 @@ from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df
 
 
 def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,
-           reward_significant_digit=None, grid_path=None, chronic_id=None):
+           reward_significant_digit=None, grid_path=None, chronic_id=None, constants=EnvConstants()):
     # 0 - Preparation : Get initial topo and line status
     init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -34,7 +35,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 3 - Graph generation
     start_time = time.time()
-    graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER]), debug=debug,reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT])
+    graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER])
+                                     , debug=debug,reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT], constants=constants)
     elapsed_time = time.time() - start_time
     print("elapsed_time for graph creation is:"+str(elapsed_time))
     if debug:
@@ -78,7 +80,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 6 - Replay of best path in real game rules condition
     replay_results = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
-                                         kpis, grid_path, chronic_id, debug=debug)
+                                         kpis, grid_path, chronic_id, debug=debug, constants=constants)
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
     return best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis

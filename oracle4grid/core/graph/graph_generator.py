@@ -6,10 +6,10 @@ import pandas as pd
 import networkx as nx
 import itertools
 
-from oracle4grid.core.utils.constants import DICT_GAME_PARAMETERS_GRAPH, END_NODE_REWARD
+from oracle4grid.core.utils.constants import END_NODE_REWARD, EnvConstants
 
 
-def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=False, reward_significant_digit=None):
+def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=False, reward_significant_digit=None, constants=EnvConstants()):
     if debug:
         print('\n')
         print("============== 3 - Graph generation ==============")
@@ -20,11 +20,11 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
 
     # Compute possible transitions list for each action
     reachable_topologies_from_init = get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status,
-                                                                        explicit_node_names=debug)
+                                                                        explicit_node_names=debug, constants=constants)
 
     start_time = time.time()
     reachable_topologies = get_reachable_topologies(actions, init_topo_vect, init_line_status,
-                                                    explicit_node_names=debug)
+                                                    explicit_node_names=debug, constants=constants)
     ordered_names = reward_df['name'].unique()
 
     elapsed_time = time.time() - start_time
@@ -70,17 +70,13 @@ def preprocessing(reward_df, max_iter, explicit_node_names=False):
     return reward_df
 
 
-def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit_node_names=False):
+def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
     # Ordered names of actions
     # ordered_names = reward_df['name'].unique()
     # TODO: explicit node names if asked
 
     # All possible action transitions
     action_couples = [(action1, action2) for action1 in actions for action2 in actions]
-    # modified_subs = [len(action_couple[0].modified_subs_to(action_couple[1], init_topo_vect))
-    #                 for action_couple in action_couples]
-    # modified_lines = [len(action_couple[0].modified_lines_to(action_couple[1], init_line_status))
-    #                  for action_couple in action_couples]
     modified_subs = [action_couple[0].number_of_modified_subs_to(action_couple[1]) for action_couple in
                      action_couples]
     modified_lines = [action_couple[0].number_of_modified_lines_to(action_couple[1]) for action_couple in
@@ -88,7 +84,7 @@ def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit
 
     # Filter all transitions that violate game rules
     valid_action_couples = [action_couple for action_couple, n_subs, n_lines in zip(action_couples, modified_subs, modified_lines)
-                            if (n_subs <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and n_lines <= DICT_GAME_PARAMETERS_GRAPH[
+                            if (n_subs <= constants.DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and n_lines <= constants.DICT_GAME_PARAMETERS_GRAPH[
             "MAX_LINE_STATUS_CHANGED"])]
 
     # Formattage
@@ -99,29 +95,20 @@ def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit
     else:
         reachable_topologies = [[action_couple[1].name for action_couple in valid_action_couples if
                                  action_couple[0].name == action.name] for action in actions]
-    # for action in actions:
-    #    if explicit_node_names:
-    #        reachable_topologies_from_action = [action_couple[1].repr for action_couple in valid_action_couples if
-    #                                            action_couple[0].repr == action.repr]
-    #    else:
-    #        reachable_topologies_from_action = [action_couple[1].name for action_couple in valid_action_couples if
-    #                                            action_couple[0].name == action.name]
-    #    reachable_topologies.append(reachable_topologies_from_action)
-
     return reachable_topologies
 
 
-def get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status, explicit_node_names=False):
+def get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
     if not explicit_node_names:
         reachable_topologies_from_init = [action.name
                                           for action in actions
-                                          if len(action.subs) <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <=
-                                          DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
+                                          if len(action.subs) <= constants.DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <=
+                                          constants.DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
     else:
         reachable_topologies_from_init = [action.repr
                                           for action in actions
-                                          if len(action.subs) <= DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <=
-                                          DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
+                                          if len(action.subs) <= constants.DICT_GAME_PARAMETERS_GRAPH["MAX_SUB_CHANGED"] and len(action.lines) <=
+                                          constants.DICT_GAME_PARAMETERS_GRAPH["MAX_LINE_STATUS_CHANGED"]]
     return reachable_topologies_from_init
 
 
