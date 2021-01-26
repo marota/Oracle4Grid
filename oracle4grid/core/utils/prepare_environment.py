@@ -3,40 +3,21 @@ import numpy as np
 
 import grid2op
 from grid2op.Chronics import GridStateFromFile
-from grid2op.Parameters import Parameters
-from oracle4grid.core.utils.constants import EnvConstants, BACKEND, DICT_GAME_PARAMETERS_REPLAY, DICT_GAME_PARAMETERS_SIMULATION, \
-    DICT_GAME_PARAMETERS_GRAPH
+from oracle4grid.core.utils.constants import EnvConstants, BACKEND
 
 
-def prepare_simulation_params():
-    param = Parameters()
-    param.init_from_dict(DICT_GAME_PARAMETERS_SIMULATION)
-    return param
-
-
-def prepare_game_params():
-    param = Parameters()
-    param.init_from_dict(DICT_GAME_PARAMETERS_GRAPH)
-    return param
-
-
-def prepare_replay_params():
-    param = Parameters()
-    param.init_from_dict(DICT_GAME_PARAMETERS_REPLAY)
-    return param
-
-
-def prepare_env(env_path, chronic_scenario, param, env_constants=EnvConstants()):
+def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants()):
     backend = BACKEND()
     env = grid2op.make(env_path,
-                       reward_class=env_constants.reward_class,
+                       reward_class=constants.reward_class,
                        backend=backend,
                        data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
                        param=param,
-                       gamerules_class=env_constants.game_rule,
+                       gamerules_class=constants.game_rule,
                        test=True,
-                       other_rewards=env_constants.other_rewards
+                       other_rewards=constants.other_rewards
                        )
+
     # If an int is provided, chronic_scenario is string by default, so it has to be converted
     try:
         chronic_scenario = int(chronic_scenario)

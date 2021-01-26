@@ -46,12 +46,14 @@ def draw_graph(graph, max_iter, save=None):
         fig.savefig(os.path.join(save, "graphe.png"))
 
 
-def display_topo_count(best_path, dir, n_best=10):
+def display_topo_count(best_path, dir, n_best=10, name = None):
     best_path_df = pd.Series(best_path)
     topo_count = best_path_df.value_counts().head(n_best)
     fig, ax = plt.subplots(1, 1, figsize=(22, 15))
     topo_count.plot.bar(ax=ax)
-    fig.savefig(os.path.join(dir, "best_path_topologies_count.png"))
+    if name is None:
+        name = 'best_path_topologies_count.png'
+    fig.savefig(os.path.join(dir, name))
     return topo_count
 
 
