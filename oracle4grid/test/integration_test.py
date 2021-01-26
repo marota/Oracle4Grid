@@ -219,7 +219,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(action_oracle_format, expected_format)
 
     def test_parsing2(self):
-        file_json = "./oracle4grid/test_resourses/test_2actions_winner_format2.json"
+        file_json = "./oracle4grid/test_resourses/test_actions_format2.json"
         chronic = 0
         env_dir = "./data/wcci_test"
 
@@ -235,11 +235,33 @@ class IntegrationTest(unittest.TestCase):
         action_oracle_format = parser.parse()
 
         # Read expected format
-        with open("./oracle4grid/test_resourses/expected_2actions_winner_format2.json") as json_file_expected:
+        with open("./oracle4grid/test_resourses/expected_actions_format2.json") as json_file_expected:
             expected_format = json.load(json_file_expected)
 
         # Assert Equal
         self.assertEqual(action_oracle_format, expected_format)
+
+    def test_actions_impact(self):
+        file_json = "./oracle4grid/test_resourses/test_actions_format2.json"
+        chronic = 0
+        env_dir = "./data/wcci_test"
+
+        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False, constants=EnvConstantsTest())
+        parser = OracleParser(atomic_actions_original, env.action_space)
+        atomic_actions = parser.parse()
+
+        init_topo_vect = np.zeros(env.action_space.dim_topo) # Not to take into account initial impacts
+        init_line_status = np.zeros(env.action_space.n_line)
+        actions = combinator.generate(atomic_actions, 1, env, False, init_topo_vect, init_line_status)
+        impacted_subs = []
+        expected_impacted_subs = [1, 23, 16, 22, 26]
+        for action in actions[:-1]: # Do nothing action is the last one
+            impact_on_subs = action.grid2op_action.get_topological_impact()[1]
+            impacted_sub = int(np.where(impact_on_subs)[0])
+            impacted_subs.append(impacted_sub)
+        self.assertEqual(impacted_subs, expected_impacted_subs)
+
+
 
 if __name__ == '__main__':
     unittest.main()
