@@ -1,6 +1,8 @@
 import unittest
 import warnings
 
+from grid2op.Parameters import Parameters
+
 from grid2op.Reward import L2RPNReward
 from grid2op.Rules import AlwaysLegal
 from oracle4grid.core.actions_utils import combinator
@@ -10,7 +12,7 @@ from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_I
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.launch_utils import load_and_run, load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
-from oracle4grid.core.utils.prepare_environment import prepare_game_params, prepare_env, get_initial_configuration
+from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 
 from pandas.testing import assert_frame_equal
 import pandas as pd
@@ -40,6 +42,15 @@ class EnvConstantsTest(EnvConstants):
             "overload_reward": OracleOverloadReward
         }
         self.game_rule = AlwaysLegal
+        self.DICT_GAME_PARAMETERS_SIMULATION = {'NO_OVERFLOW_DISCONNECTION': True,
+                                                'MAX_LINE_STATUS_CHANGED': 999,
+                                                'MAX_SUB_CHANGED': 2999}
+        self.DICT_GAME_PARAMETERS_GRAPH = {'NO_OVERFLOW_DISCONNECTION': True,
+                                           'MAX_LINE_STATUS_CHANGED': 1,
+                                           'MAX_SUB_CHANGED': 1}
+        self.DICT_GAME_PARAMETERS_REPLAY = {'NO_OVERFLOW_DISCONNECTION': False,
+                                            'MAX_LINE_STATUS_CHANGED': 1,
+                                            'MAX_SUB_CHANGED': 1}
 
 
 class IntegrationTest(unittest.TestCase):
@@ -47,7 +58,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
         self.assertNotEqual(action_path, None)
         return 1
 
@@ -55,7 +66,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
         best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1']
@@ -83,12 +94,14 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = 0
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
         best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL] == BEST_PATH_NAME, INDICATORS_REWARD_COL].values[0])
 
         # Replay path with OracleAgent as standard gym episode replay (OracleAgent not compatible with Grid2op Runner yet)
-        param = prepare_game_params()
-        env = prepare_env(env_dir, chronic, param, EnvConstantsTest())
+        constants = EnvConstantsTest()
+        param = Parameters()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
+        env = prepare_env(env_dir, chronic, param, constants)
         env.set_id(chronic)
         obs = env.reset()
         agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
@@ -116,7 +129,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
         # 0 - Preparation : Get initial topo and line status
         init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -129,7 +142,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
         expected = pd.read_csv('./oracle4grid/test_resourses/test_kpi.csv', sep=',', index_col=0)
         assert_frame_equal(indicators, expected)
 
@@ -137,7 +150,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False)
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
         # 0 - Preparation : Get initial topo and line status
         init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -157,7 +170,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Check that replay returns warning because of non convergence of one action
         with warnings.catch_warnings(record=True) as w:
-            action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG)
+            action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
             boolvec_msg = ["During replay - oracle agent has game over before max iter" in str(w_.message) for w_ in w]
             self.assertTrue(np.any(boolvec_msg))
 
@@ -172,7 +185,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Check that replay returns warning because of non convergence of one action
         with warnings.catch_warnings(record=True) as w:
-            action_path, grid2op_action_path, indicators = load_and_run(env_dir, chronic, file, False, None, None,
+            action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None,
                                                                         config_longest)
             boolvec_msg = ["During replay - oracle agent has game over before max iter" in str(w_.message) for w_ in w]
             if len(boolvec_msg) == 0:  # Test is OK if no warning

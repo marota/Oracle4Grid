@@ -2,21 +2,25 @@ import json
 import os
 import numpy as np
 
-from oracle4grid.core.utils.prepare_environment import prepare_simulation_params, prepare_env
+from grid2op.Parameters import Parameters
+
+from oracle4grid.core.utils.constants import EnvConstants
+from oracle4grid.core.utils.prepare_environment import prepare_env
 from oracle4grid.core.oracle import oracle
 
 
-def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config):
-    atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug)
+def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config, constants=EnvConstants()):
+    atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug, constants=constants)
     # Parse atomic_actions format
     atomic_actions = parse(atomic_actions,env)
     # Run all steps
     return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
-                  grid_path=env_dir, chronic_id=chronic)
+                  grid_path=env_dir, chronic_id=chronic, constants=constants)
 
 
-def load(env_dir, chronic, action_file, debug):
-    param = prepare_simulation_params()  # Move to ini?
+def load(env_dir, chronic, action_file, debug, constants=EnvConstants()):
+    param = Parameters()
+    param.init_from_dict(constants.DICT_GAME_PARAMETERS_SIMULATION)
     env = prepare_env(env_dir, chronic, param)
 
     # Load unitary actions

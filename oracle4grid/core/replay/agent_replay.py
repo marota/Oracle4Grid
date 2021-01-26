@@ -1,25 +1,21 @@
-import os
 import warnings
 
-from grid2op.Agent import OneChangeThenNothing
-from grid2op.Runner import Runner
-from grid2op.Environment import Environment
-from oracle4grid.core.reward_computation.Run import Run
+from grid2op.Parameters import Parameters
 
 from oracle4grid.core.agent.OracleAgent import OracleAgent
-
-from oracle4grid.core.utils.constants import ENV_SEEDS, AGENT_SEEDS
-from oracle4grid.core.utils.prepare_environment import prepare_replay_params, prepare_env, prepare_game_params, prepare_simulation_params
+from oracle4grid.core.utils.constants import EnvConstants
+from oracle4grid.core.utils.prepare_environment import prepare_env
 
 
 def replay(action_path: list, max_iter: int,
-           kpis, grid_path, chronic_id, debug = False):
+           kpis, grid_path, chronic_id, debug = False, constants=EnvConstants()):
     if debug:
         print('\n')
         print("============== 6 - Replay OracleAgent on best path with real condition game rules ==============")
     # Environment settings for replay
-    param = prepare_replay_params()
-    env = prepare_env(grid_path, chronic_id, param)
+    param = Parameters()
+    param.init_from_dict(constants.DICT_GAME_PARAMETERS_REPLAY)
+    env = prepare_env(grid_path, chronic_id, param, constants=constants)
     env.set_id(chronic_id)
     obs = env.reset()
 
