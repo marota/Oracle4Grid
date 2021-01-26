@@ -1,5 +1,6 @@
 import json
 import os
+import numpy as np
 
 from oracle4grid.core.utils.prepare_environment import prepare_simulation_params, prepare_env
 from oracle4grid.core.oracle import oracle
@@ -43,15 +44,60 @@ def parse(d, env):
         if 'set_bus' in list(d[0].keys()):
             if 'substations_id' in list(d[0]['set_bus'].keys()):
                 # Format 1 detected
-                print("Specific format is detected for actions: converting with parser")
+                print("Specific format is detected for actions: converting with parser 1")
                 d = parser1(d,env)
                 return d
     if type(d) is dict:
         if 'sub' in list(d.keys()) or 'line' in list(d.keys()):
-            # Natural Oracle Format
-            return d
+            first_key = list(d.keys())[0]
+            first_sub_or_line_id = list(d[first_key].keys())[0]
+            if first_sub_or_line_id.isnumeric():
+                if type(d[first_key][first_sub_or_line_id]) is dict:
+                    specific_key = list(d[first_key][first_sub_or_line_id].keys())[0]
+                    if specific_key == "set_configuration":
+                        # Format 2 detected
+                        print("Specific format is detected for actions: converting with parser 2")
+                        d = parser2(d, env)
+                        return d
+                    elif type(d[first_key][first_sub_or_line_id]) is list:
+                        # Natural Oracle Format
+                        return d
+                    else:
+                        raise ValueError("json action dict is in an unknown format")
     else:
         raise ValueError("json action dict is in an unknown format")
+
+def parser2(d, env):
+    action_space = env.action_space
+    new_dict = {line_or_sub:
+                    {id_: [] for id_ in d[line_or_sub]}
+                for line_or_sub in d.keys()}
+    for line_or_sub in d:
+        for id_ in d[line_or_sub]:
+            action = d[line_or_sub][id_]['set_configuration']
+            positions = np.argwhere(np.array(action) != 0)[:,0]
+            for asset_pos_in_topo in positions:
+                asset_action = action[asset_pos_in_topo]
+                asset_type, asset_id = find_asset(action_space, asset_pos_in_topo) # TODO: développer find_asset
+                new_dict[line_or_sub][id_] = create_or_update_asset_action(new_dict[line_or_sub][id_], asset_type, asset_id, asset_action)
+    return new_dict
+
+def find_asset(action_space, asset_pos_in_topo):
+    # TODO:
+    return
+
+def create_or_update_asset_action(target_l, asset_type, asset_id, asset_action):
+    found = False
+    for i, action_d in enumerate(target_l):
+        if list(action_d.keys())[0] == asset_type:
+            found = True
+            action_on_asset = action_d[asset_type].copy()
+            action_on_asset.append([asset_id,asset_action])
+            target_l[i][asset_type] = action_on_asset
+    if not found:
+        target_l.append({asset_type:[[asset_id,asset_action]]})
+    return target_l
+
 
 def parser1(d, env):
     action_space = env.action_space

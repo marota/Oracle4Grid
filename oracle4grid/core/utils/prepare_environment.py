@@ -37,6 +37,7 @@ def prepare_env(env_path, chronic_scenario, param, env_constants=EnvConstants())
                        test=True,
                        other_rewards=env_constants.other_rewards
                        )
+
     # If an int is provided, chronic_scenario is string by default, so it has to be converted
     try:
         chronic_scenario = int(chronic_scenario)
