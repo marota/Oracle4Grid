@@ -80,7 +80,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 6 - Replay of best path in real game rules condition
     replay_results = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
-                                         kpis, grid_path, chronic_id, debug=debug, constants=constants)
+                                         kpis, grid_path, chronic_id, debug=debug, constants=constants,
+                                         env_seed=env_seed, agent_seed=agent_seed)
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
     return best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis

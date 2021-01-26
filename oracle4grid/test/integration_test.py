@@ -1,5 +1,6 @@
 import unittest
 import warnings
+import json
 
 from grid2op.Parameters import Parameters
 
@@ -13,6 +14,8 @@ from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.launch_utils import load_and_run, load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
+from oracle4grid.core.utils.launch_utils import OracleParser
+
 
 from pandas.testing import assert_frame_equal
 import pandas as pd
@@ -69,8 +72,8 @@ class IntegrationTest(unittest.TestCase):
         action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
-        best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1']
-        best_path_expected_no_overload = ["sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-0"]
+        best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
+        best_path_expected_no_overload = ["sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", 'sub-1-1_sub-5-2']
         self.assertListEqual(best_path_actual, best_path_expected)
         self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
 
@@ -84,7 +87,7 @@ class IntegrationTest(unittest.TestCase):
         action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, config_longest)
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
-        best_path_expected = ["line-4-3", "line-4-3", "line-4-3", "line-4-3", "line-4-3", "sub-1-0"]
+        best_path_expected = ["line-4-3", "line-4-3", "line-4-3", "line-4-3", "line-4-3", "line-4-3"]
         best_path_expected_no_overload = best_path_expected
         self.assertListEqual(best_path_actual, best_path_expected)
         self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
@@ -191,6 +194,52 @@ class IntegrationTest(unittest.TestCase):
             if len(boolvec_msg) == 0:  # Test is OK if no warning
                 boolvec_msg = [False]
             self.assertFalse(np.all(boolvec_msg))
+
+    def test_parsing1(self):
+        file_json = "./oracle4grid/test_resourses/test_actions_format1.json"
+        chronic = 0
+        env_dir = "./data/wcci_test"
+
+        # Load env
+        param = Parameters()
+        param.init_from_dict(EnvConstantsTest().DICT_GAME_PARAMETERS_SIMULATION)
+        env = prepare_env(env_dir, chronic, param)
+
+        # Read and convert action
+        with open(file_json) as json_file:
+            actions_original = json.load(json_file)
+        parser = OracleParser(actions_original, env.action_space)
+        action_oracle_format = parser.parse()
+
+        # Read expected format
+        with open("./oracle4grid/test_resourses/expected_actions_format1.json") as json_file_expected:
+            expected_format = json.load(json_file_expected)
+
+        # Assert Equal
+        self.assertEqual(action_oracle_format, expected_format)
+
+    def test_parsing2(self):
+        file_json = "./oracle4grid/test_resourses/test_2actions_winner_format2.json"
+        chronic = 0
+        env_dir = "./data/wcci_test"
+
+        # Load env
+        param = Parameters()
+        param.init_from_dict(EnvConstantsTest().DICT_GAME_PARAMETERS_SIMULATION)
+        env = prepare_env(env_dir, chronic, param)
+
+        # Read and convert action
+        with open(file_json) as json_file:
+            actions_original = json.load(json_file)
+        parser = OracleParser(actions_original, env.action_space)
+        action_oracle_format = parser.parse()
+
+        # Read expected format
+        with open("./oracle4grid/test_resourses/expected_2actions_winner_format2.json") as json_file_expected:
+            expected_format = json.load(json_file_expected)
+
+        # Assert Equal
+        self.assertEqual(action_oracle_format, expected_format)
 
 if __name__ == '__main__':
     unittest.main()

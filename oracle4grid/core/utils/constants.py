@@ -1,6 +1,7 @@
 from grid2op.Reward import L2RPNReward
 from grid2op.Rules import AlwaysLegal
 from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
+from oracle4grid.core.agent.OracleL2RPNReward import OracleL2RPNReward
 
 
 try:
@@ -18,7 +19,7 @@ except ModuleNotFoundError:
 # Grid2Op Env constants
 class EnvConstants:
     def __init__(self):
-        self.reward_class = L2RPNReward  # L2RPNSandBoxScore
+        self.reward_class = OracleL2RPNReward # L2RPNReward  # L2RPNSandBoxScore
         self.other_rewards = {
             "overload_reward": OracleOverloadReward
         }
