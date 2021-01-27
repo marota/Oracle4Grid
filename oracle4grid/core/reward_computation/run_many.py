@@ -15,7 +15,7 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False,agent_seed=None,
     if nb_process is 1:
         all_res = serie(env, actions, max_iter,agent_seed,env_seed)
     else:
-        all_res = parallel(env, actions, max_iter,agent_seed,env_seed, nb_process)
+        all_res = parallel(env, actions, max_iter, nb_process,agent_seed,env_seed)
     return make_df_from_res(all_res)
 
 
@@ -38,7 +38,7 @@ def serie(env, actions, max_iter,agent_seed=None,env_seed=None):
     return all_res
 
 
-def parallel(env, actions, max_iter,agent_seed,env_seed, nb_process):
+def parallel(env, actions, max_iter,nb_process,agent_seed=None,env_seed=None):
     all_res = []
     with tqdm(total=len(actions)) as pbar:
         with Pool(nb_process) as p:
