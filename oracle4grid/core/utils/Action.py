@@ -35,7 +35,6 @@ class OracleAction:
         subs = {get_first_key(self.atomic_actions[i]['sub']): atomic_actions_names[i]
                 for i in range(len(self.atomic_actions))
                 if get_first_key(self.atomic_actions[i]) == 'sub'}
-        print(subs)
        #lines = set(get_first_key(atomic_action['line'])
        #            for atomic_action in self.atomic_actions
        #            if get_first_key(atomic_action) == 'line')
