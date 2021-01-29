@@ -16,6 +16,7 @@ ipywidgets = "*"
 numba = "*"
 pathos = "*"
 numpy = "==1.19.3"
+sphinx = "*"
 
 [requires]
 python_version = "3.7"
