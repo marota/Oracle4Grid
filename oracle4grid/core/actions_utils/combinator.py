@@ -38,48 +38,24 @@ def generate_all(atomic_actions, depth, env, init_topo_vect, init_line_status):
 
 def filter_actions(all_actions, env, debug, nb_process):
     ret = []
-    if nb_process==1:
-        ret = filter_actions_serie(all_actions, env)
-    else:
-        ret = filter_actions_parallel(all_actions, env, nb_process)
-    if debug:
-        print(str(len(all_actions) - len(ret)) + " actions out of " + str(len(all_actions)) + " have been filtered")
-    return ret
-
-
-def filter_actions_serie(all_actions, env):
-    ret = []
+    obs = env.reset()
     for action in all_actions:
-        if keep_action(action, env):
+        if keep_action(action, obs):
             ret.append(action)
     return ret
 
 
-def filter_actions_parallel(all_actions, env, nb_process):
-    ret = []
-    with multiprocessing.Pool(nb_process) as p:
-        results = p.starmap(keep_action, [(action, env) for action in all_actions])
-    ret = list(compress(all_actions, results))
-    return ret
-
-
-def pool_filter(pool, func, candidates):
-    return [c for c, keep in zip(candidates, pool.map(func, candidates)) if keep]
-
-
-def keep_action(oracle_action, env):
+def keep_action(oracle_action, obs):
     # Successive rules applied to invalidate actions that don't need to be simulated
-    check = run_pf_check(oracle_action, env)
+    check = run_pf_check(oracle_action, obs)
     return check
 
 
-def run_pf_check(oracle_action, env):
+def run_pf_check(oracle_action, obs):
     valid = False
-    copy = env.copy()
-    copy.reset()
-    obs, reward, done, info = copy.step(oracle_action.grid2op_action)
+    sim_obs, sim_reward, sim_done, sim_info = obs.simulate(oracle_action.grid2op_action, time_step=0)
 
     # Valid action?
-    if (not done) and (len(info["exception"]) == 0):
+    if (not sim_done) and (len(sim_info["exception"]) == 0):
         valid = True
     return valid
