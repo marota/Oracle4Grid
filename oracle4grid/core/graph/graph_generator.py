@@ -13,10 +13,10 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
     if debug:
         print('\n')
         print("============== 3 - Graph generation ==============")
-
-    actions = reward_df['action'].unique()
+        
     # Parameters and DataFrame preprocessing
     reward_df = preprocessing(reward_df, max_iter, explicit_node_names=debug)
+    actions = reward_df['action'].unique()
 
     # Compute possible transitions list for each action
     reachable_topologies_from_init = get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status,
