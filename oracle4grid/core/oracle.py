@@ -14,11 +14,11 @@ from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df
 def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,
            reward_significant_digit=None, grid_path=None, chronic_id=None, constants=EnvConstants()):
     # 0 - Preparation : Get initial topo and line status
-    init_topo_vect, init_line_status = get_initial_configuration(env)
+    # init_topo_vect, init_line_status = get_initial_configuration(env)
 
     # 1 - Action generation step
     start_time = time.time()
-    actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, debug, init_topo_vect, init_line_status, nb_process=int(config[NB_PROCESS]))
+    actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, debug, nb_process=int(config[NB_PROCESS]))
     elapsed_time = time.time() - start_time
     print("elapsed_time for action generation is:"+str(elapsed_time))
 
@@ -35,7 +35,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 3 - Graph generation
     start_time = time.time()
-    graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER])
+    graph = graph_generator.generate(reward_df, int(config[MAX_ITER])
                                      , debug=debug,reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT], constants=constants)
     elapsed_time = time.time() - start_time
     print("elapsed_time for graph creation is:"+str(elapsed_time))
@@ -50,13 +50,14 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     start_time = time.time()
     best_path, grid2op_action_path = compute_trajectory.best_path(graph, config["best_path_type"], actions,
-                                                                  init_topo_vect, init_line_status, debug=debug)
+                                                                  debug=debug)
     best_path_no_overload, grid2op_action_path_no_overload = compute_trajectory.best_path_no_overload(graph, config["best_path_type"], actions,
-                                                                  init_topo_vect, init_line_status, debug=debug)
+                                                                  debug=debug)
     elapsed_time = time.time() - start_time
     print("elapsed_time for best_path computation is:"+str(elapsed_time))
 
     if debug:
+        print("With possible overloads")
         print(best_path)
         # Serialization for agent replay
         serialize(grid2op_action_path, 'best_path_grid2op_action',
@@ -66,6 +67,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
         print(topo_count)
 
         # Serialization for path with no overload
+        print("Without overload")
+        print(best_path_no_overload)
         serialize(grid2op_action_path_no_overload, 'best_path_grid2op_action_no_overload',
                   dir=debug_directory, format='pickle')
         topo_count = display_topo_count(best_path_no_overload, dir=debug_directory, name="best_path_no_overload_topologies_count.png")
