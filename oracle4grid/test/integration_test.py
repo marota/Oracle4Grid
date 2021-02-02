@@ -126,6 +126,11 @@ class IntegrationTest(unittest.TestCase):
                         'line-4-3',
                         'sub-1-0_sub-5-2',
                         'sub-1-1_sub-5-2',
+                        'sub-1-0_line-4-3',
+                        'sub-1-1_line-4-3',
+                        'sub-5-2_line-4-3',
+                        'sub-1-0_sub-5-2_line-4-3',
+                        'sub-1-1_sub-5-2_line-4-3',
                         'donothing-0']
 
     def test_actions_combination(self):
@@ -133,11 +138,9 @@ class IntegrationTest(unittest.TestCase):
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
-        # 0 - Preparation : Get initial topo and line status
-        init_topo_vect, init_line_status = get_initial_configuration(env)
 
         # 1 - Action generation step
-        actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False, init_topo_vect, init_line_status)
+        actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False)
         actions = map(lambda x: str(x), actions)
         self.assertListEqual(list(actions), self.expected_actions)
 
@@ -154,11 +157,9 @@ class IntegrationTest(unittest.TestCase):
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
-        # 0 - Preparation : Get initial topo and line status
-        init_topo_vect, init_line_status = get_initial_configuration(env)
 
         # 1 - Action generation step
-        actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False, init_topo_vect, init_line_status)
+        actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False)
         # 2 - Actions rewards simulation
         reward_df = run_many.run_all(actions, env, int(CONFIG[MAX_ITER]), int(CONFIG[NB_PROCESS]), debug=False)
         reward_df["action"] = reward_df["action"].astype(str)
@@ -250,9 +251,7 @@ class IntegrationTest(unittest.TestCase):
         parser = OracleParser(atomic_actions_original, env.action_space)
         atomic_actions = parser.parse()
 
-        init_topo_vect = np.zeros(env.action_space.dim_topo) # Not to take into account initial impacts
-        init_line_status = np.zeros(env.action_space.n_line)
-        actions = combinator.generate(atomic_actions, 1, env, False, init_topo_vect, init_line_status)
+        actions = combinator.generate(atomic_actions, 1, env, False)
         impacted_subs = []
         expected_impacted_subs = [1, 23, 16, 22, 26]
         for action in actions[:-1]: # Do nothing action is the last one

@@ -9,7 +9,7 @@ import itertools
 from oracle4grid.core.utils.constants import END_NODE_REWARD, EnvConstants
 
 
-def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=False, reward_significant_digit=None, constants=EnvConstants()):
+def generate(reward_df, max_iter=None, debug=False, reward_significant_digit=None, constants=EnvConstants()):
     if debug:
         print('\n')
         print("============== 3 - Graph generation ==============")
@@ -19,12 +19,10 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
     actions = reward_df['action'].unique()
 
     # Compute possible transitions list for each action
-    reachable_topologies_from_init = get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status,
-                                                                        explicit_node_names=debug, constants=constants)
+    reachable_topologies_from_init = get_reachable_topologies_from_init(actions, explicit_node_names=debug, constants=constants)
 
     start_time = time.time()
-    reachable_topologies = get_reachable_topologies(actions, init_topo_vect, init_line_status,
-                                                    explicit_node_names=debug, constants=constants)
+    reachable_topologies = get_reachable_topologies(actions, explicit_node_names=debug, constants=constants)
     ordered_names = reward_df['name'].unique()
 
     elapsed_time = time.time() - start_time
@@ -70,7 +68,7 @@ def preprocessing(reward_df, max_iter, explicit_node_names=False):
     return reward_df
 
 
-def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
+def get_reachable_topologies(actions, explicit_node_names=False, constants=EnvConstants()):
     # Ordered names of actions
     # ordered_names = reward_df['name'].unique()
     # TODO: explicit node names if asked
@@ -98,7 +96,7 @@ def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit
     return reachable_topologies
 
 
-def get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
+def get_reachable_topologies_from_init(actions, explicit_node_names=False, constants=EnvConstants()):
     if not explicit_node_names:
         reachable_topologies_from_init = [action.name
                                           for action in actions

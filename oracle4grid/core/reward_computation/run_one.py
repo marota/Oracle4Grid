@@ -11,7 +11,7 @@ from oracle4grid.core.utils.constants import ENV_SEEDS, AGENT_SEEDS
 
 
 def run_one(action: OracleAction, env: Environment, max_iter: int,agent_seed,env_seed):
-    agent_class = OneChangeThenOnlyReconnect.gen_next(action.grid2op_action_dict)
+    agent_class = OneChangeThenOnlyReconnect.gen_next(action.grid2op_action)
     runner = Runner(**env.get_params_for_runner(), agentClass=agent_class)
     res = runner.run(nb_episode=1,
                               nb_process=1,
