@@ -1,8 +1,8 @@
 Mentions
-=======
+=========
 
 Quick Overview
---------
+------------------
 
 An Oracle system is defined by it's ability to know all possible outcome,
 in order to deduce the best course of actions. Named after an Oracle, who knows the future.
@@ -12,34 +12,32 @@ It does so by using data from a set of user-fed actions played in a dummy enviro
 It then finds the best possible course of actions that an agent can take, called "Best path".
 Finally, a few KPIs are produced in order to give a quick rundown of the state of the environment initially provided.
 
-This can allow you to test the boundaries of a given network environment, and better get a better understanding of the potential weaknesses
+This can allow you to test the boundaries of a given network environment, and get a better understanding of the potential weaknesses
 in the decision making process of an agent
 
 Features
---------
+----------
 
-- Combines a list of given atomic (= that affects a single substation) action into a list of any combinations of these action (called OracleActions)
-*We allow only one atomic action per substation*
+- Combines a list of given atomic (= that affects a single substation) action into a list of any combinations of these action (called OracleActions) - *In the combinations, we allow only one atomic action per substation*
 - Runs the simulation for all OracleActions, and stores the reward in a dataframe
-- Generates a NetworkX graph with each node being a timestep in the aforementioned simulations
-*The connection between two nodes is given by the gamerule*
+- Generates a NetworkX graph with each node being a timestep in the aforementioned simulations - *The connection between two nodes is given by the gamerule*
 - Runs a best path algorythm to deduce a series of action to achieve best results
 - Runs an agent to try the chosen path
 - Computes a few KPIs to better understand the path chosen, as well as cumulated rewards for comparison purposes
 
 Contribute
-----------
+-------------
 
 - Issue Tracker: https://github.com/marota/Oracle4Grid/issues
 - Source Code: https://github.com/marota/Oracle4Grid
 
 Support
--------
+----------
 
 If you are having issues, please let us know on github
 
 License
--------
+---------
 Copyright 2020-2021 RTE France
 
     RTE: http://www.rte-france.com

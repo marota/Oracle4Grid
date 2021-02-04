@@ -1,40 +1,52 @@
-# TODO
-
 ***************
 Getting Started
 ***************
 
-Manual Mode
-===========
+Launch Oracle4Grid
+====================
 
 To execute in **manual mode**, from root folder, type:
-``pipenv run python -m alphaDeesp.main -l 9 -s 0 -c 0 -t 0``
 
---ltc | -l int
-                            Integer representing the line to cut.
-                            For the moment, only one line to cut is handled
---snapshot | -s int
-                            If 1, will generate plots of the different grid topologies
-                            managed by alphadeesp and store it in alphadeesp/ressources/output
---chronicscenario | -c string
-                            Name of the folder containing the chronic scenario to consider
-                            By default, the first available folder will be chosen
---timestep | -t int
-                            Integer representing the timestep number at
-                            which we want to run alphadeesp simulation
+``pipenv run python -m main -d 0 -f "oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json" -e "data/rte_case14_realistic" -c 0``
 
-In any case, an end result dataframe is written in root folder.
-
-If you run the same command with '-s 1' to print the plots, you will indeed see that:
-
-* On the intial state, you had an overflow to solve
-.. image:: ../alphaDeesp/ressources/g_pow_grid2op_ltc9.PNG
-
-* The expert system indeed finds a solution topology for it at substation 4
-.. image:: ../alphaDeesp/ressources/example_4_score_ltc9.PNG
+--debug | -d int
+                            if 1, prints additional information for debugging purpose, but also serializes some result files in output folder (see dedicated chapter **Results**)
+                            If 0, doesn't print detailed info
+--file | -f string
+                            File path to a json file containing atomic actions to be played. See dedicated chapter **Atomic actions**
+--env | -e string
+                            Path to directory containing the grid2op environment and its chronics
+--chronic | -c
+                            Name (string) or id (int) to the episode we want to consider. By default, the first available chronic will be chosen. Oracle4Grid only runs for one episode.
+--agent_seed | -as
+                            Agent seed to be used by the grid 2op runner. By default, None is considered.
+--env_seed | -es
+                            Environment seed to be used by the grid 2op runner. By default, None is considered.
 
 See **Algorithm Description section** to learn more about the workflow and results.
 
+Results
+================
+
+Returned by oracle
+printed and returned in debug mode
+
+
+Atomic actions
+================
+
+Describe rules and handled formats
+
+Agent replay
+================
+
+OracleAgent to replay best path
+Replat mode in oracle to check game overs
+
+Configuration
+===============
+
+config.ini
 In manual mode, further configuration is made through alphadeesp/config.ini
 
 * *simulatorType* - you can chose Grid2op or Pypownet
@@ -43,16 +55,7 @@ In manual mode, further configuration is made through alphadeesp/config.ini
 * *grid2opDifficulty* - "0", "1", "2" or "competition". Be careful: grid datasets should have a difficulty_levels.json
 * *7 other constants for alphadeesp computation* can be set in config.ini, with comments within the file
 
-
-
-Agent Mode
-==========
-
-To execute in **agent mode**, please refer to ExpertAgent available in l2rpn-baseline repository
-
-https://github.com/mjothy/l2rpn-baselines/tree/mj-devs/l2rpn_baselines/ExpertAgent
-
-Instead of configuring through config.ini, you can pass a similar python dictionary to the API
+constants.py
 
 
 Tests
@@ -61,12 +64,3 @@ Tests
 To launch the test suite:
 ``pipenv run python -m pytest --verbose --continue-on-collection-errors -p no:warnings``
 
-Debug Help
-==========
-- To force specific hubs
-in AlphaDeesp.compute_best_topo() function, one can force override the hubs result. Check in code, there are
-commented examples.
-
-- To force specific combinations for hubs
-If one wants a specific hub, a user can "force" a specific node combination.
-Check in the code, there are commented examples
