@@ -21,7 +21,7 @@ Features
 - Combines a list of given atomic (= that affects a single substation) action into a list of any combinations of these action (called OracleActions) - *In the combinations, we allow only one atomic action per substation*
 - Runs the simulation for all OracleActions, and stores the reward in a dataframe
 - Generates a NetworkX graph with each node being a timestep in the aforementioned simulations - *The connection between two nodes is given by the gamerule*
-- Runs a best path algorythm to deduce a series of action to achieve best results
+- Runs a best path algorithm to deduce a series of action to achieve best results
 - Runs an agent to try the chosen path
 - Computes a few KPIs to better understand the path chosen, as well as cumulated rewards for comparison purposes
 
