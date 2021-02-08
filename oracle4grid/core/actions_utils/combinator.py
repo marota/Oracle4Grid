@@ -42,6 +42,8 @@ def filter_actions(all_actions, env, debug, nb_process):
     for action in all_actions:
         if keep_action(action, obs):
             ret.append(action)
+    if debug:
+        print(str(len(all_actions) - len(ret)) + " actions out of " + str(len(all_actions)) + " have been filtered")
     return ret
 
 
