@@ -234,12 +234,23 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
 
 def post_processing_rewards(graph, reward_df):
-    for node in graph.nodes:
-        if node is "init" or node is "end":
-            continue
-        action = node.split("_t")[0]
-        timestep = node.split("_t")[1]
-        line = reward_df.loc[(reward_df['name'].astype(str) == str(action)) & (reward_df['timestep'] == int(timestep))]
-        graph.nodes[node]["overload_reward"] = line.iloc[0]["overload_reward"]
+
+    #graph1=graph.copy()
+
+    reward_df["node_name"]=reward_df['name'].astype(str) + '_t' + reward_df['timestep'].astype(str)
+    v_attributes=reward_df[['node_name','overload_reward']].set_index('node_name').to_dict('index')
+    nx.set_node_attributes(graph, v_attributes)
+#
+
+    #for node in graph.nodes:
+    #    if node is "init" or node is "end":
+    #        continue
+    #    action = node.split("_t")[0]
+    #    timestep = node.split("_t")[1]
+    #    line = reward_df.loc[(reward_df['name'].astype(str) == str(action)) & (reward_df['timestep'] == int(timestep))]
+    #    graph.nodes[node]["overload_reward"] = line.iloc[0]["overload_reward"]
+#
+    #(nx.get_node_attributes(graph, 'overload_reward') ==nx.get_node_attributes(graph1, 'overload_reward'))
+
     return graph
 
