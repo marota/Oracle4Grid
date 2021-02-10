@@ -68,27 +68,48 @@ Oracle returns 2 different action path that respect the game rules allowed trans
 * *The best path*. Two level of representation are returned: a list of OracleAction and a list of Grid2op.Action
 * *The best path* without overload, with the two same levels of representation
 
-TODO Best- path - Action representation
+When printed, the OracleActions have a simple representation. For example sub-1-2_line-4-3 combines the second and third unitary actions that impacts respectively substation 1 and line 4
+The best path can look as below
 
-Additionaly, a Pandas.DataFrame with interesting indicators (KPIs) is returned in order to give context and boundaries to the performance of Oracle but also your agents.
+.. image:: images/best_path_example.JPG
+
+Additionaly, a Pandas.DataFrame with interesting cumulated rewards for various standard behaviour (indicators) is returned in order to give context and boundaries to the performance of Oracle but also your agents.
 
 .. image:: images/kpis_example.JPG
 
+In debug mode, more info will be printed and serialized.
 
-TODO - In debug mode: more info printed end returned
-
+See **Description** section for more details
 
 Agent replay
 ================
 
-OracleAgent to replay best path
-Replat mode in oracle to check game overs
+An agent is provided in order to replay the best path (*oracle4grid/core/agent/OracleAgent.py*)
+To facilitate the agent, oracle4grid replays it once in order to check in **real game rules condition**
 
+* if a game over occurs (it also prints number of survived timesteps)
+* if the expected cumulated reward is obtained (it could not be the case if overloads occur in path and leads to null rewards)
+
+Two types of warning can be returned accordingly
+
+.. image:: images/replay_check_example.JPG
 
 Constants
 ===============
 
-constants.py
+in addition to config.ini, there is a constant API available for easy local overrides of some common behaviors / implementations.
+This API can be used in two ways :
+- Local override :
+You may change the file itself to experiment with the different parameters of the API. See the comments in the file.
+- API override :
+The main function (load_and_run() and oracle()) of the Oracle allow for a constants argument that you can pass. It is usually an instance of a sub-class of the default implementation
+It can be found in *oracle4grid/core/utils/constants.py*
+
+Currently, you can modifiy three main features in constants:
+
+* The Grid2op Backend used for simulations
+* The main reward and additional other rewards to be used
+* The game rules in simulation, in graph computation and in replay conditions
 
 
 Tests

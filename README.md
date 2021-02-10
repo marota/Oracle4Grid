@@ -41,7 +41,7 @@ Checkout the forked grid2op version, NOT in the oracle4grid repository
 
 `git clone https://github.com/mjothy/Grid2Op.git`
 
-`git checkout -b mj-devs`
+`git checkout -b mj-devs-pr`
 
 `cd Grid2Op/`
 
@@ -51,7 +51,7 @@ Checkout the forked grid2op version, NOT in the oracle4grid repository
 
 There are a lot of integration tests already implemented, one can run them with :
 
-`python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warnin`
+`python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
 ## Configuration for the user
 
