@@ -18,7 +18,8 @@ in the decision making process of an agent
 Features
 ----------
 
-- Combines a list of given atomic (= that affects a single substation) action into a list of any combinations of these action (called OracleActions) - *In the combinations, we allow only one atomic action per substation*
+- Reads a json with a list of atomic actions (=unitary "action bricks" that affects a single substation or line) - It handles 3 different format to provide these atomic actions through an OracleParser object
+- Creates a set of possible and grid2op-valid actions by computing any possible combination of the atomic actions (the resulting objects are called OracleActions) - *In the combinations, we allow only one atomic action per substation*
 - Runs the simulation for all OracleActions, and stores the reward in a dataframe
 - Generates a NetworkX graph with each node being a timestep in the aforementioned simulations - *The connection between two nodes is given by the gamerule*
 - Runs a best path algorithm to deduce a series of action to achieve best results
