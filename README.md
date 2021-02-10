@@ -77,6 +77,29 @@ best_path_type = longest
 - Number of topos in best path to compute in indicators
 n_best_topos = 2
 
+### Atomic actions
+
+Oracle requires a base of atomic actions which are provided in .json format.
+These unitary elements plays the role of action "bricks" that will be combined by Oracle to build more consistent actions on the grid.
+
+As a limitation, two types of atomic actions are handled, each one having a standard format:
+
+* An atomic action which impact **one** substation topology - i.e. setting buses of assets (lines origins, lines extremities, generators, loads)
+    ``{"sub": {"1": [{"lines_id_bus": [[0, 2], [2, 2]], "loads_id_bus": [[0, 2]], "gens_id_bus": [[0,2]]}}``
+* An atomic actions that disconnects **one** line
+    ``{"line": {"4": [{"set_line": -1}]}}``
+
+A user-friendly notebook is provided to help the user defining atomic actions and visualize their impact on the grid. See *oracle4grid/core/actions_utils/Atomic_Actions_Helper.ipynb*
+
+2 other formats are handled by class *oracle4grid/core/utils/launch_utils::OracleParser*. It should be easy for a user to develop an additional parser to handle his action format using the same API
+
+* An explicit format for substation topologies (parser1) - examples in *oracle4grid/ressources/neurips_track1*
+    ``{"set_bus": {"substations_id": [[16, [1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2]]]}}``
+* An explicit format for whole action space (parser2) - examples in *oracle4grid/ressources/wcci_test*
+    ``{"sub": {"1": [{"set_configuration": [0, 0, 0,..., 2, 0, 0, ..., 0, 0]}}}``
+
+
+
 ### constants.py
 In addition to the ini file, there is a constant API available for easy local overrides of some common behaviors / implementations.
 This API can be used in two ways :
