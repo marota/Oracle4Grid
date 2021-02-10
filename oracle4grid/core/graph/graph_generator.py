@@ -19,8 +19,7 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
     actions = reward_df['action'].unique()
 
     # Compute possible transitions list for each action
-    reachable_topologies_from_init = get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status,
-                                                                        explicit_node_names=debug, constants=constants)
+    reachable_topologies_from_init = get_reachable_topologies_from_init(actions, explicit_node_names=debug, constants=constants)
 
     start_time = time.time()
     reachable_topologies = get_reachable_topologies(actions, init_topo_vect, init_line_status,
@@ -31,7 +30,6 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
     print("get_reachable_topologies time:" + str(elapsed_time))
     # Build graph
     graph = build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init, reward_significant_digit)
-    # graph = add_nodes_action(graph)
     return graph
 
 
@@ -72,9 +70,6 @@ def preprocessing(reward_df, max_iter, explicit_node_names=False):
 
 def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
     # Ordered names of actions
-    # ordered_names = reward_df['name'].unique()
-    # TODO: explicit node names if asked
-
     # All possible action transitions
     action_couples = [(action1, action2) for action1 in actions for action2 in actions]
     modified_subs = [action_couple[0].number_of_modified_subs_to(action_couple[1]) for action_couple in
@@ -98,7 +93,7 @@ def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit
     return reachable_topologies
 
 
-def get_reachable_topologies_from_init(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
+def get_reachable_topologies_from_init(actions, explicit_node_names=False, constants=EnvConstants()):
     if not explicit_node_names:
         reachable_topologies_from_init = [action.name
                                           for action in actions
@@ -189,7 +184,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     # First edges: symbolic init node and reachable first actions
     edges_or, edges_ex, edges_weights = create_init_nodes(reachable_topologies_from_init, reward_df)
 
-    ## Reachable transitions for each timestep and associated rewards
+    # Reachable transitions for each timestep and associated rewards
     start_time = time.time()
     edges_or += [str(ordered_names[i]) + '_t' + str(int(t))
                  for i in range(len(reachable_topologies))
@@ -202,16 +197,13 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
     reward_table = reward_df[['timestep', 'reward', 'name']].pivot(index='timestep', columns='name', values='reward')
 
-    # edges_weights += [reward_table[reachable_topo][int(t + 1)] for i in range(len(reachable_topologies))
-    #                  for reachable_topo in reachable_topologies[i]
-    #                  for t in range(max_iter - 1)]
     edges_weights += list(itertools.chain(*[reward_table[reachable_topologies[i]].loc[1:max_iter].values.flatten(order='F')
                                             for i in range(len(reachable_topologies))]))
     elapsed_time = time.time() - start_time
     print(elapsed_time)
 
     # Symbolic end node
-    edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]  # edges_ex.copy()
+    edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]
     or_end, ex_end, weights_end = create_end_nodes(edges_ex_t, fake_reward=END_NODE_REWARD)
     edges_or += or_end
     edges_ex += ex_end

@@ -18,3 +18,4 @@ class Run:
         self.max_ts = max_ts
         self.rewards = episode_data.rewards
         self.other_rewards = episode_data.other_rewards
+        self.attacks = episode_data.attacks
