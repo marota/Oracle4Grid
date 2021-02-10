@@ -13,7 +13,7 @@ def generate(reward_df, max_iter=None, debug=False, reward_significant_digit=Non
     if debug:
         print('\n')
         print("============== 3 - Graph generation ==============")
-        
+
     # Parameters and DataFrame preprocessing
     reward_df = preprocessing(reward_df, max_iter, explicit_node_names=debug)
     actions = reward_df['action'].unique()
@@ -232,12 +232,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
 
 def post_processing_rewards(graph, reward_df):
-    for node in graph.nodes:
-        if node is "init" or node is "end":
-            continue
-        action = node.split("_t")[0]
-        timestep = node.split("_t")[1]
-        line = reward_df.loc[(reward_df['name'].astype(str) == str(action)) & (reward_df['timestep'] == int(timestep))]
-        graph.nodes[node]["overload_reward"] = line.iloc[0]["overload_reward"]
+    reward_df["node_name"] = reward_df['name'].astype(str) + '_t' + reward_df['timestep'].astype(str)
+    v_attributes = reward_df[['node_name', 'overload_reward']].set_index('node_name').to_dict('index')
+    nx.set_node_attributes(graph, v_attributes)
     return graph
-
