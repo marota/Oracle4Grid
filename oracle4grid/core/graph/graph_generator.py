@@ -6,6 +6,7 @@ import pandas as pd
 import networkx as nx
 import itertools
 
+from oracle4grid.core.graph import attack_graph_module
 from oracle4grid.core.utils.constants import END_NODE_REWARD, EnvConstants
 
 
@@ -201,13 +202,18 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
                                             for i in range(len(reachable_topologies))]))
     elapsed_time = time.time() - start_time
     print(elapsed_time)
-
     # Symbolic end node
     edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]
     or_end, ex_end, weights_end = create_end_nodes(edges_ex_t, fake_reward=END_NODE_REWARD)
     edges_or += or_end
     edges_ex += ex_end
     edges_weights += weights_end
+    # Removing attack edges
+    print("Removing attack edges")
+    start_time = time.time()
+    #edges_or, edges_ex, edges_weights = attack_graph_module.filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df)
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
 
     # Finally create graph object from DataFrame
     edge_df = pd.DataFrame({'or': edges_or, 'ex': edges_ex, 'weight': edges_weights})
@@ -226,7 +232,20 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
 
 def post_processing_rewards(graph, reward_df):
+    # Adding other reward
     reward_df["node_name"] = reward_df['name'].astype(str) + '_t' + reward_df['timestep'].astype(str)
     v_attributes = reward_df[['node_name', 'overload_reward']].set_index('node_name').to_dict('index')
     nx.set_node_attributes(graph, v_attributes)
+    # Removing attacks
+    # mask = reward_df.apply(attack_filter, axis=1)
+    # attacks = reward_df[mask]
+    # edges_to_remove =
     return graph
+
+
+def attack_filter(row):
+    keep = False
+    for att in row["attack"]:
+        if len(att.as_dict) != 0:
+            keep = True
+    return keep

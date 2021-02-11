@@ -21,7 +21,7 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False,agent_seed=None,
 
 def make_df_from_res(all_res):
     cols = ["action", "timestep", "reward", "overload_reward"
-        # , "attacks"
+        , "attacks", "attack_id"
             ]
     data = [to_json(run, t)
             for run in all_res
@@ -31,12 +31,18 @@ def make_df_from_res(all_res):
 
 
 def to_json(run, t):
+    attack_id = None
+    for i in range(len(run.attacks)):
+        if len(run.attacks[i].as_dict()) != 0:
+            attack_id = i
+            break
     return {
         "action": run.action,
         "timestep": t,
         "reward": run.rewards[t],
         "overload_reward": run.other_rewards[t]["overload_reward"],
-        # "attacks": [run.attacks[a][t] for a in run.attacks.shape[0]]
+        "attacks": [attack for attack in run.attacks],
+        "attack_id": attack_id
     }
 
 

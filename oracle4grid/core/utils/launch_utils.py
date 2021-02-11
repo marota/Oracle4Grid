@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 from grid2op.Parameters import Parameters
+from oracle4grid.core.utils.config_ini_utils import MAX_ITER
 
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import prepare_env
