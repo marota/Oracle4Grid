@@ -75,7 +75,5 @@ def run_pf_check(oracle_action, obs):
     new_line_status = sim_obs.line_status
     impact_on_lines = np.where(new_line_status != init_line_status)[0]
     has_impact_on_lines = (len(impact_on_lines) != 0)
-    if not (valid and (has_impact_on_subs or has_impact_on_lines)):
-        print("la")
     return (valid and (has_impact_on_subs or has_impact_on_lines))
 
