@@ -99,10 +99,10 @@ Constants
 
 in addition to config.ini, there is a constant API available for easy local overrides of some common behaviors / implementations.
 This API can be used in two ways :
-- Local override :
-You may change the file itself to experiment with the different parameters of the API. See the comments in the file.
-- API override :
-The main function (load_and_run() and oracle()) of the Oracle allow for a constants argument that you can pass. It is usually an instance of a sub-class of the default implementation
+
+* *Local override* : You may change the file itself to experiment with the different parameters of the API. See the comments in the file.
+* *API override* : The main function (load_and_run() and oracle()) of the Oracle allow for a constants argument that you can pass. It is usually an instance of a sub-class of the default implementation
+
 It can be found in *oracle4grid/core/utils/constants.py*
 
 Currently, you can modifiy three main features in constants:
