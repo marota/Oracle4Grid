@@ -14,7 +14,7 @@ ASSET_MAPPING = {"line (origin)":"lines_id_bus",
                  "load":"loads_id_bus"}
 
 def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config, constants=EnvConstants()):
-    atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug, constants=constants)
+    atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug, constants=constants, config = config)
     # Parse atomic_actions format
     # atomic_actions = parse(atomic_actions,env)
     parser = OracleParser(atomic_actions, env.action_space)
@@ -25,7 +25,7 @@ def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, confi
                   grid_path=env_dir, chronic_id=chronic, constants=constants)
 
 
-def load(env_dir, chronic, action_file, debug, constants=EnvConstants()):
+def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config = None):
     param = Parameters()
     param.init_from_dict(constants.DICT_GAME_PARAMETERS_SIMULATION)
     env = prepare_env(env_dir, chronic, param)
@@ -36,17 +36,22 @@ def load(env_dir, chronic, action_file, debug, constants=EnvConstants()):
 
     # Init debug mode if necessary
     if debug:
-        debug_directory = init_debug_directory(env_dir, action_file, chronic)
+        try:
+            output_path = config["output_path"]
+        except:
+            output_path = "oracle4grid/output" # os.path.join(os.path.dirname(os.path.realpath(__file__)), "../..",'output')
+        debug_directory = init_debug_directory(env_dir, action_file, chronic, output_path)
     else:
         debug_directory = None
     return atomic_actions, env, debug_directory
 
 
-def init_debug_directory(env_dir, action_file, chronic):
+def init_debug_directory(env_dir, action_file, chronic, output_path = None):
+
     action_file_os = os.path.split(action_file)[len(os.path.split(action_file)) - 1].replace(".json", "")
     grid_file_os = os.path.split(env_dir)[len(os.path.split(env_dir)) - 1]
     scenario = "scenario_" + str(chronic)
-    debug_directory = os.path.join("oracle4grid/output/", grid_file_os, scenario, action_file_os)
+    debug_directory = os.path.join(output_path, grid_file_os, scenario, action_file_os)
     os.makedirs(debug_directory, exist_ok=True)
     return debug_directory
 

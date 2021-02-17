@@ -28,7 +28,6 @@ Process Overview
     .. image:: images/notebook_screen.JPG
 
     You'll eventually write your unitary actions in a json format which will be directly usable by Oracle.
-
 * **0 - Prepare environment and parse unitary actions**
     The grid2op environment for action simulations is prepared with provided parameters, the unitary actions are formatted to oracle format (3 formats are supported, a parser API is provided)
 * **1 - Compute all unitary action combinations**
@@ -109,7 +108,9 @@ Each OracleAction is applied on grid and the whole episode is then simulated in 
 
 .. image:: images/didactic_step2.JPG
 
-The resulting reward_df is a pandas.DataFrame representing the reward obtained at each timestep of those parallel simulation. it also includes whether there has been an overflow in the timestep (overload_reward = -1)
+The resulting reward_df is a pandas.DataFrame representing the reward obtained at each timestep of those parallel simulation. it also includes whether there has been an overflow in the timestep (overload_reward = 0)
+
+This dataframe is serialized in the output folder (reward_df.csv)
 
 Graph computation
 ^^^^^^^^^^^^^^^^^^^^
@@ -118,21 +119,101 @@ A graph is computed thanks to the result of this simulation
 
 .. image:: images/didactic_step3.JPG
 
-The transition between actions (represented by the edges of the graph) are permitted or not according to the provided game rules.
-These game rules are in constants.DICT_GAME_PARAMETERS_GRAPH
+* The nodes of the graph represent actions (vertical axis) at a given time step (horizontal axis)
+* The edges represent transitions between actions, they are permitted or not according to the provided game rules. These game rules are in constants.DICT_GAME_PARAMETERS_GRAPH and consist exclusively in limiting the number of impacted substation (for actions on topology) and impacted lines (for disconnection actions)
+* The weights on the edges represent the reward obtained when operating the edge transition
+* The init and end node don't represent any grid state, they are required in networkX for a proper computation of the best trajectories
 
 .. code-block:: python
 
     DICT_GAME_PARAMETERS_GRAPH = {'MAX_LINE_STATUS_CHANGED': 1,
                                   'MAX_SUB_CHANGED': 1}
 
-Here you can see that one *substation maximum* can be impacted in each timestep, which is why ``sub-1-0_sub-23-1`` can't be applied in one timestep
+Here you can see that **a maximum of one substation** can be impacted in each timestep, which is why ``sub-1-0_sub-23-1`` can't be applied in one timestep
 
-Indicators
-==============
+In debug mode, this graph is serialized under different formats:
 
-Enumerate - hierarchy
+* *edge_list.csv* - representing source target and weight of each edge in the graph under a table format
+* *graphe.pkl* - a pickle containing the networkX object
+* *graphe.PNG* - a picture of the graph layout, with same structure as the previous image
+
+Best path computation
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Two best trajectories are computed in order to maximise the cumulated OracleL2RPNReward (longest path has been chosen in config.ini)
+
+* One with no regard on overloads (orange) - action ``sub-1-0_sub-23-1`` retrieves an advantageous cumulated reward but leads to overloads. It is reached in 2 timesteps because the transition cannot impact two substations at a time, as specified by game rules
+* One avoiding overloads (yellow) - action ``sub-1-0`` retrieves a less advantageous cumulated reward but doesn't lead to any overload
+
+.. image:: images/didactic_step4.JPG
+
+We'll see the difference between those cumulated rewards in the indicators section
+
+In debug mode, this best path is serialized under different formats:
+
+* *best_path_grid2op_action.pkl* - a pickle containing the grid2op.Action that enable one to replay this trajectory in a grid2op simulation
+* *best_path_grid2op_action_no_overload.pkl* - same for the path without overload
+* *best_path_topologies_count.PNG* - a picture containing the frequency of the n most-played topologies in best path (n being the n_best_topos parameter in config.ini)
+
+.. image:: images/best_path_topologies_count.PNG
+
+* *best_path_no_overload_topologies_count.PNG* - same for the path without overload
+
+.. image:: images/best_path_no_overload_topologies_count.PNG
 
 
+Indicators computation
+^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of indicators (KPI) is computed in order to appreciate the boundaries of the cumulated reward that can be obtained under different hypothesis
+
+.. image:: images/didactic_step5.JPG
+
+A specific order in rewards must be respected. Otherwise a ValueError is raised
+
+* Doing nothing cannot be strictly better than the best path
+* The best path respected transition rules cannot be strictly better than the best path with no constraint
+* The best path with no overload cannot be strictly better than the best bath
+
+.. note::
+   The indicators "<action> then do nothing" are computed for the n best actions (n being the n_best_topos parameter in config.ini). We don't know where this indicator will be in the cumulated reward hierarchy
+
+The KPI table is returned as a pandas.DataFrame and serialized in debug mode (kpis.csv)
+
+Trajectory replay in real game rules conditions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The best path is replayed by OracleAgent under real game rules conditions (constants.DICT_GAME_PARAMETER_REPLAY). The user is warned if one of the two following cases occurs:
+
+* If there is a game over in the episode and the simulation doesn't reach the end of the episode. The replay function returns the number of survived time steps
+* If the expected cumulated reward is not matched (meaning that there have been overloads causing null rewards for example)
+
+In our example, the expected cumulated reward is not matched because of the overloads caused by action ``sub-1-0_sub-23-1`` that we had already noticed
+
+.. warning::
+    UserWarning: During replay - oracle agent does not retrieve the expected reward. Some timestep may have break some game rules in real condition. Expected reward: 167.48158645629883 Reward obtained: 125.66283416748047
+
+Output structure in debug mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If debug=1, all the elements mentioned above will be serialized in the same folder.
+
+* If a parameter *output_path* is provided in config.ini, this folder is used as root output folder
+* Else, a folder oracle4grid/output will be written in the current working directory
+
+Then Oracle will build an arborescence
+
+* output folder
+    * scenario_<chronic id or name>
+        * <Name of unitary action json>
+            * reward_df.csv
+            * graphe.pkl
+            * graphe.PNG
+            * edge_list.csv
+            * kpis.csv
+            * best_path_grid2op_action.pkl
+            * best_path_grid2op_action_no_overload.pkl
+            * best_path_topologies_count.PNG
+            * best_path_no_overload_topologies_count.PNG
 
 
