@@ -75,7 +75,7 @@ The best path can look as below
 
 Additionaly, a Pandas.DataFrame with interesting cumulated rewards for various standard behaviour (indicators) is returned in order to give context and boundaries to the performance of Oracle but also your agents.
 
-.. image:: images/kpis_example.JPG
+.. image:: images/didactic_step5.JPG
 
 In debug mode, more info will be printed and serialized.
 
@@ -105,7 +105,7 @@ This API can be used in two ways :
 
 It can be found in *oracle4grid/core/utils/constants.py*
 
-Currently, you can modifiy three main features in constants:
+You can currently modify three main features in the constants:
 
 * The Grid2op Backend used for simulations
 * The main reward and additional other rewards to be used

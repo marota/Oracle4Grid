@@ -1,7 +1,18 @@
 # Oracle4Grid
 
 This is a repository to compute an Oracle score on a scenario for a given Grid2op environment.
-It finds the best course of actions aposteriori, within a given perimeter of actions (cf « Learning to run a power network challenge for training topology controllers »)
+It finds the best course of actions a posteriori, within a given perimeter of actions (cf « Learning to run a power network challenge for training topology controllers »)
+
+An Oracle system is defined by it's ability to know all possible outcome,
+in order to deduce the best course of actions. Named after an Oracle, who knows the future.
+
+This is an Oracle System that tries to brute force the best possible combination of actions taken by an agent, in a certain Grid2op environment.
+It does so by using data from a set of user-fed actions played in a dummy environment that allows any actions.
+It then finds the best possible course of actions that an agent can take, called "Best path" (computed with or without possibility of overload).
+Finally, a few KPIs are produced in order to give a quick rundown of the state of the environment initially provided.
+
+This can allow you to test the boundaries of a given network environment, and get a better understanding of the potential weaknesses
+in the decision making process of an agent
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
@@ -17,6 +28,8 @@ pipenv run python -m main -d 1 -f oracle4grid/ressources/actions/rte_case14_real
 - -f/--file: Directory path to .json file containing all atomic actions we want to play 
 - -e/--env: Directory path or name of the Grid2op environment to load
 - -c/--chronic: Name or id of chronic scenario to consider, as stored in chronics folder. By default, the first available chronic scenario will be chosen
+- -as/-agent_seed: Agent seed to be used by the grid 2op runner. By default, None is considered.
+- -es/-env_seed : Environment seed to be used by the grid 2op runner. By default, None is considered.
 
 For more customisation options, see section "Configuration for the user" below
 
@@ -59,25 +72,28 @@ There are a lot of integration tests already implemented, one can run them with 
 The main configuration of the oracle module is located in ./oracle4grid/ressources/config.ini
 This file contains the following options :
 
-- Max atomic actions to combinate
-max_depth = 5
+- Max atomic actions to combinate:
+*max_depth = 5*
 
 - Max timestep to reach in episode
-max_iter = 5
+*max_iter = 5*
 
-- Number of significant digits for reward, don't write value if you don't want to truncate and the parameter will be None
-reward_significant_digit
+- Number of significant digits for reward, don't write value if you don't want to truncate and the parameter will be None:
+*reward_significant_digit*
 
-- Number of threads the computation engine is allowed to use
-nb_process = 1
+- Number of threads the computation engine is allowed to use:
+*nb_process = 1*
 
-- Computation type for finding path "shortest|longest"
-best_path_type = longest
+- Computation type for finding path "shortest|longest":
+*best_path_type = longest*
 
-- Number of topos in best path to compute in indicators
-n_best_topos = 2
+- Number of topos in best path to compute in indicators:
+*n_best_topos = 2*
 
-### Atomic actions
+- Path to folder in which to write outputs in debug mode:
+*output_path = "oracle4grid/output"*
+
+### Unitary (atomic) actions
 
 Oracle requires a base of atomic actions which are provided in .json format.
 These unitary elements plays the role of action "bricks" that will be combined by Oracle to build more consistent actions on the grid.
@@ -108,14 +124,9 @@ You may change the file itself to experiment with the different parameters of th
 - API override :
 The main function (load_and_run() and oracle()) of the Oracle allow for a constants argument that you can pass. It is usually an instance of a sub-class of the default implementation
 
-## Current content
-3 steps and notebooks
-- Create_Unitary_Actions_Viz.ipynb to create a dictionnary of unitary actions that are of interest and that will be combined after
-- Prepare_for_Oracle.ipynb run the topology configurations in parallel, and save the rewards and topology configuration dataframes
-- Analyse_Policy_Oracle-Scenario_3.ipynb Create the Transition Graph and find the best course of actions
 
-## Workflow
-![Influence Graph](OracleProcess.png)
+## Workflow and API overview
+![Influence Graph](docs/images/detailed_workflow.jpg)
 
 
 

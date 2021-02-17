@@ -8,9 +8,9 @@ Introduction
 An Oracle system is defined by it's ability to know all possible outcome,
 in order to deduce the best course of actions. Named after an Oracle, who knows the future.
 
-This is an Oracle System that tries to brute force the best possible combination of actions taken by an agent, in a certain Grid2OP environment and on a given episode.
+This is an Oracle System that tries to brute force the best possible combination of actions taken by an agent, in a certain Grid2op environment and on a given episode.
 It does so by using data from a set of user-fed actions played in a dummy environment that allows any actions.
-It then finds the best possible course of actions that an agent can take, called "Best path".
+It then finds the best possible course of actions that an agent can take, called "Best path" (computed with or without possibility of overload).
 Finally, a few KPIs are produced in order to give a quick rundown of the state of the environment initially provided.
 
 This can allow you to test the boundaries of a given network environment, and get a better understanding of the potential weaknesses
@@ -27,7 +27,9 @@ Process Overview
 
     .. image:: images/notebook_screen.JPG
 
+    The supported actions are actions on buses (on substation topologies) and line disconnection.
     You'll eventually write your unitary actions in a json format which will be directly usable by Oracle.
+
 * **0 - Prepare environment and parse unitary actions**
     The grid2op environment for action simulations is prepared with provided parameters, the unitary actions are formatted to oracle format (3 formats are supported, a parser API is provided)
 * **1 - Compute all unitary action combinations**
@@ -44,7 +46,7 @@ Process Overview
 * **6 - Trajectory replay in real game rules conditions**
     The best path is played by an OracleAgent, with a possible new set of game rules. It warns the user if these game rules lead to game over or diverging timesteps (if the expected cumulated reward is not matched)
 
-All along this process, some objects are serialized if you chose debug=1. This will be detailed in section **Indicators**
+All along this process, some objects are serialized if you chose debug=1. This will be detailed in section **Output structure in debug mode**
 
 Process detailed implementation
 ================================
@@ -56,7 +58,6 @@ Didactic example
 =================
 
 In this section, we'll dig into the algorithm of Oracle with a simple example.
-
 You'll be more familiar with the important objects of Oracle and see in particular those which are serialized in debug mode
 
 Grid, actions and configuration
@@ -89,13 +90,17 @@ Which is parsed by OracleParser to:*
 
 We can see that those two action have an impact on substations 1 and 23 respectively
 
-In config.ini, we set maxIter to 4, to simulate 4 timesteps. We set maxDepth to 2 as we will only need to combine a maximum of 2 actions.
+In config.ini, we set max_iter to 4, to simulate 4 timesteps. We set max_depth to 2 as we will only need to combine a maximum of 2 actions.
 
 Action combinations
 ^^^^^^^^^^^^^^^^^^^^
 
-We generate 4 OracleAction which have the following representation of atomic actions: 'sub-<id of substation>-<id of atomic action>'. When combinated, the atomic actions are separated by an underscore
+We generate 4 OracleAction which have the following representation of atomic actions: ``sub-<id of substation>-<id of atomic action>``.
+
+When combinated, the atomic actions are separated by an underscore
+
 ``[sub-1-0, sub-23-1, sub-1-0_sub-23-1, donothing-0]``
+
 In this step, actions can be filtered out if they cause a divergence at the first simulation timestep or if they don't have impact on the initial topology
 There is no filtering needed here
 
@@ -120,7 +125,7 @@ A graph is computed thanks to the result of this simulation
 .. image:: images/didactic_step3.JPG
 
 * The nodes of the graph represent actions (vertical axis) at a given time step (horizontal axis)
-* The edges represent transitions between actions, they are permitted or not according to the provided game rules. These game rules are in constants.DICT_GAME_PARAMETERS_GRAPH and consist exclusively in limiting the number of impacted substation (for actions on topology) and impacted lines (for disconnection actions)
+* The edges represent transitions between actions, they are permitted or not according to the provided game rules. These game rules are in ``constants.DICT_GAME_PARAMETERS_GRAPH`` and consist exclusively in limiting the number of impacted substation (for actions on topology) and impacted lines (for disconnection actions)
 * The weights on the edges represent the reward obtained when operating the edge transition
 * The init and end node don't represent any grid state, they are required in networkX for a proper computation of the best trajectories
 
@@ -169,7 +174,7 @@ A set of indicators (KPI) is computed in order to appreciate the boundaries of t
 
 .. image:: images/didactic_step5.JPG
 
-A specific order in rewards must be respected. Otherwise a ValueError is raised
+A specific order in rewards must be respected. Otherwise a ValueError is raised:
 
 * Doing nothing cannot be strictly better than the best path
 * The best path respected transition rules cannot be strictly better than the best path with no constraint
@@ -183,12 +188,13 @@ The KPI table is returned as a pandas.DataFrame and serialized in debug mode (kp
 Trajectory replay in real game rules conditions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The best path is replayed by OracleAgent under real game rules conditions (constants.DICT_GAME_PARAMETER_REPLAY). The user is warned if one of the two following cases occurs:
+The best path is replayed by OracleAgent under real game rules conditions (``constants.DICT_GAME_PARAMETER_REPLAY``). The user is warned if one of the two following cases occurs:
 
 * If there is a game over in the episode and the simulation doesn't reach the end of the episode. The replay function returns the number of survived time steps
 * If the expected cumulated reward is not matched (meaning that there have been overloads causing null rewards for example)
 
-In our example, the expected cumulated reward is not matched because of the overloads caused by action ``sub-1-0_sub-23-1`` that we had already noticed
+In our example, the expected cumulated reward is not matched because of the overloads caused by action ``sub-1-0_sub-23-1`` that we had already noticed.
+This generates the following warning:
 
 .. warning::
     UserWarning: During replay - oracle agent does not retrieve the expected reward. Some timestep may have break some game rules in real condition. Expected reward: 167.48158645629883 Reward obtained: 125.66283416748047

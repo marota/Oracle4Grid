@@ -7,9 +7,9 @@ Quick Overview
 An Oracle system is defined by it's ability to know all possible outcome,
 in order to deduce the best course of actions. Named after an Oracle, who knows the future.
 
-This is an Oracle System that tries to brute force the best possible combination of actions taken by an agent, in a certain Grid2OP environment.
+This is an Oracle System that tries to brute force the best possible combination of actions taken by an agent, in a certain Grid2op environment.
 It does so by using data from a set of user-fed actions played in a dummy environment that allows any actions.
-It then finds the best possible course of actions that an agent can take, called "Best path".
+It then finds the best possible course of actions that an agent can take, called "Best path" (computed with or without possibility of overload).
 Finally, a few KPIs are produced in order to give a quick rundown of the state of the environment initially provided.
 
 This can allow you to test the boundaries of a given network environment, and get a better understanding of the potential weaknesses
