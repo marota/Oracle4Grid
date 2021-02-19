@@ -44,7 +44,7 @@ Process Overview
 * **5 - Indicators computation**
     Some useful indicators are computed. See details in **Indicators** section
 * **6 - Trajectory replay in real game rules conditions**
-    The best path is played by an OracleAgent, with a possible new set of game rules. It warns the user if these game rules lead to game over or diverging timesteps (if the expected cumulated reward is not matched)
+    The best path is played by an OracleAgent, with possibly more comprehensive game rules that could be explicitly taken into account previously. It warns the user if these game rules lead to game over or diverging timesteps (if the expected cumulated reward is not matched)
 
 All along this process, some objects are serialized if you chose debug=1. This will be detailed in section **Output structure in debug mode**
 
