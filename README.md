@@ -33,6 +33,25 @@ pipenv run python -m main -d 1 -f oracle4grid/ressources/actions/rte_case14_real
 
 For more customisation options, see section "Configuration for the user" below
 
+## Results
+
+Oracle returns 2 different action path that respect the game rules allowed transitions (see **Constants** section)
+
+* *The best path*. Two level of representation are returned: a list of OracleAction and a list of Grid2op.Action
+* *The best path* without overload, with the two same levels of representation
+
+When printed, the OracleActions have a simple representation. For example sub-1-2_line-4-3 combines the second and third unitary actions that impacts respectively substation 1 and line 4
+The best path can look as below
+
+![Best path example](docs/images/best_path_example.jpg)
+
+Additionaly, a Pandas.DataFrame with interesting cumulated rewards for various standard behaviour (indicators) is returned in order to give context and boundaries to the performance of Oracle but also your agents.
+
+![KPI example](docs/images/didactic_step5.jpg)
+
+See the documentation for further details about the results through a simple use case. In debug mode, more info will be printed and serialized.
+
+
 ## Installation
 
 For development, please proceed as follows:

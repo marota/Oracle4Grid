@@ -1,6 +1,7 @@
 Mentions
 =========
 
+
 Quick Overview
 ------------------
 
@@ -14,6 +15,8 @@ Finally, a few KPIs are produced in order to give a quick rundown of the state o
 
 This can allow you to test the boundaries of a given network environment, and get a better understanding of the potential weaknesses
 in the decision making process of an agent
+
+To go through all the steps following a simple usecase, see :ref:`didactic-example`
 
 Features
 ----------

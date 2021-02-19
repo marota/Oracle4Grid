@@ -47,6 +47,7 @@ A user-friendly notebook is provided to help the user defining atomic actions an
 * An explicit format for whole action space (parser2) - examples in *oracle4grid/ressources/wcci_test*
     ``{"sub": {"1": [{"set_configuration": [0, 0, 0,..., 2, 0, 0, ..., 0, 0]}}}``
 
+See more details in section :ref:`parsing`
 
 Configuration
 ===============
@@ -77,9 +78,7 @@ Additionaly, a Pandas.DataFrame with interesting cumulated rewards for various s
 
 .. image:: images/didactic_step5.JPG
 
-In debug mode, more info will be printed and serialized.
-
-See **Description** section for more details
+See :ref:`didactic-example` section for more details about the results through a simple use case. In debug mode, more info will be printed and serialized.
 
 Agent replay
 ================

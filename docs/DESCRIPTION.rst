@@ -54,6 +54,8 @@ Process detailed implementation
 .. image:: images/detailed_workflow.JPG
 
 
+.. _didactic-example:
+
 Didactic example
 =================
 
@@ -222,4 +224,28 @@ Then Oracle will build an arborescence
             * best_path_topologies_count.PNG
             * best_path_no_overload_topologies_count.PNG
 
+.. _parsing:
 
+Action parsing
+=================
+
+As an internal use convention, Oracle uses a reference format for unitary actions:
+
+* For a unitary action that impacts **one** substation topology - i.e. setting buses of assets (lines origins, lines extremities, generators, loads)
+    ``{"sub": {"1": [{"lines_id_bus": [[0, 2], [2, 2]], "loads_id_bus": [[0, 2]], "gens_id_bus": [[0,2]]}}``
+* or a unitary action that impacts **one** line
+    ``{"line": {"4": [{"set_line": -1}]}}``
+
+A user-friendly notebook is provided to help the user define atomic actions and visualize their impact on the grid. See *oracle4grid/core/actions_utils/Atomic_Actions_Helper.ipynb*
+
+If unitary actions are directly provided in other formats, a parser API is available to convert it into the right conventional format.
+It is done through the class *oracle4grid/core/utils/launch_utils::OracleParser*.
+On top of that, warnings and errors are returned in case the actions provided don't have sense in the action space
+(e.g. impact an asset that is not connected to the substation)
+
+There are currently two additional formats that are handled by OracleParser:
+
+* An explicit format for substation topologies (parser1) - examples in *oracle4grid/ressources/neurips_track1*
+    ``{"set_bus": {"substations_id": [[16, [1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2]]]}}``
+* An explicit format for whole action space (parser2) - examples in *oracle4grid/ressources/wcci_test*
+    ``{"sub": {"1": [{"set_configuration": [0, 0, 0,..., 2, 0, 0, ..., 0, 0]}}}``
