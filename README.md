@@ -23,6 +23,7 @@ in the decision making process of an agent
 *   [4 User configuration](#configuration-for-the-user)
 *   [5 Workflow and API overview](#workflow-and-api-overview)
 *   [6 Tests](#tests)
+*   [7 License](#license-information)
 
 ## Run
 
@@ -156,3 +157,11 @@ There are a lot of integration tests already implemented, one can run them with 
 
 `python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
+
+# License information
+Copyright 2020-2021 RTE France
+
+    RTE: http://www.rte-france.com
+
+This Source Code is subject to the terms of the Mozilla Public License (MPL) v2 also available 
+[here](https://www.mozilla.org/en-US/MPL/2.0/)
