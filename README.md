@@ -158,7 +158,7 @@ There are a lot of integration tests already implemented, one can run them with 
 `python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
 
-# License information
+## License information
 Copyright 2020-2021 RTE France
 
     RTE: http://www.rte-france.com
