@@ -16,7 +16,7 @@ in the decision making process of an agent
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
-
+**Table of Contents**
 *   [1 Run](#run)
 *   [2 Results](#results)
 *   [3 Installation](#installation)
