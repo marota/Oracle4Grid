@@ -11,7 +11,7 @@ It does so by using data from a set of user-fed actions played in a dummy enviro
 It then finds the best possible course of actions that an agent can take, called "Best path" (computed with or without possibility of overload).
 Finally, a few KPIs are produced in order to give a quick rundown of the state of the environment initially provided.
 
-This can allow you to test the boundaries of a given network environment, and get a better understanding of the potential weaknesses
+This can allow you to test the boundaries of a given network environment, the feasibility of a given scenario or get a better understanding of the potential weaknesses
 in the decision making process of an agent
 
 ![Influence Graph](TransitionGraph_bestActions.png)
@@ -100,7 +100,7 @@ These unitary elements plays the role of action "bricks" that will be combined b
 
 As a limitation, two types of atomic actions are handled, each one having a standard format:
 
-* An atomic action which impact **one** substation topology - i.e. setting buses of assets (lines origins, lines extremities, generators, loads)
+* An atomic action which impacts **one** substation topology - i.e. setting buses of assets (lines origins, lines extremities, generators, loads)
     ``{"sub": {"1": [{"lines_id_bus": [[0, 2], [2, 2]], "loads_id_bus": [[0, 2]], "gens_id_bus": [[0,2]]}}``
 * An atomic actions that disconnects **one** line
     ``{"line": {"4": [{"set_line": -1}]}}``
@@ -117,7 +117,7 @@ A user-friendly notebook is provided to help the user defining atomic actions an
 
 
 ### constants.py
-In addition to the ini file, there is a constant API available for easy local overrides of some common behaviors / implementations.
+In addition to the ini file, there is a constant API available for easy local overrides of some common behaviors / implementations. Especially if one wants to use its customized reward function, or some other indicators that can be computed by "other_rewards" and used as path filters to derive some kpis.
 This API can be used in two ways :
 - Local override :
 You may change the file itself to experiment with the different parameters of the API. See the comments in the file.
