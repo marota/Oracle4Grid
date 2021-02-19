@@ -16,6 +16,14 @@ in the decision making process of an agent
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
+
+*   [1 Run](#run)
+*   [2 Results](#results)
+*   [3 Installation](#installation)
+*   [4 User configuration](#configuration-for-the-user)
+*   [5 Workflow and API overview](#workflow-and-api-overview)
+*   [6 Tests](#tests)
+
 ## Run
 
 Run example
@@ -79,11 +87,6 @@ Checkout the forked grid2op version, NOT in the oracle4grid repository
 
 `pip install -U .`
 
-## Tests
-
-There are a lot of integration tests already implemented, one can run them with :
-
-`python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
 ## Configuration for the user
 
@@ -147,5 +150,9 @@ The main function (load_and_run() and oracle()) of the Oracle allow for a consta
 ## Workflow and API overview
 ![Influence Graph](docs/images/detailed_workflow.jpg)
 
+## Tests
 
+There are a lot of integration tests already implemented, one can run them with :
+
+`python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
