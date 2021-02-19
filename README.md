@@ -16,6 +16,15 @@ in the decision making process of an agent
 
 ![Influence Graph](TransitionGraph_bestActions.png)
 
+**Table of Contents**
+*   [1 Run](#run)
+*   [2 Results](#results)
+*   [3 Installation](#installation)
+*   [4 User configuration](#configuration-for-the-user)
+*   [5 Workflow and API overview](#workflow-and-api-overview)
+*   [6 Tests](#tests)
+*   [7 License](#license-information)
+
 ## Run
 
 Run example
@@ -43,11 +52,11 @@ Oracle returns 2 different action path that respect the game rules allowed trans
 When printed, the OracleActions have a simple representation. For example sub-1-2_line-4-3 combines the second and third unitary actions that impacts respectively substation 1 and line 4
 The best path can look as below
 
-![Best path example](docs/images/best_path_example.jpg)
+![Best path example](docs/images/best_path_example.JPG)
 
 Additionaly, a Pandas.DataFrame with interesting cumulated rewards for various standard behaviour (indicators) is returned in order to give context and boundaries to the performance of Oracle but also your agents.
 
-![KPI example](docs/images/didactic_step5.jpg)
+![KPI example](docs/images/didactic_step5.JPG)
 
 See the documentation for further details about the results through a simple use case. In debug mode, more info will be printed and serialized.
 
@@ -79,11 +88,6 @@ Checkout the forked grid2op version, NOT in the oracle4grid repository
 
 `pip install -U .`
 
-## Tests
-
-There are a lot of integration tests already implemented, one can run them with :
-
-`python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
 ## Configuration for the user
 
@@ -147,5 +151,17 @@ The main function (load_and_run() and oracle()) of the Oracle allow for a consta
 ## Workflow and API overview
 ![Influence Graph](docs/images/detailed_workflow.jpg)
 
+## Tests
+
+There are a lot of integration tests already implemented, one can run them with :
+
+`python -m pytest oracle4grid/test --verbose --continue-on-collection-errors -p no:warning`
 
 
+## License information
+Copyright 2020-2021 RTE France
+
+    RTE: http://www.rte-france.com
+
+This Source Code is subject to the terms of the Mozilla Public License (MPL) v2 also available 
+[here](https://www.mozilla.org/en-US/MPL/2.0/)

@@ -40,13 +40,7 @@ As a limitation, two types of atomic actions are handled, each one having a stan
 
 A user-friendly notebook is provided to help the user defining atomic actions and visualize their impact on the grid. See *oracle4grid/core/actions_utils/Atomic_Actions_Helper.ipynb*
 
-2 other formats are handled by class *oracle4grid/core/utils/launch_utils::OracleParser*. It should be easy for a user to develop an additional parser to handle his action format using the same API
-
-* An explicit format for substation topologies (parser1) - examples in *oracle4grid/ressources/neurips_track1*
-    ``{"set_bus": {"substations_id": [[16, [1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2]]]}}``
-* An explicit format for whole action space (parser2) - examples in *oracle4grid/ressources/wcci_test*
-    ``{"sub": {"1": [{"set_configuration": [0, 0, 0,..., 2, 0, 0, ..., 0, 0]}}}``
-
+2 other formats can already be parsed and it is possible to develop new parsers following the API.
 See more details in section :ref:`parsing`
 
 Configuration
