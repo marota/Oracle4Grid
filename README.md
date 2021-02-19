@@ -43,11 +43,11 @@ Oracle returns 2 different action path that respect the game rules allowed trans
 When printed, the OracleActions have a simple representation. For example sub-1-2_line-4-3 combines the second and third unitary actions that impacts respectively substation 1 and line 4
 The best path can look as below
 
-![Best path example](./docs/images/best_path_example.jpg)
+![Best path example](docs/images/best_path_example.jpg)
 
 Additionaly, a Pandas.DataFrame with interesting cumulated rewards for various standard behaviour (indicators) is returned in order to give context and boundaries to the performance of Oracle but also your agents.
 
-![KPI example](./docs/images/didactic_step5.jpg)
+![KPI example](docs/images/didactic_step5.jpg)
 
 See the documentation for further details about the results through a simple use case. In debug mode, more info will be printed and serialized.
 
