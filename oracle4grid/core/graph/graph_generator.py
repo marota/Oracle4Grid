@@ -211,7 +211,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     # Removing attack edges
     print("Removing attack edges")
     start_time = time.time()
-    #edges_or, edges_ex, edges_weights = attack_graph_module.filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df)
+    edges_or, edges_ex, edges_weights = attack_graph_module.filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df)
     elapsed_time = time.time() - start_time
     print(elapsed_time)
 

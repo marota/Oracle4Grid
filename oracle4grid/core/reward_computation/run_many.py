@@ -33,8 +33,9 @@ def make_df_from_res(all_res):
 def to_json(run, t):
     attack_id = None
     for i in range(len(run.attacks)):
-        if len(run.attacks[i].as_dict()) != 0:
-            attack_id = i
+        lines = run.attacks[i].impact_on_objects()['force_line']['disconnections']['powerlines']
+        if len(lines) != 0:
+            attack_id = lines[0]
             break
     return {
         "action": run.action,
