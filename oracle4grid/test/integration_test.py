@@ -33,7 +33,8 @@ CONFIG = {
     "nb_process": 1,
     "best_path_type": "shortest",
     "n_best_topos": 2,
-    "reward_significant_digit": 2
+    "reward_significant_digit": 2,
+    "replay_reward_rel_tolerance":1e7
 }
 
 

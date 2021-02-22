@@ -197,6 +197,8 @@ This generates the following warning:
 .. warning::
     UserWarning: During replay - oracle agent does not retrieve the expected reward. Some timestep may have break some game rules in real condition. Expected reward: 167.48158645629883 Reward obtained: 125.66283416748047
 
+In debug mode, the grid2op Runner will write the simulation logs in the output directory, within a separate folder (*replay_logs*)
+
 Output structure in debug mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -219,6 +221,8 @@ Then Oracle will build an arborescence
             * best_path_grid2op_action_no_overload.pkl
             * best_path_topologies_count.PNG
             * best_path_no_overload_topologies_count.PNG
+            * replay_logs/..
+
 
 .. _parsing:
 

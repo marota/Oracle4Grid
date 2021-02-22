@@ -7,7 +7,7 @@ from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.actions_utils import combinator
-from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS,REWARD_SIGNIFICANT_DIGIT
+from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS,REWARD_SIGNIFICANT_DIGIT, REL_TOL
 from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df, serialize, display_topo_count,serialize_graph
 
 
@@ -84,7 +84,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     # 6 - Replay of best path in real game rules condition
     replay_results = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
                                          kpis, grid_path, chronic_id, debug=debug, constants=constants,
-                                         env_seed=env_seed, agent_seed=agent_seed)
+                                         env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory)
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
     return best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis

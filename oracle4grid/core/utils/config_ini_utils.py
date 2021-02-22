@@ -3,6 +3,8 @@ MAX_ITER = "max_iter"
 NB_PROCESS = "nb_process"
 N_TOPOS = "n_best_topos"
 REWARD_SIGNIFICANT_DIGIT = "reward_significant_digit"
+REL_TOL = "replay_reward_rel_tolerance"
+
 
 # Default config dict you may use for calling oracle.py directly
 DEFAULT_CONFIG = {
@@ -15,5 +17,7 @@ DEFAULT_CONFIG = {
     # Number of significant digits for reward
     REWARD_SIGNIFICANT_DIGIT: None,
     # Number of topos in best path to compute in indicators
-    N_TOPOS: 2
+    N_TOPOS: 2,
+    # Relative tolerance of replayed reward compared to its expected value from simulation
+    REL_TOL: 1e7
 }

@@ -53,6 +53,8 @@ def init_debug_directory(env_dir, action_file, chronic, output_path = None):
     scenario = "scenario_" + str(chronic)
     debug_directory = os.path.join(output_path, grid_file_os, scenario, action_file_os)
     os.makedirs(debug_directory, exist_ok=True)
+    replay_debug_directory = os.path.join(debug_directory, "replay_logs")
+    os.makedirs(replay_debug_directory, exist_ok=True)
     return debug_directory
 
 class OracleParser():
