@@ -73,7 +73,7 @@ class IntegrationTest(unittest.TestCase):
         best_path_actual = list(map(lambda x: x.__str__(), action_path))
         best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
         best_path_expected = ['sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2', 'sub-1-1_sub-5-2']
-        best_path_expected_no_overload = ["sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", 'sub-1-1_sub-5-2']
+        best_path_expected_no_overload = ["sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", "sub-1-1", 'sub-1-1']
         self.assertListEqual(best_path_actual, best_path_expected)
         self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
 

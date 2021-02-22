@@ -12,7 +12,7 @@ class OracleOverloadReward(BaseReward):
         self.reward_max = 1
 
     def __call__(self, action, env, has_error, is_done, is_illegal, is_ambiguous):
-        if is_done or has_error:
+        if has_error: # or is_done
             return -1
         elif has_overflow(env):
             return 0
