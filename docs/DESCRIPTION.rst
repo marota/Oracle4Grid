@@ -47,7 +47,7 @@ All along this process, some objects are serialized if you chose debug=1. This w
 Process detailed implementation
 ================================
 
-.. image:: images/detailed_workflow.JPG
+.. image:: images/detailed_workflow.jpg
 
 
 .. _didactic-example:
@@ -148,7 +148,7 @@ Two best trajectories are computed in order to maximise the cumulated OracleL2RP
 * One with no regard on overloads (orange) - action ``sub-1-0_sub-23-1`` retrieves an advantageous cumulated reward but leads to overloads. It is reached in 2 timesteps because the transition cannot impact two substations at a time, as specified by game rules
 * One avoiding overloads (yellow) - action ``sub-1-0`` retrieves a less advantageous cumulated reward but doesn't lead to any overload
 
-.. image:: images/didactic_step4.JPG
+.. image:: images/didactic_step4.jpg
 
 We'll see the difference between those cumulated rewards in the indicators section
 
@@ -158,11 +158,11 @@ In debug mode, this best path is serialized under different formats:
 * *best_path_grid2op_action_no_overload.pkl* - same for the path without overload
 * *best_path_topologies_count.PNG* - a picture containing the frequency of the n most-played topologies in best path (n being the n_best_topos parameter in config.ini)
 
-.. image:: images/best_path_topologies_count.PNG
+.. image:: images/best_path_topologies_count.png
 
 * *best_path_no_overload_topologies_count.PNG* - same for the path without overload
 
-.. image:: images/best_path_no_overload_topologies_count.PNG
+.. image:: images/best_path_no_overload_topologies_count.png
 
 
 Indicators computation
