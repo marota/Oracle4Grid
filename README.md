@@ -17,13 +17,18 @@ in the decision making process of an agent
 ![Influence Graph](TransitionGraph_bestActions.png)
 
 **Table of Contents**
-*   [1 Run](#run)
-*   [2 Results](#results)
-*   [3 Installation](#installation)
-*   [4 User configuration](#configuration-for-the-user)
-*   [5 Workflow and API overview](#workflow-and-api-overview)
-*   [6 Tests](#tests)
-*   [7 License](#license-information)
+*   [1 Documentation](#documentation)
+*   [2 Run](#run)
+*   [3 Results](#results)
+*   [4 Installation](#installation)
+*   [5 User configuration](#configuration-for-the-user)
+*   [6 Workflow and API overview](#workflow-and-api-overview)
+*   [7 Tests](#tests)
+*   [8 License](#license-information)
+
+## Documentation
+You can find the more comprehensive documentation on ReadTheDocs:
+https://oracle4grid.readthedocs.io/en/latest/
 
 ## Run
 
