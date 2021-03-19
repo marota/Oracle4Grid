@@ -103,7 +103,7 @@ class OracleParser():
         new_d = {'sub': {sub: [] for sub in subs}}
 
         # Pas bonne idée, parcourir dans la boucle
-        grid = self.action_space.to_dict()
+        grid = self.action_space.cls_to_dict()
 
         for action in self.d:
             for sub_action in action['set_bus']['substations_id']:
