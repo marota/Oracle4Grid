@@ -3,14 +3,14 @@ from grid2op.Agent.BaseAgent import BaseAgent
 
 
 class OneChangeThenOnlyReconnect(BaseAgent):
-    my_dict = {}
+    my_action = None
 
     def __init__(self, action_space):
         BaseAgent.__init__(self, action_space)
         self.has_changed = False
 
          # Check if action concerns a line
-        impact = self.action_space(self._get_dict_act()).impact_on_objects()
+        impact = self._get_act().impact_on_objects()
 
         # Find ids of untouchable lines because they are disconnected on purpose and sould not be disconnected
         self.untouchable_line_ids = impact['force_line']['disconnections']['powerlines']
@@ -31,27 +31,27 @@ class OneChangeThenOnlyReconnect(BaseAgent):
         if self.has_changed:
             res = self.get_reconnect(observation)
         else:
-            res = self.action_space(self._get_dict_act())
+            res = self._get_act()
             self.has_changed = True
         return res
 
     def reset(self, obs):
         self.has_changed = False
 
-    def _get_dict_act(self):
+    def _get_act(self):
         """
         Function that need to be overridden to indicate which action to perform.
 
         Returns
         -------
-        res: ``dict``
-            A dictionnary that can be converted into a valid :class:`grid2op.BaseAction.BaseAction`. See the help of
+        res: ``BaseAction``
+            An action of :class:`grid2op.BaseAction.BaseAction`. See the help of
             :func:`grid2op.BaseAction.ActionSpace.__call__` for more information.
         """
-        return self.my_dict
+        return self.my_action
 
     @classmethod
-    def gen_next(cls, dict_):
+    def gen_next(cls, action_):
         """
         This function allows to change the dictionnary of the action that the agent will perform.
 
@@ -65,5 +65,5 @@ class OneChangeThenOnlyReconnect(BaseAgent):
 
 
         """
-        cls.my_dict = dict_
+        cls.my_action = action_
         return cls

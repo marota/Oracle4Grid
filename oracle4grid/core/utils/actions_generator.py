@@ -93,10 +93,15 @@ def append_unitary_actions(states, elem, ut):
 
 
 
-def get_valid_sub_action(action_space, dict_, init_topo_vect):
+def format_line_action_dict_for_g2op(line_dict):
+    return {"set_line_status": [(k, v['set_line']) for k, v in line_dict.items()]}
 
-    # set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
-    set_bus_vect = init_topo_vect.copy()
+def format_sub_action_dict_for_g2op(dict_, action_space):
+    LINE_ON_SUB_ERR = "Line id {} is not connected to sub id {}"
+    GEN_ON_SUB_ERR = "Generator id {} is not connected to sub id {}"
+    LOAD_ON_SUB_ERR = "Load id {} is not connected to sub id {}"
+
+    set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
 
     assert isinstance(dict_, dict)
     # assert "sub_elems" in dict_
@@ -157,10 +162,40 @@ def get_valid_sub_action(action_space, dict_, init_topo_vect):
 
     return {"set_bus": set_bus_vect}
 
-
-def get_valid_line_action(line_dict, init_line_status):
-    line_status = init_line_status.copy()
-    for key in line_dict:
-        line_status[key] = line_dict[key]['set_line']
-    # {"set_line_status": [(k, v['set_line']) for k, v in line_dict.items()]}
-    return {'set_line_status':line_status}
+# def format_sub_action_dict_for_g2op_v2(atomic_action, action_space):
+#     subid = get_first_key(atomic_action['sub'])
+#     assets = list(atomic_action['sub'][subid].keys())
+#     formated_dict = {"set_bus":{}}
+#     if "loads_id_bus" in assets:
+#         formated_dict['set_bus']['loads_id'] = atomic_action['sub'][subid]['loads_id_bus']
+#     if "gens_id_bus" in assets:
+#         formated_dict['set_bus']['generators_id'] = atomic_action['sub'][subid]['gens_id_bus']
+#     if "lines_id_bus" in assets:
+#         for line_id, bus_id in atomic_action['sub'][subid]['lines_id_bus']:
+#             line_or_ex_standard_key, line_or_ex_id = extremity_or_origin(action_space,line_id,subid)
+#             if line_or_ex_standard_key in list(formated_dict['set_bus'].keys()):
+#                 formated_dict['set_bus'][line_or_ex_standard_key].append([line_or_ex_id,bus_id])
+#             else:
+#                 formated_dict['set_bus'][line_or_ex_standard_key] = [[line_or_ex_id, bus_id]]
+#     return formated_dict
+#
+# def extremity_or_origin(action_space,line_id,subid):
+#     sub_id = int(subid)
+#     sub_start_pos = np.sum(action_space.sub_info[:sub_id])
+#     sub_end_pos = sub_start_pos + action_space.sub_info[sub_id]
+#     sub_range_pos = np.arange(sub_start_pos, sub_end_pos).astype(np.int32)
+#
+#     # Get line or and ex topo pos
+#     line_pos_or = action_space.line_or_pos_topo_vect[line_id]
+#     line_pos_ex = action_space.line_ex_pos_topo_vect[line_id]
+#     # Is line or on sub ?
+#     if line_pos_or in sub_range_pos:
+#         line_or_ex_id = line_pos_or
+#         line_or_ex_standard_key = "lines_or_id"
+#     # Is line ex on sub ?
+#     elif line_pos_ex in sub_range_pos:
+#         line_or_ex_id = line_pos_ex
+#         line_or_ex_standard_key = "lines_ex_id"
+#     else:
+#         raise ValueError("Line "+str(line_id)+" has no origin nor extremity at substation "+str(subid))
+#     return line_or_ex_standard_key, line_or_ex_id

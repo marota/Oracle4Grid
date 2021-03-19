@@ -7,7 +7,7 @@ SHORTEST = "shortest"
 LONGEST = "longest"
 
 
-def best_path(graph, best_path_type, actions, init_topo_vect, init_line_status, debug = False):
+def best_path(graph, best_path_type, actions, debug = False):
     if debug:
         print('\n')
         print("============== 4 - Computation of best action path ==============")
@@ -20,11 +20,11 @@ def best_path(graph, best_path_type, actions, init_topo_vect, init_line_status, 
 
     # Traduce path in terms of OracleActions
     action_path = return_action_path(path, actions, debug=debug)
-    grid2op_action_path = get_grid2op_action_path(action_path, init_topo_vect, init_line_status)
+    grid2op_action_path = get_grid2op_action_path(action_path)
     return action_path, grid2op_action_path
 
 
-def best_path_no_overload(graph, best_path_type, actions, init_topo_vect, init_line_status, debug = False):
+def best_path_no_overload(graph, best_path_type, actions, debug = False):
     if debug:
         print('\n')
         print("============== 4 - Computation of best action path with no overload ==============")
@@ -36,7 +36,7 @@ def best_path_no_overload(graph, best_path_type, actions, init_topo_vect, init_l
         if node is not "init" and node is not "end" and "overload_reward" in graph.nodes[node] and graph.nodes[node]["overload_reward"] == 0:
             graph_no_overload.remove_node(node)
 
-    return best_path(graph_no_overload, best_path_type, actions, init_topo_vect, init_line_status, debug)
+    return best_path(graph_no_overload, best_path_type, actions, debug)
 
 
 def return_action_path(path, actions, debug=False):
@@ -56,24 +56,22 @@ def return_action_path(path, actions, debug=False):
         action_path.append(actions[pos])
     return action_path
 
-def get_grid2op_action_path(action_path, init_topo_vect, init_line_status):
+def get_grid2op_action_path(action_path):
     """
     Compute the grid2op actions equivalent to a given list of OracleAction
     :param action_path: list of OracleAction that define path
-    :param init_topo_vect:
-    :param init_line_status:
     :return: list of dict representing all grid2op actions that need to be done for optimal path
     """
     grid2op_action_path = []
 
     # At timestep 0
-    grid2op_action = action_path[0].grid2op_action_dict
+    grid2op_action = action_path[0].grid2op_action
     grid2op_action_path.append(grid2op_action)
 
     # At other timesteps: get grid2op transition actions
     for i in range(len(action_path)-1):
         action = action_path[i]
         next_action = action_path[i+1]
-        grid2op_action = action.transition_action_to(next_action, init_topo_vect, init_line_status)
+        grid2op_action = action.transition_action_to(next_action)
         grid2op_action_path.append(grid2op_action)
     return grid2op_action_path

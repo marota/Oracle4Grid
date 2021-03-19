@@ -4,7 +4,7 @@ class OracleAgent(BaseAgent):
     """
     OracleAgent which plays the optimal simulated path in the action transition graph in a scenario
     """
-    action_path = {}
+    action_path = []
 
     def __init__(self,
                  #action_path,
@@ -15,8 +15,8 @@ class OracleAgent(BaseAgent):
         self.actions_left = self.action_path.copy()
 
     def act(self, observation, reward, done):
-        action_dict = self.actions_left.pop(0)
-        return self.action_space(action_dict)
+        action = self.actions_left.pop(0)
+        return action
 
     def reset(self, observation):
         self.actions_left = self.action_path.copy()

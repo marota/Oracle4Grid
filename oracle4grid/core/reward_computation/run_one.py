@@ -10,13 +10,12 @@ from oracle4grid.core.agent.OneChangeThenOnlyReconnect import OneChangeThenOnlyR
 from oracle4grid.core.utils.constants import ENV_SEEDS, AGENT_SEEDS
 
 
-def run_one(action: OracleAction, env: Environment, max_iter: int,agent_seed,env_seed):
-    agent_class = OneChangeThenOnlyReconnect.gen_next(action.grid2op_action_dict)
+def run_one(action: OracleAction, env: Environment, max_iter: int,agent_seed,env_seed,path_logs=None):
+    agent_class = OneChangeThenOnlyReconnect.gen_next(action.grid2op_action)
     runner = Runner(**env.get_params_for_runner(), agentClass=agent_class)
     res = runner.run(nb_episode=1,
                               nb_process=1,
                               max_iter=max_iter, add_detailed_output=True,
                               env_seeds=env_seed,#ENV_SEEDS,
-                              agent_seeds=agent_seed,#AGENT_SEEDS,
-                              )
+                              agent_seeds=agent_seed)#AGENT_SEEDS,
     return Run(action, res)

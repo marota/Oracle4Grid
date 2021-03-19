@@ -10,7 +10,7 @@ from oracle4grid.core.graph import attack_graph_module
 from oracle4grid.core.utils.constants import END_NODE_REWARD, EnvConstants
 
 
-def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=False, reward_significant_digit=None, constants=EnvConstants()):
+def generate(reward_df, max_iter=None, debug=False, reward_significant_digit=None, constants=EnvConstants()):
     if debug:
         print('\n')
         print("============== 3 - Graph generation ==============")
@@ -23,8 +23,7 @@ def generate(reward_df, init_topo_vect, init_line_status, max_iter=None, debug=F
     reachable_topologies_from_init = get_reachable_topologies_from_init(actions, explicit_node_names=debug, constants=constants)
 
     start_time = time.time()
-    reachable_topologies = get_reachable_topologies(actions, init_topo_vect, init_line_status,
-                                                    explicit_node_names=debug, constants=constants)
+    reachable_topologies = get_reachable_topologies(actions, explicit_node_names=debug, constants=constants)
     ordered_names = reward_df['name'].unique()
 
     elapsed_time = time.time() - start_time
@@ -69,7 +68,7 @@ def preprocessing(reward_df, max_iter, explicit_node_names=False):
     return reward_df
 
 
-def get_reachable_topologies(actions, init_topo_vect, init_line_status, explicit_node_names=False, constants=EnvConstants()):
+def get_reachable_topologies(actions, explicit_node_names=False, constants=EnvConstants()):
     # Ordered names of actions
     # All possible action transitions
     action_couples = [(action1, action2) for action1 in actions for action2 in actions]

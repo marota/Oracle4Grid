@@ -23,12 +23,24 @@ def make_df_from_res(all_res):
     cols = ["action", "timestep", "reward", "overload_reward"
         , "attacks", "attack_id"
             ]
-    data = [to_json(run, t)
-            for run in all_res
-            for t in range(run.rewards.shape[0])]
+    data = []
+    for run in all_res:
+        # Temporary fix in case there is divergence - rewards and other_rewards should be under the same convention (length, NaN)
+        run = check_other_rewards(run)
+        for t in range(run.rewards.shape[0]):
+            data.append(to_json(run, t))
     df = pandas.DataFrame(data, columns=cols)
     return df
 
+def check_other_rewards(run):
+    other_rewards = run.other_rewards.copy()
+    ref_dict = other_rewards[0]
+    n_other_rewards = len(other_rewards)
+    if n_other_rewards < run.max_ts:
+        ref_dict_nan = {key: float('nan') for key in ref_dict.keys()}
+        other_rewards += [ref_dict_nan for i in range(run.max_ts-n_other_rewards)]
+        run.other_rewards = other_rewards
+    return run
 
 def to_json(run, t):
     attack_id = None
