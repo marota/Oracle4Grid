@@ -43,17 +43,14 @@ def check_other_rewards(run):
     return run
 
 def to_json(run, t):
-    attack_id = None
-    lines = run.attacks[t].impact_on_objects()['force_line']['disconnections']['powerlines']
-    if len(lines) != 0:
-        attack_id = lines[0]
+
     return {
         "action": run.action,
         "timestep": t,
         "reward": run.rewards[t],
         "overload_reward": run.other_rewards[t]["overload_reward"],
-        "attacks": [attack for attack in run.attacks],
-        "attack_id": attack_id
+        "attacks": run.attacks[t],
+        "attack_id": run.attacks_id[t]
     }
 
 
