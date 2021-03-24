@@ -67,13 +67,14 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
         print(topo_count)
 
         # Serialization for path with no overload
-        print("Without overload")
-        print(best_path_no_overload)
-        serialize(grid2op_action_path_no_overload, 'best_path_grid2op_action_no_overload',
-                  dir=debug_directory, format='pickle')
-        topo_count = display_topo_count(best_path_no_overload, dir=debug_directory, name="best_path_no_overload_topologies_count.png")
-        print('10 best topologies in optimal path')
-        print(topo_count)
+        if(len(best_path_no_overload)>=1):
+            print("Without overload")
+            print(best_path_no_overload)
+            serialize(grid2op_action_path_no_overload, 'best_path_grid2op_action_no_overload',
+                      dir=debug_directory, format='pickle')
+            topo_count = display_topo_count(best_path_no_overload, dir=debug_directory, name="best_path_no_overload_topologies_count.png")
+            print('10 best topologies in optimal path')
+            print(topo_count)
 
     # 5 - Indicators computation
     kpis = indicators.generate(best_path, best_path_no_overload, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug=debug)
@@ -86,10 +87,11 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
                                          kpis, grid_path, chronic_id, debug=debug, constants=constants,
                                          env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory)
 
-    replay_results_no_overload = agent_replay.replay(grid2op_action_path_no_overload, int(config[MAX_ITER]),
-                                                     kpis, grid_path, chronic_id, debug=debug, constants=constants,
-                                                     env_seed=env_seed, agent_seed=agent_seed,
-                                                     rel_tol=float(config[REL_TOL]), path_logs=debug_directory,logs_file_name_extension="no_overload")
+    if(len(grid2op_action_path_no_overload)>=1):
+        replay_results_no_overload = agent_replay.replay(grid2op_action_path_no_overload, int(config[MAX_ITER]),
+                                                         kpis, grid_path, chronic_id, debug=debug, constants=constants,
+                                                         env_seed=env_seed, agent_seed=agent_seed,
+                                                         rel_tol=float(config[REL_TOL]), path_logs=debug_directory,logs_file_name_extension="no_overload")
 
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
