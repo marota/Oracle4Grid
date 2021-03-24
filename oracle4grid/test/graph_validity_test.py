@@ -86,6 +86,10 @@ class PerformanceTest(unittest.TestCase):
         start_time = time.time()
         graph = graph_generator.generate(reward_df, int(config[MAX_ITER]), debug=False, reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT], constants=EnvConstantsTest())
 
+        #check first that the full graph is still connected
+        g_und = graph.to_undirected()
+        assert nx.number_connected_components(g_und) == 1
+
         all_windows = get_windows_from_df(reward_df)
         # Go through all attacks,
         for window in all_windows:
@@ -116,6 +120,9 @@ class PerformanceTest(unittest.TestCase):
             subg2 = graph.subgraph(nodes_in_all_attacks_inner)
             subg2 = subg2.to_undirected()
             assert nx.number_connected_components(subg2) == len(all_windows[window])
+            #check size of connected components
+            if window=='400_447':
+                assert [len(c) for c in sorted(nx.connected_components(subg2), key=len, reverse=True)]==[184, 184]
         return 1
 
 
