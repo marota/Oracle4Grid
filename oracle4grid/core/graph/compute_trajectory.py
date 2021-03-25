@@ -12,16 +12,26 @@ def best_path(graph, best_path_type, actions, debug = False):
         print('\n')
         print("============== 4 - Computation of best action path ==============")
     path = None
-    if best_path_type == SHORTEST:
-        path = nx.bellman_ford_path(graph, 'init', 'end')  # shortest_path(G)
-    elif best_path_type == LONGEST:
-        path = nx.dag_longest_path(graph)  # Longest path
-    # Add more treatment here
+    if not nx.has_path(graph, 'init', 'end'):
 
-    # Traduce path in terms of OracleActions
-    action_path = return_action_path(path, actions, debug=debug)
-    grid2op_action_path = get_grid2op_action_path(action_path)
-    return action_path, grid2op_action_path
+        l_nodes_with_init = list(graph.subgraph(nx.shortest_path(graph.to_undirected(), 'init')).nodes)#get connected component to init node
+        l_nodes_with_init.remove('init')
+        timesteps=[int(s.split("_")[-1][1:]) for s in l_nodes_with_init]#get timesteps of connected component
+        max_timestep=np.max(timesteps)
+        print("WARNING: there is no path without overloads between t0 and max iter. Problem occurs at timestep "+ str(max_timestep))
+
+        return [],[]
+    else:
+        if best_path_type == SHORTEST:
+            path = nx.bellman_ford_path(graph, 'init', 'end')  # shortest_path(G)
+        elif best_path_type == LONGEST:
+            path = nx.dag_longest_path(graph)  # Longest path
+        # Add more treatment here
+
+        # Traduce path in terms of OracleActions
+        action_path = return_action_path(path, actions, debug=debug)
+        grid2op_action_path = get_grid2op_action_path(action_path)
+        return action_path, grid2op_action_path
 
 
 def best_path_no_overload(graph, best_path_type, actions, debug = False):
@@ -44,8 +54,10 @@ def return_action_path(path, actions, debug=False):
         names = [str(action) for action in actions]
     else:
         names = [action.name for action in actions]
-    path.remove('init')
-    path.remove('end')
+    if 'init' in path:
+        path.remove('init')
+    if 'end' in path:
+        path.remove('end')
     action_path = []
     for node in path:
         if debug:

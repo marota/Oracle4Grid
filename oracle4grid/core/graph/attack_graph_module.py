@@ -1,6 +1,8 @@
 from itertools import compress
 import time
 import numpy as np
+import itertools
+import networkx as nx
 
 
 def filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df):
@@ -19,6 +21,36 @@ def filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df):
     print("number of edges removes because of inconsistency in attacks : " + str(len(edges_or) - len(new_or)))
     return new_or, new_ex, new_weights
 
+def filter_attack_edges(reachable_topologies,topo_ordered_names,reward_df,max_iter,n_init,n_end):
+    """
+    Other possible function to filter edges that don't share the attack id
+    """
+    print("Removing attack edges")
+    # To filter graph edges whose nodes don't share the same attack (if attack exist)
+    attacks_table = reward_df[['timestep', 'attack_id', 'name']].pivot(index='timestep', columns='name',
+                                                                       values='attack_id')
+    attacks_table = attacks_table.reset_index(drop=True).rename_axis(None,
+                                                                     axis=1)  # to have a proper data table without parasite names
+
+    edges_attack_diff = list(
+        itertools.chain(*[attacks_table[reachable_topologies[i]][1:max_iter].reset_index(drop=True).
+                        sub(attacks_table[topo_ordered_names[i]][0:max_iter - 1], axis=0).values.flatten(order='F')
+                          for i in range(len(topo_ordered_names))] ))
+
+
+
+    edges_attack_filtered_after_init_befor_end = [False if (np.isnan(edges_attack_diff[i]) or edges_attack_diff[i] == 0) else True for i in
+                              range(len(edges_attack_diff))]
+    #add filter for init and end node
+    edges_attack_filtered_init = [False for i in range(n_init)]
+    edges_attack_filtered_end=[False for i in range(n_end)]
+
+    #number of edges normally filtered on the test case,by looking at reachable topology for each topology and attacks per topology at timestep 400
+    # 1*48+1*48+1*48+1*48+1*48+1*48+1*48+1*48=8*48=384 over test case, for 2nd window
+    edges_attack_filtered = edges_attack_filtered_init + edges_attack_filtered_after_init_befor_end + edges_attack_filtered_end
+    print("number of edges removes because of inconsistency in attacks : " + str(np.sum(edges_attack_filtered)))
+    return edges_attack_filtered
+
 
 def is_masked(edge_or, edge_ex, attacks_per_topo):
     if edge_or is "init" or edge_ex is "end" or edge_or is "end" or edge_ex is "init":
@@ -35,7 +67,8 @@ def get_attack_from_edge(edge, attacks_per_topo):
     topo = edge_info[0]
     timestep = int(edge_info[1])
     t_indexes = [i for i, x in enumerate(attacks_per_topo['timestep']) if x == timestep]
-    name_indexes = [i for i, x in enumerate(attacks_per_topo['name']) if x == int(topo)]
+    #name_indexes = [i for i, x in enumerate(attacks_per_topo['name']) if x == int(topo)]#x=topo
+    name_indexes = [i for i, x in enumerate(attacks_per_topo['name']) if str(x) == str(topo)]
     final_indexes = set(t_indexes).intersection(name_indexes)
     if len(final_indexes) == 1:
         return attacks_per_topo['attack_id'][final_indexes.pop()]

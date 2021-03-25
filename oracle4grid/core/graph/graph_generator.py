@@ -182,7 +182,8 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     """
 
     # First edges: symbolic init node and reachable first actions
-    edges_or, edges_ex, edges_weights = create_init_nodes(reachable_topologies_from_init, reward_df)
+    edges_or, edges_ex, edges_weights= create_init_nodes(reachable_topologies_from_init, reward_df)
+    n_init=len(edges_weights)
 
     # Reachable transitions for each timestep and associated rewards
     start_time = time.time()
@@ -201,20 +202,30 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
                                             for i in range(len(reachable_topologies))]))
     elapsed_time = time.time() - start_time
     print(elapsed_time)
+
     # Symbolic end node
     edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]
     or_end, ex_end, weights_end = create_end_nodes(edges_ex_t, fake_reward=END_NODE_REWARD)
     edges_or += or_end
     edges_ex += ex_end
     edges_weights += weights_end
+    n_end=len(weights_end)
+
     # Removing attack edges
+
     print("Removing attack edges")
     start_time = time.time()
     edges_or, edges_ex, edges_weights = attack_graph_module.filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df)
     elapsed_time = time.time() - start_time
     print(elapsed_time)
 
+    ### other_way to remove inconsistent attack edges after graph creation, using graph.remove_edges then. Important to do it before edge_df.dropna()
+    #attack_filters=attack_graph_module.filter_attack_edges(reachable_topologies,ordered_names,reward_df,max_iter,n_init,n_end)
+    #edge_df = pd.DataFrame({'or': edges_or, 'ex': edges_ex, 'weight': edges_weights,'attack_filter':attack_filters})
+    ##
+
     # Finally create graph object from DataFrame
+
     edge_df = pd.DataFrame({'or': edges_or, 'ex': edges_ex, 'weight': edges_weights})
     edge_df = edge_df.dropna()
 
@@ -225,8 +236,15 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
         edge_df.weight = (edge_df.weight * (10 ** (reward_significant_digit))).astype('int64')
         print("currently the number of signficant digits considered is:" + str(reward_significant_digit))
     graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight'], create_using=nx.DiGraph())
+
+    #other_way to remove inconsistent attack edges after graph creation
+    #graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight', 'attack_filter'],create_using=nx.DiGraph())
+    #graph.remove_edges_from([e for i,e in enumerate(graph.edges(data=True)) if e[2]['attack_filter']])
+    ###
+
     graph = post_processing_rewards(graph, reward_df)
     print("graph created")
+
     return graph
 
 
