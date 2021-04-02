@@ -83,7 +83,7 @@ class OracleParser():
                             # Format 2 detected
                             print("Specific format is detected for actions: converting with parser 2")
                             return self.parser2
-                        elif specific_key in list(ASSET_MAPPING.values()):
+                        elif specific_key in list(ASSET_MAPPING.values()) or specific_key == "set_line":
                             # Natural Oracle Format
                             print("Natural Oracle format is detected for actions")
                             return self.parser0
