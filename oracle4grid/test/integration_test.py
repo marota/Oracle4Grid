@@ -159,13 +159,17 @@ class IntegrationTest(unittest.TestCase):
         env_dir = "./data/rte_case14_realistic"
         atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
 
+        cols_to_check = ['action', 'timestep', 'reward', 'overload_reward', 'attack_id']
+
         # 1 - Action generation step
         actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False)
         # 2 - Actions rewards simulation
         reward_df = run_many.run_all(actions, env, int(CONFIG[MAX_ITER]), int(CONFIG[NB_PROCESS]), debug=False)
         reward_df["action"] = reward_df["action"].astype(str)
         expected = pd.read_csv('./oracle4grid/test_resourses/test_reward.csv', sep=',', index_col=0)
-        assert_frame_equal(reward_df, expected)
+        expected['attack_id'] = expected['attack_id'].astype(float)
+        reward_df['attack_id'] = reward_df['attack_id'].astype(float)
+        assert_frame_equal(reward_df[cols_to_check], expected[cols_to_check])
 
     def test_action_divergence(self):
         # Compute best path with Oracle
