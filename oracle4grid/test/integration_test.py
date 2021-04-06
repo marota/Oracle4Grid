@@ -101,7 +101,7 @@ class IntegrationTest(unittest.TestCase):
         action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, file, False, None, None, CONFIG, constants=EnvConstantsTest())
         best_path_reward = float(indicators.loc[indicators[INDICATORS_NAMES_COL] == BEST_PATH_NAME, INDICATORS_REWARD_COL].values[0])
 
-        # Replay path with OracleAgent as standard gym episode replay (OracleAgent not compatible with Grid2op Runner yet)
+        # Replay path with OracleAgent as standard gym episode replay
         constants = EnvConstantsTest()
         param = Parameters()
         param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
@@ -120,6 +120,42 @@ class IntegrationTest(unittest.TestCase):
 
         # Check if we get expected reward
         self.assertEqual(best_path_reward, agent_reward)
+
+    def test_agent_reco(self):
+        # Parameters
+        timestep_disconnect = 2
+        total_timesteps = 4
+        line_to_disconnect = 6
+        chronic = 0
+        env_dir = "./data/rte_case14_realistic"
+
+        # Load env
+        constants = EnvConstantsTest()
+        param = Parameters()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
+        env = prepare_env(env_dir, chronic, param, constants)
+        env.set_id(chronic)
+        obs = env.reset()
+
+        # Compute a fake Oracle action path and Oracle Agent
+        grid2op_action = env.action_space({"set_line_status":[(9,-1)]})
+        grid2op_action_path = [grid2op_action for t in range(total_timesteps)]
+        agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
+                            observation_space=None, name=None)
+
+        # Play OracleAgent and disconnect a line - test if it is well reconnected by agent
+        action_disconnect = env.action_space({"set_line_status":[(line_to_disconnect,-1)]})
+        done = False
+        for t in range(total_timesteps):
+            if t == timestep_disconnect:
+                obs, reward, done, info = env.step(action_disconnect)
+            else:
+                if not done:
+                    action = agent.act(obs, reward=0., done=False)
+                    obs, reward, done, info = env.step(action)
+
+        # Check if we get expected reward
+        self.assertEqual(obs.line_status[line_to_disconnect], True)
 
     expected_actions = ['sub-1-0',
                         'sub-1-1',
