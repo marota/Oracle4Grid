@@ -16,8 +16,11 @@ def best_path(graph, best_path_type, actions, debug = False):
 
         l_nodes_with_init = list(graph.subgraph(nx.shortest_path(graph.to_undirected(), 'init')).nodes)#get connected component to init node
         l_nodes_with_init.remove('init')
-        timesteps=[int(s.split("_")[-1][1:]) for s in l_nodes_with_init]#get timesteps of connected component
-        max_timestep=np.max(timesteps)
+        if len(l_nodes_with_init) == 0:
+            max_timestep = 0
+        else:
+            timesteps=[int(s.split("_")[-1][1:]) for s in l_nodes_with_init]#get timesteps of connected component
+            max_timestep=np.max(timesteps)
         print("WARNING: there is no path without overloads between t0 and max iter. Problem occurs at timestep "+ str(max_timestep))
 
         return [],[]

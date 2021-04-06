@@ -301,6 +301,23 @@ class IntegrationTest(unittest.TestCase):
             impacted_subs.append(impacted_sub)
         self.assertEqual(impacted_subs, expected_impacted_subs)
 
+    def test_no_path_without_overload(self):
+        config_longest = CONFIG.copy()
+        config_longest["best_path_type"] = "shortest"
+
+        file = "./oracle4grid/test_resourses/test_unitary_actions_overload.json"
+        chronic = "000"
+        env_dir = "./oracle4grid/test_resourses/grids/rte_case14_realistic_overload"
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(
+            env_dir, chronic, file, False, None, None, config_longest)
+        best_path_actual = list(map(lambda x: x.__str__(), action_path))
+        best_path_actual_no_overload = list(map(lambda x: x.__str__(), best_path_no_overload))
+
+        best_path_expected = ['donothing-0', 'donothing-0', 'donothing-0', 'donothing-0', 'donothing-0', 'donothing-0']
+        best_path_expected_no_overload = []
+        self.assertListEqual(best_path_actual, best_path_expected)
+        self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
+
 
 
 if __name__ == '__main__':
