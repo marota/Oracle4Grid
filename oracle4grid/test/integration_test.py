@@ -318,7 +318,117 @@ class IntegrationTest(unittest.TestCase):
         self.assertListEqual(best_path_actual, best_path_expected)
         self.assertListEqual(best_path_actual_no_overload, best_path_expected_no_overload)
 
+    def test_cancelling_action(self):
+        # Parameters
+        chronic = 0
+        env_dir = "./data/rte_case14_realistic"
+        file_json = "./oracle4grid/test_resourses/test_unitary_actions_cancelling.json"
 
+        # Load env
+        constants = EnvConstantsTest()
+        param = Parameters()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
+        env = prepare_env(env_dir, chronic, param, constants)
+        env.set_id(chronic)
+        obs = env.reset()
+        init_topo_vect, init_line_status = get_initial_configuration(env)
+
+        # Compute a fake Oracle action path and Oracle Agent
+        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
+                                                             constants=EnvConstantsTest())
+        parser = OracleParser(atomic_actions_original, env.action_space)
+        atomic_actions = parser.parse()
+        actions = combinator.generate(atomic_actions, 2, env, False)
+
+        action_path = [actions[0],actions[2], actions[1]]
+        grid2op_action_path = [action.grid2op_action for action in action_path]
+
+        agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
+                            oracle_action_path=action_path,
+                            observation_space=None, name=None,
+                            init_line_status=init_line_status, init_topo_vect=init_topo_vect)
+
+        # Play OracleAgent and disconnect a line - test if it is well reconnected by agent
+        done = False
+        for t in range(3):
+            if not done:
+                action = agent.act(obs, reward=0., done=False)
+                obs, reward, done, info = env.step(action)
+
+        # Check if there is the right cancelling action
+        impact = action.impact_on_objects()['topology']["assigned_bus"]
+        expected_impact = [{'bus': 1,
+                             'object_type': 'line (extremity)',
+                             'object_id': 0,
+                             'substation': 1},
+                            {'bus': 1, 'object_type': 'line (origin)', 'object_id': 2, 'substation': 1},
+                            {'bus': 1, 'object_type': 'load', 'object_id': 0, 'substation': 1},
+                            {'bus': 2,
+                            'object_type': 'line (origin)',
+                            'object_id': 7,
+                            'substation': 5},
+                           {'bus': 2,
+                            'object_type': 'line (extremity)',
+                            'object_id': 17,
+                            'substation': 5}
+                            ]
+
+        self.assertListEqual(impact, expected_impact)
+
+    def test_final_topo_replay(self):
+        # Parameters
+        chronic = 0
+        env_dir = "./data/rte_case14_realistic"
+        file_json = "./oracle4grid/test_resourses/test_unitary_actions_final_topo.json"
+        max_depth = 4
+        max_timestep = 100
+
+        # Load env
+        constants = EnvConstantsTest()
+        param = Parameters()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
+        env = prepare_env(env_dir, chronic, param, constants)
+        env.set_id(chronic)
+        obs = env.reset()
+        init_topo_vect, init_line_status = get_initial_configuration(env)
+
+        # Compute a fake Oracle action path and Oracle Agent
+        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
+                                                             constants=EnvConstantsTest())
+        parser = OracleParser(atomic_actions_original, env.action_space)
+        atomic_actions = parser.parse()
+        actions = combinator.generate(atomic_actions, max_depth, env, False)
+
+        # Compute an abritrary path with traps
+        np.random.seed(1000)
+        action_path = np.random.choice(actions, max_timestep).tolist()
+        grid2op_action_path = [action.grid2op_action for action in action_path]
+
+        agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
+                            oracle_action_path=action_path,
+                            observation_space=None, name=None,
+                            init_line_status=init_line_status, init_topo_vect=init_topo_vect)
+
+        # Play OracleAgent and disconnect a line - test if it is well reconnected by agent
+        done = False
+        for t in range(max_timestep):
+            if not done:
+                action = agent.act(obs, reward=0., done=False)
+                obs, reward, done, info = env.step(action)
+
+        # Check if we obtain the right end topo
+        end_topo_vect = obs.topo_vect.tolist()
+        expected_end_topo_vect =  [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+                                    1,  1,  2,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+                                    1, -1,  1,  1,  1,  1, -1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+                                    1,  1,  1,  1,  1]
+        end_line_status = obs.line_status.tolist()
+        expected_end_line_status = [True,  True,  True,  True,  True,  True,  True,  True,  True,
+                                    True, False,  True,  True,  True,  True,  True,  True,  True,
+                                    True,  True]
+
+        self.assertListEqual(end_topo_vect, expected_end_topo_vect)
+        self.assertListEqual(end_line_status, expected_end_line_status)
 
 if __name__ == '__main__':
     unittest.main()

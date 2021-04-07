@@ -8,7 +8,7 @@ from grid2op.Runner import Runner
 
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.constants import EnvConstants
-from oracle4grid.core.utils.prepare_environment import prepare_env
+from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 
 def replay(action_path: list, max_iter: int,
            kpis, grid_path, chronic_id, debug = False, constants=EnvConstants(), env_seed = None, agent_seed = None,
@@ -20,6 +20,7 @@ def replay(action_path: list, max_iter: int,
     param = Parameters()
     param.init_from_dict(constants.DICT_GAME_PARAMETERS_REPLAY)
     env = prepare_env(grid_path, chronic_id, param, constants=constants)
+    init_topo_vect, init_line_status = get_initial_configuration(env)
     #env.set_id(chronic_id)
 
 
@@ -33,7 +34,8 @@ def replay(action_path: list, max_iter: int,
             path_logs = os.path.join(path_logs, "replay_logs")
 
     #agent_class = OracleAgent(env.action_space, oracle_action_path).gen_next(action_path)
-    agent = OracleAgent(env.action_space,action_path, oracle_action_path)#.gen_next(action_path)
+    agent = OracleAgent(env.action_space,action_path, oracle_action_path,
+                        init_topo_vect=init_topo_vect,init_line_status=init_line_status)#.gen_next(action_path)
     runner = Runner(**env.get_params_for_runner(), agentClass=None,agentInstance=agent)
     res = runner.run(nb_episode=1,
                      nb_process=1,

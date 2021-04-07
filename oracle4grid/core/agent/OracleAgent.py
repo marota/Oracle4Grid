@@ -1,4 +1,5 @@
 from grid2op.Agent import BaseAgent
+from grid2op.Exceptions import AmbiguousAction
 import numpy as np
 
 class OracleAgent(BaseAgent):
@@ -11,6 +12,8 @@ class OracleAgent(BaseAgent):
                  action_space,
                  action_path,
                  oracle_action_path=None,
+                 init_topo_vect = None,
+                 init_line_status = None,
                  **kwargs):
         BaseAgent.__init__(self, action_space)
         self.action_path = action_path.copy()
@@ -19,19 +22,46 @@ class OracleAgent(BaseAgent):
             self.oracle_action_path=oracle_action_path.copy()
         else:
             self.oracle_action_path=None
+        # Initialize memory
+        self.previous_action = None
+        self.current_action = None
+        self.init_topo_vect = init_topo_vect
+        self.init_line_status = init_line_status
+        self.previous_was_legal = True
 
     def act(self, observation, reward, done):
         action = self.action_path.pop(0)
 
-        #check line reco in addition if some were deconnected not on purpose
+        # check line reco in addition if some were deconnected not on purpose
+        # check if previous atomic_actions has to be canceled thanks to memory
+        self.update_memory()
         action_line_reco=self.check_reconnect_line(observation)
+        cancelling_action = self.compare_with_previous()
+        self.previous_was_legal = True
         if(action_line_reco!=self.action_space({})):
             action_combined=action_line_reco
             action_combined+=action
+            if (cancelling_action!=self.action_space({})):
+                action_combined += cancelling_action
             if(self.action_space._is_legal(action_combined,observation._obs_env)):
                 return action_combined
+            else:
+                self.previous_was_legal = False
 
+        if (cancelling_action != self.action_space({})):
+            action_combined = cancelling_action
+            action_combined += action
+            if (self.action_space._is_legal(action_combined, observation._obs_env)):
+                return action_combined
+            else:
+                self.previous_was_legal = False
         return action
+
+    def update_memory(self):
+        if self.oracle_action_path is not None:
+            if self.previous_was_legal:
+                self.previous_action = self.current_action
+            self.current_action = self.oracle_action_path[0]
 
     def check_reconnect_line(self,observation):
 
@@ -52,6 +82,29 @@ class OracleAgent(BaseAgent):
         if np.any(can_be_reco):
             res = {"set_line_status": [(id_, +1) for id_ in np.where(can_be_reco)[0]]}
         return self.action_space(res)
+
+    def compare_with_previous(self):
+        if self.previous_action is None or self.init_line_status is None or self.init_topo_vect is None or str(self.previous_action) == 'donothing-0':
+            return self.action_space({})
+        else:
+            # Get previous and current
+            previous_atomic_actions_repr = str(self.previous_action).split('_')
+            current_atomic_actions_repr = str(self.current_action).split('_')
+
+            # Check if less action
+            atomic_actions_to_cancel_repr = []
+            for previous_atomic_action_repr in previous_atomic_actions_repr:
+                if previous_atomic_action_repr not in current_atomic_actions_repr:
+                    atomic_actions_to_cancel_repr.append(previous_atomic_action_repr)
+            atomic_actions_to_cancel = [self.previous_action.get_atomic_action_by_repr(repr_) for repr_ in atomic_actions_to_cancel_repr]
+
+            # If actions, cancel them
+            canceling_g2op_actions = self.action_space({})
+            for atomic_action_to_cancel in atomic_actions_to_cancel:
+                canceling_g2op_action = get_canceling_action(self.action_space, self.init_line_status, self.init_topo_vect,
+                                                             atomic_action_to_cancel)
+                canceling_g2op_actions += canceling_g2op_action
+            return canceling_g2op_actions
 
     def reset(self, observation):
         #self.actions_left = self.action_path.copy()
@@ -75,3 +128,65 @@ class OracleAgent(BaseAgent):
     #    """
     #    cls.action_path = action_path.copy()
     #    return cls
+
+def get_canceling_action(action_space, init_line_status, init_topo_vect, atomic_action_to_cancel):
+    set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
+    LINE_ON_SUB_ERR = "Line id {} is not connected to sub id {}"
+    GEN_ON_SUB_ERR = "Generator id {} is not connected to sub id {}"
+    LOAD_ON_SUB_ERR = "Load id {} is not connected to sub id {}"
+
+    if 'sub' in list(atomic_action_to_cancel.keys()):
+        for sub_id, sub_elems_dict in atomic_action_to_cancel['sub'].items():
+            sub_start_pos = np.sum(action_space.sub_info[:sub_id])
+            sub_end_pos = sub_start_pos + action_space.sub_info[sub_id]
+            sub_range_pos = np.arange(sub_start_pos, sub_end_pos).astype(np.int32)
+
+            # Update provided lines buses on sub
+            if "lines_id_bus" in sub_elems_dict:
+                for line_id, bus_id in sub_elems_dict["lines_id_bus"]:
+                    # Get line or and ex topo pos
+                    line_pos_or = action_space.line_or_pos_topo_vect[line_id]
+                    line_pos_ex = action_space.line_ex_pos_topo_vect[line_id]
+                    line_pos = -1
+                    # Is line or on sub ?
+                    if line_pos_or in sub_range_pos:
+                        line_pos = line_pos_or
+                    # Is line ex on sub ?
+                    if line_pos_ex in sub_range_pos:
+                        line_pos = line_pos_ex
+
+                    # Line not on sub : Error
+                    if line_pos == -1:
+                        err_msg = LINE_ON_SUB_ERR.format(line_id, sub_id)
+                        raise AmbiguousAction(err_msg)
+                    else:  # Set line bus on sub
+                        set_bus_vect[line_pos] = init_topo_vect[line_pos]
+
+            # Set provided gens buses on sub
+            if "gens_id_bus" in sub_elems_dict:
+                for gen_id, bus_id in sub_elems_dict["gens_id_bus"]:
+                    # Get gen pos in topo
+                    gen_pos = action_space.gen_pos_topo_vect[gen_id]
+                    # Gen not on sub: Error
+                    if gen_pos not in sub_range_pos:
+                        err_msg = GEN_ON_SUB_ERR.format(gen_id, sub_id)
+                        raise AmbiguousAction(err_msg)
+                    else:  # Set gen bus on sub
+                        set_bus_vect[gen_pos] = init_topo_vect[gen_pos]
+
+            # Set provided loads buses on sub
+            if "loads_id_bus" in sub_elems_dict:
+                for load_id, bus_id in sub_elems_dict["loads_id_bus"]:
+                    # Get load pos in topo
+                    load_pos = action_space.load_pos_topo_vect[load_id]
+                    # Load not on sub: Error
+                    if load_pos not in sub_range_pos:
+                        err_msg = LOAD_ON_SUB_ERR.format(load_id, sub_id)
+                        raise AmbiguousAction(err_msg)
+                    else:  # Set load bus on sub
+                        set_bus_vect[load_pos] = init_topo_vect[load_pos]
+        return action_space({"set_bus": set_bus_vect})
+    if 'line' in list(atomic_action_to_cancel.keys()):
+        action_dict = {"set_line_status": [(line_id, init_line_status[line_id])
+                             for line_id, line_elems_dict in atomic_action_to_cancel['line'].items()]}
+        return action_space(action_dict)
