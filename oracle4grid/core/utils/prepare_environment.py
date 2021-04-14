@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from grid2op.Action import PlayableAction
 
 import grid2op
 from grid2op.Chronics import GridStateFromFile
@@ -15,7 +16,9 @@ def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants()):
                        param=param,
                        gamerules_class=constants.game_rule,
                        test=True,
-                       other_rewards=constants.other_rewards
+                       other_rewards=constants.other_rewards,
+                       # We need the actions of the agent to be the highest base class
+                       action_class=PlayableAction
                        )
 
     # If an int is provided, chronic_scenario is string by default, so it has to be converted

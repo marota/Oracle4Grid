@@ -79,32 +79,41 @@ def get_attack_from_edge(edge, attacks_per_topo):
 
 
 def get_windows_from_df(reward_df):
-    attacks_per_topo = reward_df.dropna()[['timestep', 'name', 'attack_id']].groupby('name')
+    """
+
+    :param reward_df: The reward dataframe given by computation module
+    :return: A dict containing all windows "begin, end" associated to all attacks , and all topologies per attacks
+    """
+    attacks_per_topo = reward_df.dropna()[['timestep', 'name', 'attacks', 'attack_id']].groupby('name')
     all_windows = {}
     for name, name_group in attacks_per_topo:
         first_time = name_group.head(1)['timestep'].iloc[0]
         prev_timestep = int(name_group.head(1)['timestep'].iloc[0]) - 1
-        prev_attack = name_group.head(1)['attack_id'].iloc[0]
+        prev_attack_id = name_group.head(1)['attack_id'].iloc[0]
+        prev_attack = name_group.head(1)['attacks'].iloc[0]
         for index, row in name_group.iterrows():
             timestep = int(row['timestep'])
             attack_id = row['attack_id']
-            if (timestep - prev_timestep != 1) or prev_attack != attack_id:
+            if (timestep - prev_timestep != 1) or prev_attack_id != attack_id:
                 # Save block
-                all_windows = _save_in_window(all_windows, first_time, prev_timestep, prev_attack, name)
+                all_windows = _save_in_window(all_windows, first_time, prev_timestep, prev_attack_id, prev_attack, name)
                 # Reset block
-                prev_attack = attack_id
+                prev_attack_id = attack_id
+                prev_attack = row['attacks']
                 first_time = timestep
             prev_timestep = timestep
         # Save block
-        all_windows = _save_in_window(all_windows, first_time, prev_timestep, prev_attack, name)
+        all_windows = _save_in_window(all_windows, first_time, prev_timestep, prev_attack_id, prev_attack, name)
     return all_windows
 
 
-def _save_in_window(all_windows, first_time, prev_timestep, prev_attack, name):
+def _save_in_window(all_windows, first_time, prev_timestep, prev_attack_id, prev_attack, name):
     key = str(first_time) + '_' + str(prev_timestep)
     if key not in all_windows:
         all_windows[key] = {}
-    if prev_attack not in all_windows[key]:
-        all_windows[key][prev_attack] = []
-    all_windows[key][prev_attack].append(name)
+    if prev_attack_id not in all_windows[key]:
+        all_windows[key][prev_attack_id] = {}
+        all_windows[key][prev_attack_id]['topos'] = []
+        all_windows[key][prev_attack_id]['attack'] = prev_attack
+    all_windows[key][prev_attack_id]['topos'].append(name)
     return all_windows

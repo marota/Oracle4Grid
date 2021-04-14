@@ -19,7 +19,9 @@ class Run:
         self.rewards = episode_data.rewards
         self.other_rewards = episode_data.other_rewards
         self.attacks = episode_data.attacks
-        self.attacks_id=[None if len(attack.impact_on_objects()['force_line']['disconnections']['powerlines']) == 0 else
-         attack.impact_on_objects()['force_line']['disconnections']['powerlines'][0] for attack in self.attacks]
-        #self.attacks_id=[run.attacks[t].impact_on_objects()['force_line']['disconnections']['powerlines'] for t, attack in self.attack]
+        self.attacks_id = None
+        self.reset_attacks_id()
 
+    def reset_attacks_id(self):
+        self.attacks_id = [None if attack is None or len(attack.impact_on_objects()['force_line']['disconnections']['powerlines']) == 0 else
+                           attack.impact_on_objects()['force_line']['disconnections']['powerlines'][0] for attack in self.attacks]

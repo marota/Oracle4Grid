@@ -16,7 +16,7 @@ def generate(reward_df, max_iter=None, debug=False, reward_significant_digit=Non
         print("============== 3 - Graph generation ==============")
 
     # Parameters and DataFrame preprocessing
-    reward_df = preprocessing(reward_df, max_iter, explicit_node_names=debug)
+    reward_df = preprocessing(reward_df, max_iter)
     actions = reward_df['action'].unique()
 
     # Compute possible transitions list for each action
@@ -43,12 +43,7 @@ def add_nodes_action(graph):
     nx.set_node_attributes(graph, dict_ids, name='action_id')
 
 
-def preprocessing(reward_df, max_iter, explicit_node_names=False):
-    # Extract name column
-    if not explicit_node_names:
-        reward_df['name'] = [action.name for action in reward_df['action']]
-    else:
-        reward_df['name'] = [str(action) for action in reward_df['action']]
+def preprocessing(reward_df, max_iter):
 
     # Maximum timestep to consider for graph
     max_iter_df = reward_df['timestep'].max() + 1
@@ -171,6 +166,16 @@ def create_end_nodes(final_edges, fake_reward=0.1):
     return or_end, ex_end, weights_end
 
 
+def get_inverted_reachable_topologies(ordered_names, reachable_topologies):
+    inverted = []
+    for idx, name in enumerate(ordered_names):
+        inverted.append([])
+        for idxreach, reachable in enumerate(reachable_topologies):
+            if name in reachable:
+                inverted[idx].append(ordered_names[idxreach])
+    return inverted
+
+
 def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_iter, reachable_topologies_from_init, reward_significant_digit=None):
     """
     Builds a networkx.digraph with all possible transitions and their rewards at each timestep
@@ -182,24 +187,79 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     """
 
     # First edges: symbolic init node and reachable first actions
-    edges_or, edges_ex, edges_weights= create_init_nodes(reachable_topologies_from_init, reward_df)
+    edges_or, edges_ex, edges_weights = create_init_nodes(reachable_topologies_from_init, reward_df)
     n_init=len(edges_weights)
+
+
+    # Optional old way
+    """
+    edges_ex_old = edges_ex.copy()
+    edges_or_old = edges_or.copy()
+    edges_weights_old = edges_weights.copy()
+    edges_or_old += [str(ordered_names[i]) + '_t' + str(int(t))
+                 for i in range(len(reachable_topologies))
+                 for reachable_topo in reachable_topologies[i]
+                 for t in range(max_iter - 1)]
+    edges_ex_old += [str(reachable_topo) + '_t' + str(int(t + 1))
+                 for i in range(len(reachable_topologies))
+                 for reachable_topo in reachable_topologies[i]
+                 for t in range(max_iter - 1)]
+    reward_table = reward_df[['timestep', 'reward', 'name']].pivot(index='timestep', columns='name', values='reward')
+
+    edges_weights_old += list(itertools.chain(*[reward_table[reachable_topologies[i]].loc[1:max_iter].values.flatten(order='F')
+                                            for i in range(len(reachable_topologies))]))
+    """
+
+
 
     # Reachable transitions for each timestep and associated rewards
     start_time = time.time()
-    edges_or += [str(ordered_names[i]) + '_t' + str(int(t))
-                 for i in range(len(reachable_topologies))
-                 for reachable_topo in reachable_topologies[i]
-                 for t in range(max_iter - 1)]
-    edges_ex += [str(reachable_topo) + '_t' + str(int(t + 1))
-                 for i in range(len(reachable_topologies))
-                 for reachable_topo in reachable_topologies[i]
-                 for t in range(max_iter - 1)]
+    inverted = get_inverted_reachable_topologies(ordered_names, reachable_topologies)
+    reward_df_with_edges = reward_df
+    list_topo = reward_df_with_edges['name']
+    list_attack = reward_df_with_edges['attack_id']
+    list_timestep = reward_df_with_edges["timestep"]
+    list_weights = reward_df_with_edges["reward"]
 
-    reward_table = reward_df[['timestep', 'reward', 'name']].pivot(index='timestep', columns='name', values='reward')
+    for (topo, attack, t, reward) in zip(list_topo, list_attack, list_timestep, list_weights):
+        if t == 0:
+            continue
+        attack_label = ""
+        if attack is not None:
+            attack_label = "_atk" + str(attack)
+        topo_index = np.where(ordered_names==topo)[0][0]
+        for inverted_topo in inverted[topo_index]:
+            edges_ex.append(str(topo) + "_t" + str(t) + attack_label)
+            prev_t = t-1
+            edges_or.append(str(inverted_topo) + "_t" + str(prev_t) + attack_label)
+            edges_weights.append(reward)
 
-    edges_weights += list(itertools.chain(*[reward_table[reachable_topologies[i]].loc[1:max_iter].values.flatten(order='F')
-                                            for i in range(len(reachable_topologies))]))
+    uniques_or = set(edges_or)
+    uniques_ex = set(edges_ex)
+    to_dump = uniques_or.difference(uniques_ex)
+    to_dump.remove('init')
+    print("number of nodes to dump :" + str(len(to_dump)))
+
+    #Optional filtering
+    """
+    indexes_to_dump = [i for i in range(len(edges_or)) if edges_or[i] in to_dump]
+    edges_ex = [i for j, i in enumerate(edges_ex) if j not in indexes_to_dump]
+    edges_or = [i for j, i in enumerate(edges_or) if j not in indexes_to_dump]
+    edges_weights = [i for j, i in enumerate(edges_weights) if j not in indexes_to_dump]
+    """
+
+    #Optional dataframe generation
+    """
+    df1 = pd.DataFrame(columns=["ex", "or", "weight"])
+    df1["ex"] = edges_ex
+    df1["or"] = edges_or
+    df1["weight"] = edges_weights
+    df2 = pd.DataFrame(columns=["ex", "or", "weight"])
+    df2["ex"] = edges_ex_old
+    df2["or"] = edges_or_old
+    df2["weight"] = edges_weights_old
+    """
+
     elapsed_time = time.time() - start_time
     print(elapsed_time)
 
@@ -243,6 +303,9 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     ###
 
     graph = post_processing_rewards(graph, reward_df)
+
+    print("removing nodes created for attack but useless")
+    graph.remove_nodes_from(to_dump)
     print("graph created")
 
     return graph
@@ -253,10 +316,6 @@ def post_processing_rewards(graph, reward_df):
     reward_df["node_name"] = reward_df['name'].astype(str) + '_t' + reward_df['timestep'].astype(str)
     v_attributes = reward_df[['node_name', 'overload_reward']].set_index('node_name').to_dict('index')
     nx.set_node_attributes(graph, v_attributes)
-    # Removing attacks
-    # mask = reward_df.apply(attack_filter, axis=1)
-    # attacks = reward_df[mask]
-    # edges_to_remove =
     return graph
 
 

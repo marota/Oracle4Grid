@@ -3,6 +3,7 @@ import time
 
 from oracle4grid.core.graph import graph_generator, compute_trajectory, indicators
 from oracle4grid.core.replay import agent_replay
+from oracle4grid.core.reward_computation.attacks_multiverse import compute_all_multiverses, multiverse_simulation
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
@@ -32,6 +33,12 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     if debug:
         print(reward_df)
         serialize_reward_df(reward_df, debug_directory)
+
+    # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
+    start_time = time.time()
+    reward_df = multiverse_simulation(env, actions, reward_df, debug, env_seed=env_seed, agent_seed=agent_seed)
+    elapsed_time = time.time() - start_time
+    print("elapsed_time for attack multiversing is:"+str(elapsed_time))
 
     # 3 - Graph generation
     start_time = time.time()
