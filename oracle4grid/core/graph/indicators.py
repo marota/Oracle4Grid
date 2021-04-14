@@ -60,7 +60,7 @@ def check_indicators_order(donothing, best, best_no_ol, best_without_transitions
             check = False
             message = "Indicator '"+MSG_GAMERULES+"' is better than indicator '"+MSG_NOGAMERULE
         # Check if best path better than best without overload
-        if best_no_ol < best:
+        if pd.notnull(best_no_ol) and best_no_ol < best:
             check = False
             message = "Indicator '" + MSG_GAMERULES_NO_OL + "' is better than indicator '" + MSG_GAMERULES
     elif best_path_type == LONGEST:
@@ -73,7 +73,7 @@ def check_indicators_order(donothing, best, best_no_ol, best_without_transitions
             check = False
             message = "Indicator '"+MSG_GAMERULES+"' is better than indicator '"+MSG_NOGAMERULE+ " which should not be possible"
         # Check if best path better than best without overload
-        if best_no_ol > best:
+        if pd.notnull(best_no_ol) and best_no_ol > best:
             check = False
             message = "Indicator '" + MSG_GAMERULES_NO_OL + "' is better than indicator '" + MSG_GAMERULES
     return check, message
@@ -85,9 +85,12 @@ def get_best_path_reward(best_path, reward_df):
     return [MSG_GAMERULES, reward]
 
 def get_best_path_reward_no_overload(best_path_no_overload, reward_df):
-    reward = 0.
-    for t ,action in enumerate(best_path_no_overload):
-        reward += reward_df.loc[(reward_df['name']==action.name)&(reward_df['timestep']==t),'reward'].values[0]
+    if len(best_path_no_overload)==0:
+        reward = float('nan')
+    else:
+        reward = 0.
+        for t ,action in enumerate(best_path_no_overload):
+            reward += reward_df.loc[(reward_df['name']==action.name)&(reward_df['timestep']==t),'reward'].values[0]
     return [MSG_GAMERULES_NO_OL, reward]
 
 def get_best_path_without_constraints(reward_df, best_path_type):
