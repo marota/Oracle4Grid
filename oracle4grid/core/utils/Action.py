@@ -27,6 +27,14 @@ class OracleAction:
     def get_action_representation(self, atomic_action_names):
         return "_".join(atomic_action_names)
 
+    def get_atomic_action_by_repr(self, repr):
+        atomic_actions_names = self.repr.split("_")
+        try:
+            i = atomic_actions_names.index(repr)
+            return self.atomic_actions[i]
+        except:
+            return None
+
     def compute_subs_and_lines(self,atomic_actions_names):
         #subs = set(get_first_key(atomic_action['sub'])
         #           for atomic_action in self.atomic_actions
