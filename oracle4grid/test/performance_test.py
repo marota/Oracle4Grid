@@ -71,7 +71,7 @@ class PerformanceTest(unittest.TestCase):
 
         # 1 - Action generation step
         start_time = time.time()
-        actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, False, init_topo_vect, init_line_status, nb_process=int(config[NB_PROCESS]))
+        actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, False, nb_process=int(config[NB_PROCESS]))
         elapsed_time = time.time() - start_time
         print("elapsed_time for action generation is:"+str(elapsed_time))
 
@@ -84,8 +84,9 @@ class PerformanceTest(unittest.TestCase):
 
         # 3 - Graph generation
         start_time = time.time()
-        graph = graph_generator.generate(reward_df, init_topo_vect, init_line_status, int(config[MAX_ITER])
+        graph = graph_generator.generate(reward_df, int(config[MAX_ITER])
                                          , debug=False,reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT], constants=EnvConstantsTest())
+
         elapsed_time = time.time() - start_time
         print("elapsed_time for graph creation is:"+str(elapsed_time))
         assert elapsed_time < 3
