@@ -92,11 +92,26 @@ class OracleAgent(BaseAgent):
             current_atomic_actions_repr = str(self.current_action).split('_')
 
             # Check if less action
-            atomic_actions_to_cancel_repr = []
+            atomic_actions_to_cancel = []
             for previous_atomic_action_repr in previous_atomic_actions_repr:
                 if previous_atomic_action_repr not in current_atomic_actions_repr:
-                    atomic_actions_to_cancel_repr.append(previous_atomic_action_repr)
-            atomic_actions_to_cancel = [self.previous_action.get_atomic_action_by_repr(repr_) for repr_ in atomic_actions_to_cancel_repr]
+                    if 'line' in previous_atomic_action_repr:
+                        atomic_actions_to_cancel.append(self.previous_action.get_atomic_action_by_repr(previous_atomic_action_repr))
+                    elif 'sub' in previous_atomic_action_repr:
+                        previous_impacted_sub = previous_atomic_action_repr.split('-')[1]
+                        current_atomic_actions_repr_same_sub = [repr_ for repr_ in current_atomic_actions_repr
+                                                                if 'sub-'+str(previous_impacted_sub) in repr_]
+                        if len(current_atomic_actions_repr_same_sub) > 0:
+                            # Here we have some possible ambiguous action on same sub
+                            current_atomic_actions_same_sub = [self.current_action.get_atomic_action_by_repr(repr_)
+                                                               for repr_ in current_atomic_actions_repr_same_sub]
+                            previous_atomic_action = self.previous_action.get_atomic_action_by_repr(previous_atomic_action_repr)
+                            unambiguous_canceling_action = get_unambiguous_canceling_action(previous_atomic_action,
+                                                                                            current_atomic_actions_same_sub,
+                                                                                            previous_impacted_sub)
+                            atomic_actions_to_cancel.append(unambiguous_canceling_action)
+                        else:
+                            atomic_actions_to_cancel.append(self.previous_action.get_atomic_action_by_repr(previous_atomic_action_repr))
 
             # If actions, cancel them
             canceling_g2op_actions = self.action_space({})
@@ -128,6 +143,25 @@ class OracleAgent(BaseAgent):
     #    """
     #    cls.action_path = action_path.copy()
     #    return cls
+
+def get_unambiguous_canceling_action(previous_atomic_action, current_atomic_actions_same_sub, substation_id):
+    # 1 - retrieve impact of previous atomic action (line-load-gen)
+    previous_atomic_action_to_cancel = {'sub':{int(substation_id):{}}}
+    previous_atomic_action_assets = previous_atomic_action['sub'][int(substation_id)]
+    for asset in previous_atomic_action_assets.keys():
+        list_impacts_previous = previous_atomic_action_assets[asset]
+        for current_atomic_action_same_sub in current_atomic_actions_same_sub:
+            if asset in current_atomic_action_same_sub['sub'][int(substation_id)].keys():
+                list_impact_current = current_atomic_action_same_sub['sub'][int(substation_id)][asset]
+                # Filter the impacts who have been found in current
+                list_impacts_previous_new = [impact for impact in list_impacts_previous
+                                             if impact not in list_impact_current]
+            else:
+                list_impacts_previous_new = list_impacts_previous
+            # If no impact, nothing to add key, else update dict with desired impacts only
+            if len(list_impacts_previous_new) > 0:
+                previous_atomic_action_to_cancel['sub'][int(substation_id)][asset] = list_impacts_previous_new
+    return previous_atomic_action_to_cancel
 
 def get_canceling_action(action_space, init_line_status, init_topo_vect, atomic_action_to_cancel):
     set_bus_vect = np.zeros(action_space.dim_topo, dtype=np.int32)
