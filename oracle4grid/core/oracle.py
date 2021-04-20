@@ -92,13 +92,13 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     # 6 - Replay of best path in real game rules condition
     replay_results = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
                                          kpis, grid_path, chronic_id, debug=debug, constants=constants,
-                                         env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory)
+                                         env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory,oracle_action_path=best_path)
 
     if(len(grid2op_action_path_no_overload)>=1):
         replay_results_no_overload = agent_replay.replay(grid2op_action_path_no_overload, int(config[MAX_ITER]),
                                                          kpis, grid_path, chronic_id, debug=debug, constants=constants,
                                                          env_seed=env_seed, agent_seed=agent_seed,
-                                                         rel_tol=float(config[REL_TOL]), path_logs=debug_directory,logs_file_name_extension="no_overload")
+                                                         rel_tol=float(config[REL_TOL]), path_logs=debug_directory,logs_file_name_extension="no_overload",oracle_action_path=best_path_no_overload)
 
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
