@@ -324,18 +324,11 @@ class IntegrationTest(unittest.TestCase):
         env_dir = "./data/rte_case14_realistic"
         file_json = "./oracle4grid/test_resourses/test_unitary_actions_cancelling.json"
 
-        # Load env
-        constants = EnvConstantsTest()
-        param = Parameters()
-        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
-        env = prepare_env(env_dir, chronic, param, constants)
-        env.set_id(chronic)
-        obs = env.reset()
-        init_topo_vect, init_line_status = get_initial_configuration(env)
-
         # Compute a fake Oracle action path and Oracle Agent
         atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
                                                              constants=EnvConstantsTest())
+        obs = env.reset()
+        init_topo_vect, init_line_status = get_initial_configuration(env)
         parser = OracleParser(atomic_actions_original, env.action_space)
         atomic_actions = parser.parse()
         actions = combinator.generate(atomic_actions, 2, env, False)
@@ -381,18 +374,12 @@ class IntegrationTest(unittest.TestCase):
         env_dir = "./data/rte_case14_realistic"
         file_json = "./oracle4grid/test_resourses/test_unitary_actions_cancelling_sub1.json"
 
-        # Load env
-        constants = EnvConstantsTest()
-        param = Parameters()
-        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
-        env = prepare_env(env_dir, chronic, param, constants)
-        env.set_id(chronic)
-        obs = env.reset()
-        init_topo_vect, init_line_status = get_initial_configuration(env)
 
         # Compute a fake Oracle action path and Oracle Agent
         atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
                                                              constants=EnvConstantsTest())
+        init_topo_vect, init_line_status = get_initial_configuration(env)
+        obs = env.reset()
         parser = OracleParser(atomic_actions_original, env.action_space)
         atomic_actions = parser.parse()
         actions = combinator.generate(atomic_actions, 2, env, False)
