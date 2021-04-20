@@ -3,6 +3,7 @@
 from multiprocessing import Pool
 
 import pandas
+from pandas import notnull
 from tqdm import tqdm
 
 from oracle4grid.core.reward_computation.run_one import run_one
@@ -21,20 +22,22 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False, agent_seed=None
 
 def make_df_from_res(all_res, debug):
     cols = ["action", "timestep", "reward", "overload_reward"
-        , "attacks", "attack_id"
+            , "attacks", "attack_id", "name", "node_name"
             ]
     data = []
     for run in all_res:
         # Temporary fix in case there is divergence - rewards and other_rewards should be under the same convention (length, NaN)
         run = check_other_rewards(run)
         for t in range(run.rewards.shape[0]):
-            data.append(to_json(run, t))
+            data.append(to_json(run, t, debug))
     df = pandas.DataFrame(data, columns=cols)
     # Extract name column
+    """
     if not debug:
         df['name'] = [action.name for action in df['action']]
     else:
         df['name'] = [str(action) for action in df['action']]
+    """
     return df
 
 
@@ -49,15 +52,23 @@ def check_other_rewards(run):
     return run
 
 
-def to_json(run, t):
+def to_json(run, t, debug):
+    name = str(run.action) if debug else run.action.name
     return {
         "action": run.action,
         "timestep": t,
         "reward": run.rewards[t],
         "overload_reward": run.other_rewards[t]["overload_reward"],
         "attacks": run.attacks[t],
-        "attack_id": run.attacks_id[t]
+        "attack_id": run.attacks_id[t],
+        "name": name,
+        "node_name": get_node_name(name, t, run.attacks_id[t])
     }
+
+
+def get_node_name(name, t, attack_id):
+    attack_label = ("_atk" + str(attack_id)) if notnull(attack_id) else ""
+    return str(name) + "_t" + str(t) + attack_label
 
 
 def serie(env, actions, max_iter, agent_seed=None, env_seed=None):

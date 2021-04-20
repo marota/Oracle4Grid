@@ -62,10 +62,18 @@ def is_masked(edge_or, edge_ex, attacks_per_topo):
     return or_attack is None or ex_attack is None or or_attack == ex_attack
 
 
+def get_info_from_edge(edge):
+    split_1 = edge.split("_t")
+    topo = split_1[0]
+    split_2 = split_1[1].split("_atk")[0]
+    timestep = split_2[0]
+    attack = None
+    if len(split_2) == 2:
+        attack = split_2[1]
+    return topo, timestep, attack
+
 def get_attack_from_edge(edge, attacks_per_topo):
-    edge_info = edge.split("_t")
-    topo = edge_info[0]
-    timestep = int(edge_info[1])
+    topo, timestep, attack = get_info_from_edge(edge)
     t_indexes = [i for i, x in enumerate(attacks_per_topo['timestep']) if x == timestep]
     #name_indexes = [i for i, x in enumerate(attacks_per_topo['name']) if x == int(topo)]#x=topo
     name_indexes = [i for i, x in enumerate(attacks_per_topo['name']) if str(x) == str(topo)]

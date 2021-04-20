@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
+from oracle4grid.core.graph.attack_graph_module import get_info_from_edge
+
 
 def draw_graph(graph, max_iter, save=None):
     layout = {}
@@ -27,8 +29,7 @@ def draw_graph(graph, max_iter, save=None):
             x = 1
             y = 0
         else:
-            prefix = node.split('_t')[0]
-            timestep = int(node.split('_t')[1])
+            prefix, timestep, attack = get_info_from_edge(node)
             x = x_axis[timestep + 1]
             y = y_axis[prefix]
         layout[node] = np.array([x, y])
