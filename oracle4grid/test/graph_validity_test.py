@@ -80,10 +80,6 @@ def with_multiverse():
 
 class PerformanceTest(unittest.TestCase):
 
-    def test_multiverse_generation(self):
-        reward_df, env, actions = with_multiverse()
-        assert len(reward_df.index) == 0
-
     def test_graph_connected(self):
         reward_df, env, actions = with_multiverse()
 
