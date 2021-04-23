@@ -28,16 +28,9 @@ def make_df_from_res(all_res, debug):
     for run in all_res:
         # Temporary fix in case there is divergence - rewards and other_rewards should be under the same convention (length, NaN)
         run = check_other_rewards(run)
-        for t in range(run.rewards.shape[0]):
-            data.append(to_json(run, t, debug))
+        for n, t in enumerate(range(run.max_ts - run.nb_timestep, run.max_ts)):
+            data.append(to_json(run, t, n,  debug))
     df = pandas.DataFrame(data, columns=cols)
-    # Extract name column
-    """
-    if not debug:
-        df['name'] = [action.name for action in df['action']]
-    else:
-        df['name'] = [str(action) for action in df['action']]
-    """
     return df
 
 
@@ -52,17 +45,17 @@ def check_other_rewards(run):
     return run
 
 
-def to_json(run, t, debug):
+def to_json(run, t, n, debug):
     name = str(run.action) if debug else run.action.name
     return {
         "action": run.action,
         "timestep": t,
-        "reward": run.rewards[t],
-        "overload_reward": run.other_rewards[t]["overload_reward"],
-        "attacks": run.attacks[t],
-        "attack_id": run.attacks_id[t],
+        "reward": run.rewards[n],
+        "overload_reward": run.other_rewards[n]["overload_reward"],
+        "attacks": run.attacks[n],
+        "attack_id": run.attacks_id[n],
         "name": name,
-        "node_name": get_node_name(name, t, run.attacks_id[t])
+        "node_name": get_node_name(name, t, run.attacks_id[n])
     }
 
 

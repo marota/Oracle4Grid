@@ -5,9 +5,6 @@ import time
 import numpy as np
 import pandas as pd
 import networkx as nx
-import itertools
-
-from oracle4grid.core.graph import attack_graph_module
 from oracle4grid.core.reward_computation.run_many import get_node_name
 from oracle4grid.core.utils.constants import END_NODE_REWARD, EnvConstants
 
@@ -103,53 +100,6 @@ def get_reachable_topologies_from_init(actions, explicit_node_names=False, const
     return reachable_topologies_from_init
 
 
-def create_edges_at_t(edges_ex_previous, ordered_names, reachable_topologies, t):
-    """
-    From extremities of previous timestep, compute extremities of next timestep
-    :param edges_ex_previous:
-    :param ordered_names:
-    :param reachable_topologies:
-    :param t:
-    :return:
-    """
-    old_suffix = '_t' + str(t)
-    new_suffix = '_t' + str(t + 1)
-    edges_or_t = []
-    edges_ex_t = []
-    for or_ in edges_ex_previous:
-        # Find possible transitions of each origin node
-        try:
-            or_name = int(or_.replace(old_suffix, ''))
-        except:
-            or_name = or_.replace(old_suffix, '')
-        or_position = np.where(ordered_names == or_name)[0][0]
-        new_edges_ex = [str(ex_name) + new_suffix for ex_name in reachable_topologies[or_position]]
-        # Append to edges
-        edges_ex_t += new_edges_ex
-        edges_or_t += [or_ for ex_ in new_edges_ex]
-    return edges_or_t, edges_ex_t
-
-
-def get_transition_rewards_from_t(reward_df, edges_ex_t, t):
-    """
-    This function return the weights of the edges of the graph that connect t to t+1
-    Between timestep t and t+1, the edges are weighted by the reward obtained in t+1 (by applying the action represented by the edge extremity)
-    :param reward_df: dataframe with actions and their simulated reward at each timestep. Columns are 'action', 'timestep', reward'
-    :param edges_ex_t: names of the actions that generate the rewards at t+1
-    :param t: origin timestep of the edge
-    :return: list of rewards at t+1 which
-    """
-    edges_weights_t = []
-    for action_name in edges_ex_t:
-        try:
-            action_name = int(action_name.replace("_t" + str(t + 1), ""))
-        except:
-            action_name = action_name.replace("_t" + str(t + 1), "")
-        reward = reward_df.loc[(reward_df['name'] == action_name) & (reward_df['timestep'] == (t + 1)), 'reward'].values[0]
-        edges_weights_t.append(reward)
-    return edges_weights_t
-
-
 def create_init_nodes(reachable_topologies_from_init, reward_df):
     ex_init = [str(name) + '_t0' for name in reachable_topologies_from_init]
     or_init = ['init' for i in range(len(reachable_topologies_from_init))]
@@ -191,25 +141,6 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     edges_or, edges_ex, edges_weights = create_init_nodes(reachable_topologies_from_init, reward_df)
     n_init = len(edges_weights)
 
-    # Optional old way
-    """
-    edges_ex_old = edges_ex.copy()
-    edges_or_old = edges_or.copy()
-    edges_weights_old = edges_weights.copy()
-    edges_or_old += [str(ordered_names[i]) + '_t' + str(int(t))
-                 for i in range(len(reachable_topologies))
-                 for reachable_topo in reachable_topologies[i]
-                 for t in range(max_iter - 1)]
-    edges_ex_old += [str(reachable_topo) + '_t' + str(int(t + 1))
-                 for i in range(len(reachable_topologies))
-                 for reachable_topo in reachable_topologies[i]
-                 for t in range(max_iter - 1)]
-    reward_table = reward_df[['timestep', 'reward', 'name']].pivot(index='timestep', columns='name', values='reward')
-
-    edges_weights_old += list(itertools.chain(*[reward_table[reachable_topologies[i]].loc[1:max_iter].values.flatten(order='F')
-                                            for i in range(len(reachable_topologies))]))
-    """
-
     # Reachable transitions for each timestep and associated rewards
     start_time = time.time()
     inverted = get_inverted_reachable_topologies(ordered_names, reachable_topologies)
@@ -218,15 +149,16 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     list_attack = reward_df_with_edges['attack_id']
     list_timestep = reward_df_with_edges["timestep"]
     list_weights = reward_df_with_edges["reward"]
-
+    prevAtk = None
     for (topo, attack, t, reward) in zip(list_topo, list_attack, list_timestep, list_weights):
         if t == 0:
             continue
         topo_index = np.where(ordered_names == topo)[0][0]
         for inverted_topo in inverted[topo_index]:
             edges_ex.append(get_node_name(str(topo), t, attack))
-            edges_or.append(get_node_name(str(inverted_topo), t - 1, attack))
+            edges_or.append(get_node_name(str(inverted_topo), t - 1, prevAtk))
             edges_weights.append(reward)
+        prevAtk = attack
 
     uniques_or = set([node for node in edges_or if '_atk' in node])
     uniques_ex = set([node for node in edges_ex if '_atk' in node])
@@ -239,18 +171,6 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     edges_or_filtered = [i for j, i in enumerate(edges_or) if j not in indexes_to_dump]
     edges_weights_filtered = [i for j, i in enumerate(edges_weights) if j not in indexes_to_dump]
 
-    # Optional dataframe generation
-    """
-    df1 = pd.DataFrame(columns=["ex", "or", "weight"])
-    df1["ex"] = edges_ex
-    df1["or"] = edges_or
-    df1["weight"] = edges_weights
-    df2 = pd.DataFrame(columns=["ex", "or", "weight"])
-    df2["ex"] = edges_ex_old
-    df2["or"] = edges_or_old
-    df2["weight"] = edges_weights_old
-    """
-
     elapsed_time = time.time() - start_time
     print(elapsed_time)
 
@@ -262,19 +182,6 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     edges_weights_filtered += weights_end
     n_end = len(weights_end)
 
-    # Removing attack edges
-    """
-    print("Removing attack edges")
-    start_time = time.time()
-    edges_or, edges_ex, edges_weights = attack_graph_module.filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df)
-    elapsed_time = time.time() - start_time
-    print(elapsed_time)
-    """
-    ### other_way to remove inconsistent attack edges after graph creation, using graph.remove_edges then. Important to do it before edge_df.dropna()
-    # attack_filters=attack_graph_module.filter_attack_edges(reachable_topologies,ordered_names,reward_df,max_iter,n_init,n_end)
-    # edge_df = pd.DataFrame({'or': edges_or, 'ex': edges_ex, 'weight': edges_weights,'attack_filter':attack_filters})
-    ##
-
     # Finally create graph object from DataFrame
 
     edge_df = pd.DataFrame({'or': edges_or_filtered, 'ex': edges_ex_filtered, 'weight': edges_weights_filtered})
@@ -282,21 +189,16 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
     print("edge_df done - creating graph")
     print("if it takes too long to create, you might change the number of significant digits to consider in config.ini")
-    if (reward_significant_digit is not None):
+    if reward_significant_digit is not None:
         reward_significant_digit = int(reward_significant_digit)
         edge_df.weight = (edge_df.weight * (10 ** (reward_significant_digit))).astype('int64')
         print("currently the number of signficant digits considered is:" + str(reward_significant_digit))
     graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight'], create_using=nx.DiGraph())
 
-    # other_way to remove inconsistent attack edges after graph creation
-    # graph = nx.from_pandas_edgelist(edge_df, target='ex', source='or', edge_attr=['weight', 'attack_filter'],create_using=nx.DiGraph())
-    # graph.remove_edges_from([e for i,e in enumerate(graph.edges(data=True)) if e[2]['attack_filter']])
-    ###
-
     graph = post_processing_rewards(graph, reward_df)
 
     print("removing nodes created for attack but useless")
-    graph.remove_nodes_from(to_dump)
+    #graph.remove_nodes_from(to_dump)
     print("graph created")
 
     return graph
@@ -307,11 +209,3 @@ def post_processing_rewards(graph, reward_df):
     v_attributes = reward_df[['node_name', 'overload_reward']].set_index('node_name').to_dict('index')
     nx.set_node_attributes(graph, v_attributes)
     return graph
-
-
-def attack_filter(row):
-    keep = False
-    for att in row["attack"]:
-        if len(att.as_dict) != 0:
-            keep = True
-    return keep

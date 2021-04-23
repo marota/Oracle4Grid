@@ -11,6 +11,7 @@ from oracle4grid.core.graph import graph_generator
 from oracle4grid.core.graph.attack_graph_module import get_windows_from_df
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.reward_computation.attacks_multiverse import multiverse_simulation
+from oracle4grid.core.reward_computation.run_many import get_node_name
 from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_ITER, REWARD_SIGNIFICANT_DIGIT
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.launch_utils import OracleParser
@@ -114,18 +115,19 @@ class PerformanceTest(unittest.TestCase):
                 # We loop on all topo to create a list of nodes in the current window of attack
                 for topo in all_windows[window][attack]['topos']:
                     topo_name = str(topo)
-                    topo_nodes = [topo_name + '_t' + str(t) for t in range(start - 2, (end + 1) + 2)]
+                    topo_nodes = [get_node_name(topo_name, t, attack) for t in range(start - 2, (end + 1) + 2)]
                     # List needed for first subgraph, and Test1 : we take the attack window, and 2 nodes before and after.
-                    nodes_in_same_attack = nodes_in_same_attack + topo_nodes
+                    nodes_in_same_attack = nodes_in_same_attack + topo_nodes[3:-3]
                     # List needed for second subgraph, and TEst 2 : we zoom on the inner attack window
                     nodes_in_all_attacks_inner = nodes_in_all_attacks_inner + topo_nodes[3:-3]
                 subg1 = graph.subgraph(nodes_in_same_attack)
-                for t in range(start - 1, (end + 1) + 1):
+                for t in range(start+2, (end -2)):
                     for topo in all_windows[window][attack]['topos']:
                         topo_name = str(topo)
+                        node_name = get_node_name(topo_name, t, attack)
                         # Test n°1 : Check that  there is exactly the same amount of edges in and out of nodes during a attack window
-                        nombre_connexion_in = subg1.in_degree(topo_name + '_t' + str(t))
-                        nombre_connexion_out = subg1.out_degree(topo_name + '_t' + str(t))
+                        nombre_connexion_in = subg1.in_degree(node_name)
+                        nombre_connexion_out = subg1.out_degree(node_name)
                         assert nombre_connexion_out == nombre_connexion_in
 
             # Test n°2 : Check that the number of disconected graph in the subgraph containing the attack windows for all topo
@@ -135,7 +137,7 @@ class PerformanceTest(unittest.TestCase):
             assert nx.number_connected_components(subg2) == len(all_windows[window])
             # check size of connected components
             if window == '400_447':
-                assert [len(c) for c in sorted(nx.connected_components(subg2), key=len, reverse=True)] == [184, 184]
+                assert [len(c) for c in sorted(nx.connected_components(subg2), key=len, reverse=True)] == [368,368]
         return 1
 
 

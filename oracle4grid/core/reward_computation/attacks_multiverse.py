@@ -28,24 +28,24 @@ def compute_all_multiverses(env, actions, reward_df, env_seed=None, agent_seed=N
         for attack in windows[window]:
             attack_topos = windows[window][attack]['topos']
             attack = windows[window][attack]['attack']
-            attack_topo = attack_topos[0]
             # get the list of topologies that where not computed [all_topo] - windows[u,v][A]
             universes = actions.copy()
+            universes = filter(lambda x: x.name not in attack_topos, actions)
             # Remove indexes from already computed topologies, need to sort and reverse the indices to not messup the positions
-            for index in sorted(attack_topos, reverse=True):
-                del universes[index]
+            # for index in sorted(attack_topos, reverse=True):
+            #    del universes[index]
             for universe in universes:
-                run = compute_one_multiverse(env, attack_topo, universe, attack, begin, end, env_seed, agent_seed)
+                run = compute_one_multiverse(env, universe, attack, begin, end, env_seed, agent_seed)
                 run.action = universe
                 run.attacks = [attack for i in range(begin,end+1)]
-                run.max_ts = end-begin+1
+                run.max_ts = end + 1
                 run.reset_attacks_id()
                 runs.append(run)
     print("Number of multiverse computed :" + str(len(runs)))
     return runs
 
 
-def compute_one_multiverse(env, topo_init, universe, attack, begin, end, env_seed=None, agent_seed=None):
+def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, agent_seed=None):
     with warnings.catch_warnings():
         warnings.filterwarnings("error")
         # TODO what do i do if agent cannot do opponent action ?
