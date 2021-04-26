@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from Episode import EpisodeData
+from grid2op.Episode import EpisodeData
 from grid2op.dtypes import dt_float, dt_bool
 from oracle4grid.core.agent.OneChangeThenOnlyReconnect import OneChangeThenOnlyReconnect
 from oracle4grid.core.graph.attack_graph_module import get_windows_from_df
