@@ -28,7 +28,7 @@ def make_df_from_res(all_res, debug):
     for run in all_res:
         # Temporary fix in case there is divergence - rewards and other_rewards should be under the same convention (length, NaN)
         run = check_other_rewards(run)
-        for n, t in enumerate(range(run.max_ts - run.nb_timestep, run.max_ts)):
+        for n, t in enumerate(range(run.begin_ts, run.begin_ts+run.nb_timestep)):
             data.append(to_json(run, t, n,  debug))
     df = pandas.DataFrame(data, columns=cols)
     return df
