@@ -2,7 +2,7 @@ from oracle4grid.core.utils.Action import OracleAction
 
 
 class Run:
-    def __init__(self, action: OracleAction, res: list):
+    def __init__(self, action: OracleAction, res: list,begin_ts=0):
         """
 
         :type action: oracle4grid.core.utils.Action
@@ -15,6 +15,7 @@ class Run:
         self.name_chron = name_chron
         self.cum_reward = cum_reward
         self.nb_timestep = nb_timestep
+        self.begin_ts = begin_ts
         self.max_ts = max_ts
         self.rewards = episode_data.rewards
         self.other_rewards = episode_data.other_rewards
