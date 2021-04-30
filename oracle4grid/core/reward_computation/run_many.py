@@ -36,12 +36,16 @@ def make_df_from_res(all_res, debug):
 
 def check_other_rewards(run):
     other_rewards = run.other_rewards.copy()
-    ref_dict = other_rewards[0]
     n_other_rewards = len(other_rewards)
-    if n_other_rewards < run.max_ts:
-        ref_dict_nan = {key: float('nan') for key in ref_dict.keys()}
-        other_rewards += [ref_dict_nan for i in range(run.max_ts - n_other_rewards)]
-        run.other_rewards = other_rewards
+    #If divergence on first timestep, we need to create a fake other reward
+    if n_other_rewards == 0:
+        run.other_rewards = [{'overload_reward': float('nan')}]
+    else:
+        ref_dict = other_rewards[0]
+        if n_other_rewards < run.nb_timestep:
+            ref_dict_nan = {key: float('nan') for key in ref_dict.keys()}
+            other_rewards += [ref_dict_nan for i in range(run.max_ts - n_other_rewards)]
+            run.other_rewards = other_rewards
     return run
 
 

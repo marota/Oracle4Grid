@@ -80,6 +80,31 @@ def with_multiverse():
 
 class PerformanceTest(unittest.TestCase):
 
+    def test_fast_forward(self):
+        file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
+        chronic = "000"
+        env_dir = "./data/l2rpn_neurips_2020_track1"
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        parser = OracleParser(atomic_actions, env.action_space)
+        atomic_actions = parser.parse()
+        env.chronics_handler.tell_id(0)
+        env.seed(0)
+        obs = env.reset()
+        #0 runner
+        obs, reward, done, info = env.step(env.action_space({}))
+        obs, reward, done, info = env.step(env.action_space({}))
+        obs, reward, done, info = env.step(env.action_space({}))
+        obs, reward, done, info = env.step(env.action_space({}))
+
+
+        env.chronics_handler.tell_id(0)
+        env.seed(0)
+        obs1 = env.reset()
+        # compute the reward when fast forwarding to t = u-1, doing an action that puts us in T at t = u and stopping at v
+        env.fast_forward_chronics(3)
+        obs1, reward1, done1, info1 = env.step(env.action_space({}))
+        assert reward1 == reward
+
     def test_graph_connected(self):
         reward_df, env, actions = with_multiverse()
 

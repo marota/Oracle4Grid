@@ -270,15 +270,16 @@ class IntegrationTest(unittest.TestCase):
         param.init_from_dict(EnvConstantsTest().DICT_GAME_PARAMETERS_SIMULATION)
         env = prepare_env(env_dir, chronic, param)
 
+        # Read expected format
+        with open("./oracle4grid/test_resourses/expected_actions_format2.json") as json_file_expected:
+            expected_format = json.load(json_file_expected)
+
         # Read and convert action
         with open(file_json) as json_file:
             actions_original = json.load(json_file)
         parser = OracleParser(actions_original, env.action_space)
         action_oracle_format = parser.parse()
 
-        # Read expected format
-        with open("./oracle4grid/test_resourses/expected_actions_format2.json") as json_file_expected:
-            expected_format = json.load(json_file_expected)
 
         # Assert Equal
         self.assertEqual(action_oracle_format, expected_format)

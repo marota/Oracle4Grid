@@ -46,41 +46,60 @@ def compute_all_multiverses(env, actions, reward_df, env_seed=None, agent_seed=N
 
 
 def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, agent_seed=None):
+    '''
+
+    :param env:
+    :param universe:
+    :param attack:
+    :param begin: WARNING : This is the begin timestep of the window, not the begin of the computation, and
+                            from the point of vue of the Runner, not the chronix
+                    If a window of attack is [44, 100] :
+                    - this "begin" will be 44
+                    - the chronic (real life) timestep will be 45
+    :param end:
+    :param env_seed:
+    :param agent_seed:
+    :return:
+    '''
     with warnings.catch_warnings():
         warnings.filterwarnings("error")
         # TODO what do i do if agent cannot do opponent action ?
         combinated_action = universe.grid2op_action + attack
     agent = OneChangeThenOnlyReconnect.gen_next(combinated_action)(env.action_space)
     # set the seed
+    env.chronics_handler.tell_id(-1)
     if env_seed is not None:
         env.seed(env_seed)
     obs = env.reset()
     if agent_seed is not None:
         agent.seed(agent_seed)
+    # We fast forward a number of timestep from the point of vue of the chronic
+    # (so begin + 1 to arrive at the correct time step to compute, since begin was already computed)
+    env.fast_forward_chronics(begin+1)
+    obs = env.current_obs
     agent.reset(obs)
-    # compute the reward when fast forwarding to t = u-1, doing an action that puts us in T at t = u and stopping at v
-    env.fast_forward_chronics(begin)
-    episode = init_episode_data(env, end - begin + 1)
+    episode = init_episode_data(env, end - begin)
     reward = float(env.reward_range[0])
     done = False
     iteration = 0
-    time_step = begin
+    time_step = begin+1
     cum_reward = dt_float(0.0)
-    while time_step <= end:
+    while time_step <= end and not done:
         act = agent.act(obs, reward, done)
         obs, reward, done, info = env.step(act)
-        iteration += 1
-        time_step += 1
         cum_reward += reward
-        opp_attack = env._oppSpace.last_attack
+        opp_attack = attack
         episode.incr_store(True, iteration, 0,
                            float(reward), env._env_modification,
                            act, obs, opp_attack,
                            info)
-
+        iteration += 1
+        time_step += 1
+    max_timestep = time_step-1
+    nb_timestep = iteration
     episode.set_meta(env, iteration, float(cum_reward), env_seed, agent_seed)
-    res = [(None, None, cum_reward, end - begin + 1, None, episode)]
-    return Run(universe, res)
+    res = [(None, None, cum_reward, iteration, max_timestep, episode)]
+    return Run(universe, res, begin_ts=begin + 1)
 
 
 def init_episode_data(env, nb_timestep_max):
