@@ -9,6 +9,7 @@ from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
 from oracle4grid.core.graph import graph_generator
 from oracle4grid.core.graph.attack_graph_module import get_windows_from_df
+from oracle4grid.core.graph.graph_generator import get_reachable_topologies
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.reward_computation.attacks_multiverse import multiverse_simulation
 from oracle4grid.core.reward_computation.run_many import get_node_name
@@ -124,6 +125,9 @@ class PerformanceTest(unittest.TestCase):
         start_time = time.time()
         graph = graph_generator.generate(reward_df, int(config[MAX_ITER]), debug=False, reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT],
                                          constants=EnvConstantsTest())
+        #Get universal number of connections between nodes for each topo
+        topos = get_reachable_topologies(actions)
+        transition_per_topo = {topo.name: len(topos[index]) for index, topo in enumerate(actions)}
 
         all_windows = get_windows_from_df(reward_df)
         # Go through all attacks,
@@ -150,6 +154,7 @@ class PerformanceTest(unittest.TestCase):
                         nombre_connexion_in = subg1.in_degree(node_name)
                         nombre_connexion_out = subg1.out_degree(node_name)
                         assert nombre_connexion_out == nombre_connexion_in
+                        assert nombre_connexion_out == transition_per_topo[topo]
 
             # Test n°2 : Check that the number of disconected graph in the subgraph containing the attack windows for all topo
             # is the same than the number of attacks. This is needed for all attacks to be disconnected from each others

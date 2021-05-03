@@ -50,7 +50,7 @@ def check_other_rewards(run):
 
 
 def to_json(run, t, n, debug):
-    name = str(run.action) if debug else run.action.name
+    name = get_action_name(run.action, debug)
     return {
         "action": run.action,
         "timestep": t,
@@ -61,6 +61,10 @@ def to_json(run, t, n, debug):
         "name": name,
         "node_name": get_node_name(name, t, run.attacks_id[n])
     }
+
+
+def get_action_name(action, debug):
+    return str(action) if debug else action.name
 
 
 def get_node_name(name, t, attack_id):

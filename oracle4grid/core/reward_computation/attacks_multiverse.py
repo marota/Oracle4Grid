@@ -8,18 +8,18 @@ from grid2op.dtypes import dt_float, dt_bool
 from oracle4grid.core.agent.OneChangeThenOnlyReconnect import OneChangeThenOnlyReconnect
 from oracle4grid.core.graph.attack_graph_module import get_windows_from_df
 from oracle4grid.core.reward_computation.Run import Run
-from oracle4grid.core.reward_computation.run_many import make_df_from_res
+from oracle4grid.core.reward_computation.run_many import make_df_from_res, get_action_name
 
 
 def multiverse_simulation(env, actions, reward_df, debug, env_seed=None, agent_seed=None):
-    runs = compute_all_multiverses(env, actions, reward_df, env_seed, agent_seed)
+    runs = compute_all_multiverses(env, actions, reward_df, debug, env_seed, agent_seed)
     if len(runs) == 0:
         return reward_df
     multiverse_df = make_df_from_res(runs, debug)
     return pd.concat([reward_df, multiverse_df], ignore_index=True, sort=False)
 
 
-def compute_all_multiverses(env, actions, reward_df, env_seed=None, agent_seed=None):
+def compute_all_multiverses(env, actions, reward_df, debug=False, env_seed=None, agent_seed=None):
     runs = []
     windows = get_windows_from_df(reward_df)
     for window in windows:
@@ -30,7 +30,7 @@ def compute_all_multiverses(env, actions, reward_df, env_seed=None, agent_seed=N
             attack = windows[window][attack]['attack']
             # get the list of topologies that where not computed [all_topo] - windows[u,v][A]
             universes = actions.copy()
-            universes = filter(lambda x: x.name not in attack_topos, actions)
+            universes = filter(lambda x: get_action_name(x, debug) not in attack_topos, actions)
             # Remove indexes from already computed topologies, need to sort and reverse the indices to not messup the positions
             # for index in sorted(attack_topos, reverse=True):
             #    del universes[index]

@@ -8,7 +8,6 @@ import networkx as nx
 def filter_attacked_nodes(edges_or, edges_ex, edges_weights, reward_df):
     # attacks_per_topo_df = reward_df[['name', 'attack_id']].drop_duplicates()
     # Transform DF to dict
-    # attacks_per_topo = attacks_per_topo_df.set_index('name').T.to_dict('list')
     attacks_per_topo = reward_df.dropna()[['timestep', 'name', 'attack_id']].to_dict("list")
     mask = [is_masked(edge_or, edge_ex, attacks_per_topo) for (edge_or, edge_ex) in zip(edges_or, edges_ex)]
     print("Compressing attack lists...")
@@ -87,41 +86,45 @@ def get_attack_from_edge(edge, attacks_per_topo):
 
 
 def get_windows_from_df(reward_df):
-    """
+    #Pre computing the correspondig attack to attack_id
+    attack_df = reward_df[['attack_id', 'attacks']].drop_duplicates(subset='attack_id')
+    attack_dict = attack_df.set_index('attack_id').to_dict()['attacks']
 
-    :param reward_df: The reward dataframe given by computation module
-    :return: A dict containing all windows "begin, end" associated to all attacks , and all topologies per attacks
-    """
-    attacks_per_topo = reward_df.dropna()[['timestep', 'name', 'attacks', 'attack_id']].groupby('name')
     all_windows = {}
-    for name, name_group in attacks_per_topo:
-        first_time = name_group.head(1)['timestep'].iloc[0]
-        prev_timestep = int(name_group.head(1)['timestep'].iloc[0]) - 1
-        prev_attack_id = name_group.head(1)['attack_id'].iloc[0]
-        prev_attack = name_group.head(1)['attacks'].iloc[0]
-        for index, row in name_group.iterrows():
-            timestep = int(row['timestep'])
-            attack_id = row['attack_id']
-            if (timestep - prev_timestep != 1) or prev_attack_id != attack_id:
-                # Save block
-                all_windows = _save_in_window(all_windows, first_time, prev_timestep, prev_attack_id, prev_attack, name)
-                # Reset block
-                prev_attack_id = attack_id
-                prev_attack = row['attacks']
-                first_time = timestep
-            prev_timestep = timestep
-        # Save block
-        all_windows = _save_in_window(all_windows, first_time, prev_timestep, prev_attack_id, prev_attack, name)
+
+    pivot = reward_df[['timestep', 'attack_id', 'name', 'node_name']]\
+        .pivot(index='timestep', columns=['name', 'node_name'], values='attack_id')
+    serie = pivot.sum(axis=1)
+    non_zero = serie[serie != 0]
+    prevIndex = np.nan
+    begin = None
+    end = None
+    for index, value in non_zero.items():
+        if index != prevIndex + 1:
+            if begin is not None:
+                window = str(begin)+'_'+str(prevIndex)
+                all_windows[window] = _save_all_in_window(begin, prevIndex, pivot, attack_dict, reward_df)
+            begin = index
+        prevIndex = index
+    window = str(begin)+'_'+str(prevIndex)
+    all_windows[window] = _save_all_in_window(begin, prevIndex, pivot, attack_dict,reward_df)
     return all_windows
 
 
-def _save_in_window(all_windows, first_time, prev_timestep, prev_attack_id, prev_attack, name):
-    key = str(first_time) + '_' + str(prev_timestep)
-    if key not in all_windows:
-        all_windows[key] = {}
-    if prev_attack_id not in all_windows[key]:
-        all_windows[key][prev_attack_id] = {}
-        all_windows[key][prev_attack_id]['topos'] = []
-        all_windows[key][prev_attack_id]['attack'] = prev_attack
-    all_windows[key][prev_attack_id]['topos'].append(name)
-    return all_windows
+def _save_all_in_window(begin, end, pivot, attack_dict, reward_df):
+    # get all attacks per topo in the given range, by taking the first valid value in the range
+    attacks_per_topo = pivot[pivot.index.isin(range(begin, end+1))].dropna(axis=1).apply(lambda col: col.loc[col.first_valid_index()])
+    a_p_t = reward_df[reward_df['timestep']
+        .isin(range(begin, end+1))][['name', 'attack_id']]\
+        .drop_duplicates().to_dict(orient='records')
+    window_serial = {}
+    for item in a_p_t:
+        topo = item['name']
+        attack = item['attack_id']
+    #for topo, attack in attacks_per_topo.items():
+        if attack not in window_serial:
+            window_serial[attack] = {}
+            window_serial[attack]['topos'] = []
+            window_serial[attack]['attack'] = attack_dict[attack]
+        window_serial[attack]['topos'].append(topo)
+    return window_serial
