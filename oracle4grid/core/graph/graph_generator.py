@@ -144,7 +144,6 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     n_init = len(edges_weights)
 
     # Find and create all possible edges
-    # Reachable transitions for each timestep and associated rewards
     start_time = time.time()
     inverted = get_inverted_reachable_topologies(ordered_names, reachable_topologies)
     list_topo = reward_df['name']
@@ -162,6 +161,7 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
             edges_weights.append(reward)
         prevAtk = attack
 
+    # Find nodes to dump because impossible to get to from attacks
     uniques_or = set([node for node in edges_or if '_atk' in node])
     uniques_ex = set([node for node in edges_ex if '_atk' in node])
     to_dump = uniques_or.difference(uniques_ex)
@@ -169,8 +169,8 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     print("number of nodes to dump :" + str(len(to_dump)))
     print(elapsed_time)
 
-    # filtering (option 1)
-    edges_ex, edges_or, edges_weights = filter_nodes_from_python_list(edges_or, edges_ex, edges_weights, to_dump)
+    # filtering (option 1)  this option is way slower than the networkx removal at the bottom here
+    # edges_ex, edges_or, edges_weights = filter_nodes_from_python_list(edges_or, edges_ex, edges_weights, to_dump)
 
     # Symbolic end node
     edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]
@@ -194,8 +194,8 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
     graph = post_processing_rewards(graph, reward_df)
 
-    # Node removal (option 2)
-    # graph = remove_nodes_from_graph_networkx(graph, to_dump)
+    # Node removal
+    graph = remove_nodes_from_graph_networkx(graph, to_dump)
 
     print("graph created, total time :")
     elapsed_time = time.time() - graph_time
@@ -204,6 +204,9 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
 
 
 def remove_nodes_from_graph_networkx(graph, to_dump):
+    '''
+    Network x removal of given nodes
+    '''
     print("removing nodes created for attack but useless")
     start_time = time.time()
     graph.remove_nodes_from(to_dump)
@@ -214,6 +217,9 @@ def remove_nodes_from_graph_networkx(graph, to_dump):
 
 
 def filter_nodes_from_python_list(edges_or, edges_ex, edges_weights, to_dump):
+    '''
+    Other way of filtering the nodes that should be removed from graph, this is way slower than the node removal from networkx
+    '''
     start_time = time.time()
     indexes_to_dump = [i for i in range(len(edges_or)) if edges_or[i] in to_dump]
     edges_ex_filtered = [i for j, i in enumerate(edges_ex) if j not in indexes_to_dump]
