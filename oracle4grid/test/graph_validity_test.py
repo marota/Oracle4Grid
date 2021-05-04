@@ -65,7 +65,7 @@ def init_test_env():
 
     # 2 - Actions rewards simulation
     reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]), debug=False,
-                                 agent_seed=[16101991], env_seed=[16101991])
+                                 agent_seed=16101991, env_seed=16101991)
     return reward_df, env, actions
 
 

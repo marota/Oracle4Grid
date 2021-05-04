@@ -13,6 +13,10 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False, agent_seed=None
     if debug:
         print('\n')
         print("============== 2 - Rewards simulation ==============")
+    if agent_seed is not None:  # Grid2op runner expect a list of seeds
+        agent_seed=[agent_seed]
+    if env_seed is not None:
+        env_seed=[env_seed]
     if nb_process is 1:
         all_res = serie(env, actions, max_iter, agent_seed, env_seed)
     else:

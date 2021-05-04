@@ -39,11 +39,6 @@ def main():
     if (args.file is None) or not os.path.exists(args.file):
         raise ValueError("Could not find file provided :" + str(args.file))
 
-    if(args.agent_seed is not None):#Grid2op runner expect a list of seeds
-        args.agent_seed=[args.agent_seed]
-    if(args.env_seed is not None):
-        args.env_seed=[args.env_seed]
-
     if args.debug > 1:
         raise ValueError("Input arg error, --debug, options are 0 or 1")
     else:

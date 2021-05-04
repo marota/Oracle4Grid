@@ -96,6 +96,9 @@ def get_windows_from_df(reward_df):
         .pivot(index='timestep', columns=['name', 'node_name'], values='attack_id')
     serie = pivot.sum(axis=1)
     non_zero = serie[serie != 0]
+    if non_zero.first_valid_index() is None:
+        #No attacks in runs
+        return all_windows
     prevIndex = np.nan
     begin = None
     end = None
@@ -113,7 +116,7 @@ def get_windows_from_df(reward_df):
 
 def _save_all_in_window(begin, end, pivot, attack_dict, reward_df):
     # get all attacks per topo in the given range, by taking the first valid value in the range
-    attacks_per_topo = pivot[pivot.index.isin(range(begin, end+1))].dropna(axis=1).apply(lambda col: col.loc[col.first_valid_index()])
+    # attacks_per_topo = pivot[pivot.index.isin(range(begin, end+1))].dropna(axis=1).apply(lambda col: col.loc[col.first_valid_index()])
     a_p_t = reward_df[reward_df['timestep']
         .isin(range(begin, end+1))][['name', 'attack_id']]\
         .drop_duplicates().to_dict(orient='records')
