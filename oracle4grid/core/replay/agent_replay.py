@@ -36,6 +36,10 @@ def replay(action_path: list, max_iter: int,
     #agent_class = OracleAgent(env.action_space, oracle_action_path).gen_next(action_path)
     agent = OracleAgent(env.action_space,action_path, oracle_action_path,
                         init_topo_vect=init_topo_vect,init_line_status=init_line_status)#.gen_next(action_path)
+    if agent_seed is not None:  # Grid2op runner expect a list of seeds
+        agent_seed=[agent_seed]
+    if env_seed is not None:
+        env_seed=[env_seed]
     runner = Runner(**env.get_params_for_runner(), agentClass=None,agentInstance=agent)
     res = runner.run(nb_episode=1,
                      nb_process=1,
