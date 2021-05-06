@@ -2,6 +2,7 @@ import time
 import unittest
 
 import networkx as nx
+import numpy as np
 
 from grid2op.Reward import L2RPNReward
 from grid2op.Rules import AlwaysLegal
@@ -11,8 +12,8 @@ from oracle4grid.core.graph import graph_generator
 from oracle4grid.core.graph.attack_graph_module import get_windows_from_df
 from oracle4grid.core.graph.graph_generator import get_reachable_topologies
 from oracle4grid.core.reward_computation import run_many
-from oracle4grid.core.reward_computation.attacks_multiverse import multiverse_simulation
-from oracle4grid.core.reward_computation.run_many import get_node_name
+from oracle4grid.core.reward_computation.attacks_multiverse import multiverse_simulation, compute_one_multiverse
+from oracle4grid.core.reward_computation.run_many import get_node_name, make_df_from_res
 from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_ITER, REWARD_SIGNIFICANT_DIGIT
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.launch_utils import OracleParser
@@ -165,6 +166,38 @@ class PerformanceTest(unittest.TestCase):
             if window == '400_447':
                 assert [len(c) for c in sorted(nx.connected_components(subg2), key=len, reverse=True)] == [368,368]
         return 1
+
+    def test_multiverse_with_initial_computation(self):
+        file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
+        chronic = "000"
+        env_dir = "./data/l2rpn_neurips_2020_track1"
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        parser = OracleParser(atomic_actions, env.action_space)
+        atomic_actions = parser.parse()
+
+        # 1 - Action generation step
+        actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, False, nb_process=int(config[NB_PROCESS]))
+
+        #Compute one of the runs with runner :
+        test_action = actions[0]
+        run_runner = run_many.run_one(test_action, env, int(config[MAX_ITER]), env_seed=[16101991], agent_seed=[16101991])
+        #make df and retreive window of attack
+        df_runner = make_df_from_res([run_runner], False)
+        windows = get_windows_from_df(df_runner)
+        # multiverse needs a different environment
+        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest(), opponent_allowed=False)
+        #compute same action with multiverse
+        for window in windows:
+            begin = int(window.split("_")[0])
+            end = int(window.split("_")[1])
+            attacks = windows[window]
+            for attack_id in attacks:
+                attack = attacks[attack_id]["attack"]
+                run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
+                #test expected values for rewards
+                expected = run_runner.rewards[begin+2:end+2]
+                np.testing.assert_allclose(expected, run_multiverse.rewards)
+
 
 
 if __name__ == '__main__':

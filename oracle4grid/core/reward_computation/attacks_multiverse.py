@@ -36,10 +36,6 @@ def compute_all_multiverses(env, actions, reward_df, debug=False, env_seed=None,
             #    del universes[index]
             for universe in universes:
                 run = compute_one_multiverse(env, universe, attack, begin, end, env_seed, agent_seed)
-                run.action = universe
-                run.attacks = [attack for i in range(begin,end+1)]
-                run.max_ts = end + 1
-                run.reset_attacks_id()
                 runs.append(run)
     print("Number of multiverse computed :" + str(len(runs)))
     return runs
@@ -64,7 +60,20 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
     with warnings.catch_warnings():
         warnings.filterwarnings("error")
         # TODO what do i do if agent cannot do opponent action ?
-        combinated_action = universe.grid2op_action + attack
+        # Retrieve line that is attacked
+        line_id = attack.as_dict()['set_line_status']["disconnected_id"][0]
+        # get the index of the attacked line in the topo vect
+        ex_bus_index = env.action_space.line_ex_pos_topo_vect[line_id]
+        or_bus_index = env.action_space.line_or_pos_topo_vect[line_id]
+        # copy the original action's vect (it is read_only)
+        new_vect = universe.grid2op_action.set_bus.copy()
+        # force switch the two indexes of the attacked line in this vect to be unchanged
+        new_vect[ex_bus_index] = 0
+        new_vect[or_bus_index] = 0
+        # recreate the original action with the new vect, devoid of change on the same line as attacked
+        action_bus_vect = env.action_space({"set_bus": new_vect})
+        # Combination is now not ambiguous
+        combinated_action = action_bus_vect + attack
     agent = OneChangeThenOnlyReconnect.gen_next(combinated_action)(env.action_space)
     # set the seed
     env.chronics_handler.tell_id(-1)
@@ -91,7 +100,7 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
         opp_attack = attack
         episode.incr_store(True, iteration, 0,
                            float(reward), env._env_modification,
-                           act, obs, opp_attack,
+                           act, obs, None,
                            info)
         iteration += 1
         time_step += 1
@@ -99,7 +108,12 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
     nb_timestep = iteration
     episode.set_meta(env, iteration, float(cum_reward), env_seed, agent_seed)
     res = [(None, None, cum_reward, iteration, max_timestep, episode)]
-    return Run(universe, res, begin_ts=begin + 1)
+    run = Run(universe, res, begin_ts=begin + 1)
+    run.action = universe
+    run.attacks = [attack for i in range(begin,end+1)]
+    run.max_ts = end + 1
+    run.reset_attacks_id()
+    return run
 
 
 def init_episode_data(env, nb_timestep_max):

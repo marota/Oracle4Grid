@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from grid2op.Action.DontAct import DontAct
 from grid2op.Action import PlayableAction
 
 import grid2op
@@ -7,19 +8,35 @@ from grid2op.Chronics import GridStateFromFile
 from oracle4grid.core.utils.constants import EnvConstants, BACKEND
 
 
-def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants()):
+def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants(), opponent_allowed=True):
     backend = BACKEND()
-    env = grid2op.make(env_path,
-                       reward_class=constants.reward_class,
-                       backend=backend,
-                       data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
-                       param=param,
-                       gamerules_class=constants.game_rule,
-                       test=True,
-                       other_rewards=constants.other_rewards,
-                       # We need the actions of the agent to be the highest base class
-                       action_class=PlayableAction
-                       )
+    env = None
+    if opponent_allowed:
+        env = grid2op.make(env_path,
+                           reward_class=constants.reward_class,
+                           backend=backend,
+                           data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
+                           param=param,
+                           gamerules_class=constants.game_rule,
+                           test=True,
+                           other_rewards=constants.other_rewards,
+                           # We need the actions of the agent to be the highest base class
+                           action_class=PlayableAction
+                           )
+    else:
+        env = grid2op.make(env_path,
+                           reward_class=constants.reward_class,
+                           backend=backend,
+                           data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
+                           param=param,
+                           gamerules_class=constants.game_rule,
+                           test=True,
+                           other_rewards=constants.other_rewards,
+                           # We need the actions of the agent to be the highest base class
+                           action_class=PlayableAction,
+                           opponent_init_budget=0,
+                           opponent_action_class=DontAct
+                           )
 
     # If an int is provided, chronic_scenario is string by default, so it has to be converted
     try:

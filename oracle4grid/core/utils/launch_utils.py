@@ -26,10 +26,10 @@ def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, confi
                   grid_path=env_dir, chronic_id=chronic, constants=constants)
 
 
-def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config = None):
+def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config = None, opponent_allowed=True):
     param = Parameters()
     param.init_from_dict(constants.DICT_GAME_PARAMETERS_SIMULATION)
-    env = prepare_env(env_dir, chronic, param)
+    env = prepare_env(env_dir, chronic, param, opponent_allowed=opponent_allowed)
 
     # Load unitary actions
     with open(action_file) as f:
