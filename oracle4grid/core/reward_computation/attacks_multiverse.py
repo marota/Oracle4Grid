@@ -62,18 +62,15 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
         # TODO what do i do if agent cannot do opponent action ?
         # Retrieve line that is attacked
         line_id = attack.as_dict()['set_line_status']["disconnected_id"][0]
-        # get the index of the attacked line in the topo vect
-        ex_bus_index = env.action_space.line_ex_pos_topo_vect[line_id]
-        or_bus_index = env.action_space.line_or_pos_topo_vect[line_id]
-        # copy the original action's vect (it is read_only)
-        new_vect = universe.grid2op_action.set_bus.copy()
-        # force switch the two indexes of the attacked line in this vect to be unchanged
-        new_vect[ex_bus_index] = 0
-        new_vect[or_bus_index] = 0
-        # recreate the original action with the new vect, devoid of change on the same line as attacked
-        action_bus_vect = env.action_space({"set_bus": new_vect})
-        # Combination is now not ambiguous
-        combinated_action = action_bus_vect + attack
+        universe.line_or_set_bus = [(line_id, 0)]
+        action = universe.grid2op_action
+        action.line_or_set_bus = [(line_id, 0)]
+        action.line_ex_set_bus = [(line_id, 0)]
+        if action.line_or_change_bus[line_id]:
+            action.line_or_change_bus = [line_id]
+        if action.line_ex_change_bus[line_id]:
+            action.line_ex_change_bus = [line_id]
+        combinated_action = action + attack
     agent = OneChangeThenOnlyReconnect.gen_next(combinated_action)(env.action_space)
     # set the seed
     env.chronics_handler.tell_id(-1)
