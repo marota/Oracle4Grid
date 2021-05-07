@@ -62,7 +62,6 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
         # TODO what do i do if agent cannot do opponent action ?
         # Retrieve line that is attacked
         line_id = attack.as_dict()['set_line_status']["disconnected_id"][0]
-        universe.line_or_set_bus = [(line_id, 0)]
         action = universe.grid2op_action
         action.line_or_set_bus = [(line_id, 0)]
         action.line_ex_set_bus = [(line_id, 0)]

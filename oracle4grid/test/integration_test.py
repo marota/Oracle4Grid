@@ -261,7 +261,6 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(action_oracle_format, expected_format)
 
     def test_parsing2(self):
-        file_json = "./oracle4grid/test_resourses/test_actions_format2.json"
         chronic = 0
         env_dir = "./data/wcci_test"
 
@@ -269,23 +268,26 @@ class IntegrationTest(unittest.TestCase):
         param = Parameters()
         param.init_from_dict(EnvConstantsTest().DICT_GAME_PARAMETERS_SIMULATION)
         env = prepare_env(env_dir, chronic, param)
-
         # Read expected format
         with open("./oracle4grid/test_resourses/expected_actions_format2.json") as json_file_expected:
             expected_format = json.load(json_file_expected)
 
-        # Read and convert action
-        with open(file_json) as json_file:
-            actions_original = json.load(json_file)
-        parser = OracleParser(actions_original, env.action_space)
-        action_oracle_format = parser.parse()
+        # Create the json format based on to_vect
+        actions = combinator.generate(expected_format, 1, env, False, nb_process=1)
+        vect_format = {"sub": {}}
+        for action in actions:
+            if len(action.subs.keys()) > 0:
+                vect_format["sub"][str(list(action.subs.keys())[0])] = [{'set_configuration':action.grid2op_action.to_vect()}]
 
+        #parse this format 2
+        parser = OracleParser(vect_format, env.action_space)
+        action_oracle_format = parser.parse()
 
         # Assert Equal
         self.assertEqual(action_oracle_format, expected_format)
 
     def test_actions_impact(self):
-        file_json = "./oracle4grid/test_resourses/test_actions_format2.json"
+        file_json = "./oracle4grid/test_resourses/expected_actions_format2.json"
         chronic = 0
         env_dir = "./data/wcci_test"
 
