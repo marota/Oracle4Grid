@@ -19,3 +19,9 @@ Welcome to Oracle4Grid's documentation!
    :caption: Algorithms documentation
 
    DESCRIPTION.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Attacks Multiverse
+
+   ATTACKS.rst
