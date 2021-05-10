@@ -179,7 +179,7 @@ class GraphValidation(unittest.TestCase):
         actions = combinator.generate(atomic_actions, int(config[MAX_DEPTH]), env, False, nb_process=int(config[NB_PROCESS]))
 
         #Compute one of the runs with runner :
-        test_action = actions[0]
+        test_action = actions[1]
         run_runner = run_many.run_one(test_action, env, int(config[MAX_ITER]), env_seed=[16101991], agent_seed=[16101991])
         #make df and retreive window of attack
         df_runner = make_df_from_res([run_runner], False)
@@ -193,10 +193,13 @@ class GraphValidation(unittest.TestCase):
             attacks = windows[window]
             for attack_id in attacks:
                 attack = attacks[attack_id]["attack"]
-                run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
+                run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end+1, env_seed=16101991, agent_seed=16101991)
+                run_multiverse2 = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
                 #test expected values for rewards
-                expected = run_runner.rewards[begin+2:end+2]
-                np.testing.assert_allclose(expected, run_multiverse.rewards)
+                expected = run_runner.rewards[begin+1:end+1]
+                actual = run_multiverse.rewards[:-1]
+                np.testing.assert_allclose(expected, actual)
+
 
 
 

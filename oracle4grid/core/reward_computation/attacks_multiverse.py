@@ -94,11 +94,11 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
         obs, reward, done, info = env.step(act)
         cum_reward += reward
         opp_attack = attack
+        iteration += 1
         episode.incr_store(True, iteration, 0,
                            float(reward), env._env_modification,
                            act, obs, None,
                            info)
-        iteration += 1
         time_step += 1
     max_timestep = time_step-1
     nb_timestep = iteration
