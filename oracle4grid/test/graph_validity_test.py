@@ -80,7 +80,7 @@ def with_multiverse():
     return reward_df, env, actions
 
 
-class PerformanceTest(unittest.TestCase):
+class GraphValidation(unittest.TestCase):
 
     def test_fast_forward(self):
         file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
