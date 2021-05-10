@@ -194,7 +194,6 @@ class GraphValidation(unittest.TestCase):
             for attack_id in attacks:
                 attack = attacks[attack_id]["attack"]
                 run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end+1, env_seed=16101991, agent_seed=16101991)
-                run_multiverse2 = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
                 #test expected values for rewards
                 expected = run_runner.rewards[begin+1:end+1]
                 actual = run_multiverse.rewards[:-1]
