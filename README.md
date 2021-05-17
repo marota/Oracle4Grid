@@ -68,6 +68,15 @@ See the documentation for further details about the results through a simple use
 
 ## Installation
 
+For normal usage :
+
+- [Optional] create a virtual environment for running the program :
+  ``pipenv install ``
+  ``pipenv shell ``
+  
+- Install :
+``pip install oracle4grid``
+
 For development, please proceed as follows:
 - Create a pipenv environment with required dependencies. It will install from the Pipfile
 ``pipenv install
