@@ -5,6 +5,8 @@ import time
 import numpy as np
 import pandas as pd
 import networkx as nx
+from pandas import notnull
+
 from oracle4grid.core.reward_computation.run_many import get_node_name
 from oracle4grid.core.utils.constants import END_NODE_REWARD, EnvConstants
 
@@ -168,9 +170,6 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     elapsed_time = time.time() - start_time
     print("number of nodes to dump :" + str(len(to_dump)))
     print(elapsed_time)
-
-    # filtering (option 1)  this option is way slower than the networkx removal at the bottom here
-    # edges_ex, edges_or, edges_weights = filter_nodes_from_python_list(edges_or, edges_ex, edges_weights, to_dump)
 
     # Symbolic end node
     edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]

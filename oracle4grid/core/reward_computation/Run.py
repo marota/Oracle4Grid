@@ -26,4 +26,4 @@ class Run:
 
     def reset_attacks_id(self):
         self.attacks_id = [None if attack is None or len(attack.impact_on_objects()['force_line']['disconnections']['powerlines']) == 0 else
-                           attack.impact_on_objects()['force_line']['disconnections']['powerlines'][0] for attack in self.attacks]
+                           float(attack.impact_on_objects()['force_line']['disconnections']['powerlines'][0]) for attack in self.attacks]

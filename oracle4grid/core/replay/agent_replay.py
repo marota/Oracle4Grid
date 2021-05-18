@@ -49,23 +49,6 @@ def replay(action_path: list, max_iter: int,
                      path_save=path_logs
                      )
     id_chron, name_chron, agent_reward, t, max_ts, episode_data = res.pop()
-    ################
-    #agent_class = OracleAgent.gen_next(action_path)
-    #agent = agent_class(action_space=env.action_space,
-    #                    observation_space=None, name=None)
-    # obs = env.reset()
-    #env.seed(env_seed)
-    #agent.seed(agent_seed)
-#
-    #agent_reward = 0.
-    #done = False
-    #for t in range(max_iter):
-    #    if done:
-    #        warnings.warn("During replay - oracle agent has game over before max iter (timestep "+str(t)+") with exception: "+str(info['exception']))
-    #        break
-    #    action = agent.act(obs, reward=0., done=False)
-    #    obs, reward, done, info = env.step(action)
-    #    agent_reward += reward
 
     # Check reward as expected
     expected_reward = extract_expected_reward(kpis)

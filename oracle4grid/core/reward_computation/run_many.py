@@ -24,16 +24,16 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False, agent_seed=None
     return make_df_from_res(all_res, debug)
 
 
-def make_df_from_res(all_res, debug):
+def make_df_from_res(all_res, debug, multiverse=False):
     cols = ["action", "timestep", "reward", "overload_reward"
-            , "attacks", "attack_id", "name", "node_name"
+            , "attacks", "attack_id", "name", "node_name", "multiverse"
             ]
     data = []
     for run in all_res:
         # Temporary fix in case there is divergence - rewards and other_rewards should be under the same convention (length, NaN)
         run = check_other_rewards(run)
         for n, t in enumerate(range(run.begin_ts, run.begin_ts+run.nb_timestep)):
-            data.append(to_json(run, t, n,  debug))
+            data.append(to_json(run, t, n,  debug, multiverse))
     df = pandas.DataFrame(data, columns=cols)
     return df
 
@@ -53,7 +53,7 @@ def check_other_rewards(run):
     return run
 
 
-def to_json(run, t, n, debug):
+def to_json(run, t, n, debug, multiverse):
     name = get_action_name(run.action, debug)
     return {
         "action": run.action,
@@ -63,7 +63,8 @@ def to_json(run, t, n, debug):
         "attacks": run.attacks[n],
         "attack_id": run.attacks_id[n],
         "name": name,
-        "node_name": get_node_name(name, t, run.attacks_id[n])
+        "node_name": get_node_name(name, t, run.attacks_id[n]),
+        "multiverse": multiverse
     }
 
 

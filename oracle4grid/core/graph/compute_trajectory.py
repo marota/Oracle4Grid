@@ -2,6 +2,8 @@
 import networkx as nx
 import numpy as np
 
+from oracle4grid.core.graph.attack_graph_module import get_info_from_edge
+
 
 SHORTEST = "shortest"
 LONGEST = "longest"
@@ -19,11 +21,11 @@ def best_path(graph, best_path_type, actions, debug = False):
         if len(l_nodes_with_init) == 0:
             max_timestep = 0
         else:
-            timesteps=[int(s.split("_")[-1][1:]) for s in l_nodes_with_init]#get timesteps of connected component
+            timesteps=[int(get_info_from_edge(s)[1]) for s in l_nodes_with_init]#get timesteps of connected component
             max_timestep=np.max(timesteps)
         print("WARNING: there is no path without overloads between t0 and max iter. Problem occurs at timestep "+ str(max_timestep))
 
-        return [],[]
+        return [], [], []
     else:
         if best_path_type == SHORTEST:
             path = nx.bellman_ford_path(graph, 'init', 'end')  # shortest_path(G)
@@ -34,7 +36,7 @@ def best_path(graph, best_path_type, actions, debug = False):
         # Traduce path in terms of OracleActions
         action_path = return_action_path(path, actions, debug=debug)
         grid2op_action_path = get_grid2op_action_path(action_path)
-        return action_path, grid2op_action_path
+        return path, action_path, grid2op_action_path
 
 
 def best_path_no_overload(graph, best_path_type, actions, debug = False):

@@ -56,9 +56,9 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
     start_time = time.time()
-    best_path, grid2op_action_path = compute_trajectory.best_path(graph, config["best_path_type"], actions,
+    raw_path, best_path, grid2op_action_path = compute_trajectory.best_path(graph, config["best_path_type"], actions,
                                                                   debug=debug)
-    best_path_no_overload, grid2op_action_path_no_overload = compute_trajectory.best_path_no_overload(graph, config["best_path_type"], actions,
+    raw_path_no_overload, best_path_no_overload, grid2op_action_path_no_overload = compute_trajectory.best_path_no_overload(graph, config["best_path_type"], actions,
                                                                   debug=debug)
     elapsed_time = time.time() - start_time
     print("elapsed_time for best_path computation is:"+str(elapsed_time))
@@ -84,7 +84,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
             print(topo_count)
 
     # 5 - Indicators computation
-    kpis = indicators.generate(best_path, best_path_no_overload, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug=debug)
+    kpis = indicators.generate(raw_path, raw_path_no_overload, best_path, best_path_no_overload, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug=debug)
     if debug:
         print(kpis)
         kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
