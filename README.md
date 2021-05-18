@@ -35,7 +35,7 @@ https://oracle4grid.readthedocs.io/en/latest/
 Run example
 
 ``
-pipenv run python -m main -d 1 -f oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json -e data/rte_case14_realistic -c 0
+pipenv run python -m oracle4grid.main -d 1 -f oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json -e data/rte_case14_realistic -c 0
 ``
 
 - -d/--debug: If 1, prints additional information for debugging purposes. If 0, doesn't print any info

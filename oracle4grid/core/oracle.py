@@ -1,15 +1,14 @@
 import os
 import time
 
+from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.graph import graph_generator, compute_trajectory, indicators
 from oracle4grid.core.replay import agent_replay
-from oracle4grid.core.reward_computation.attacks_multiverse import compute_all_multiverses, multiverse_simulation
-from oracle4grid.core.utils.constants import EnvConstants
-from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation import run_many
-from oracle4grid.core.actions_utils import combinator
-from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS,REWARD_SIGNIFICANT_DIGIT, REL_TOL
-from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df, serialize, display_topo_count,serialize_graph
+from oracle4grid.core.reward_computation.attacks_multiverse import multiverse_simulation
+from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS, REWARD_SIGNIFICANT_DIGIT, REL_TOL
+from oracle4grid.core.utils.constants import EnvConstants
+from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df, serialize, display_topo_count, serialize_graph
 
 
 def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,
@@ -36,7 +35,10 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
-    reward_df = multiverse_simulation(env, actions, reward_df, debug, env_seed=env_seed, agent_seed=agent_seed)
+    reward_df, windows = multiverse_simulation(env, actions, reward_df, debug, env_seed=env_seed, agent_seed=agent_seed)
+    if debug:
+        print("Windows of attack are :")
+        print(windows)
     elapsed_time = time.time() - start_time
     print("elapsed_time for attack multiversing is:"+str(elapsed_time))
 
@@ -65,7 +67,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     if debug:
         print("With possible overloads")
-        print(best_path)
+        print(raw_path)
         # Serialization for agent replay
         serialize(grid2op_action_path, 'best_path_grid2op_action',
                   dir=debug_directory, format='pickle')
@@ -76,7 +78,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
         # Serialization for path with no overload
         if(len(best_path_no_overload)>=1):
             print("Without overload")
-            print(best_path_no_overload)
+            print(raw_path_no_overload)
             serialize(grid2op_action_path_no_overload, 'best_path_grid2op_action_no_overload',
                       dir=debug_directory, format='pickle')
             topo_count = display_topo_count(best_path_no_overload, dir=debug_directory, name="best_path_no_overload_topologies_count.png")

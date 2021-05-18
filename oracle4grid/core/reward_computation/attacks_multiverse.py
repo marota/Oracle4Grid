@@ -12,11 +12,11 @@ from oracle4grid.core.reward_computation.run_many import make_df_from_res, get_a
 
 
 def multiverse_simulation(env, actions, reward_df, debug, env_seed=None, agent_seed=None):
-    runs = compute_all_multiverses(env, actions, reward_df, debug, env_seed, agent_seed)
+    runs, windows = compute_all_multiverses(env, actions, reward_df, debug, env_seed, agent_seed)
     if len(runs) == 0:
         return reward_df
     multiverse_df = make_df_from_res(runs, debug, multiverse=True)
-    return pd.concat([reward_df, multiverse_df], ignore_index=True, sort=False)
+    return pd.concat([reward_df, multiverse_df], ignore_index=True, sort=False), windows
 
 
 def compute_all_multiverses(env, actions, reward_df, debug=False, env_seed=None, agent_seed=None):
@@ -38,7 +38,7 @@ def compute_all_multiverses(env, actions, reward_df, debug=False, env_seed=None,
                 run = compute_one_multiverse(env, universe, attack, begin, end, env_seed, agent_seed)
                 runs.append(run)
     print("Number of multiverse computed :" + str(len(runs)))
-    return runs
+    return runs, windows
 
 
 def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, agent_seed=None):

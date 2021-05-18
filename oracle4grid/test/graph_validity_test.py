@@ -74,7 +74,7 @@ def with_multiverse():
     reward_df, env, actions = init_test_env()
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
-    reward_df = multiverse_simulation(env, actions, reward_df, False, env_seed=16101991, agent_seed=16101991)
+    reward_df, windows = multiverse_simulation(env, actions, reward_df, False, env_seed=16101991, agent_seed=16101991)
     elapsed_time = time.time() - start_time
     print("elapsed_time for attack multiversing is:" + str(elapsed_time))
     return reward_df, env, actions
