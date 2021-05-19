@@ -21,7 +21,6 @@ class Run:
         self.other_rewards = episode_data.other_rewards
         self.attacks = episode_data.attacks
         self.attacks_id = None
-        self.episode_data = episode_data
         self.reset_attacks_id()
 
     def reset_attacks_id(self):
