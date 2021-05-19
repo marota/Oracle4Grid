@@ -18,7 +18,9 @@ def generate(reward_df, max_iter=None, debug=False, reward_significant_digit=Non
 
     # Parameters and DataFrame preprocessing
     reward_df = preprocessing(reward_df, max_iter)
-    actions = reward_df['action'].unique()
+    #actions = reward_df['action'].unique()#be careful because with multiprocessing same action name could have different action object, that is diferent pointer adresses
+    indice_unique_actions=list(reward_df['name'].drop_duplicates().index)
+    actions = reward_df['action'][indice_unique_actions].values
 
     # Compute possible transitions list for each action
     reachable_topologies_from_init = get_reachable_topologies_from_init(actions, explicit_node_names=debug, constants=constants)
