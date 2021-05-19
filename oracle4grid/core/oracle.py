@@ -36,9 +36,10 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
     reward_df, windows = multiverse_simulation(env, actions, reward_df, debug, env_seed=env_seed, agent_seed=agent_seed)
-    if debug:
-        print("Windows of attack are :")
-        print(windows)
+
+    print("Windows of attack are :")
+    for el in windows.items():
+        print('attack_window: ' + el[0] + ' with lines possibly attacked ' + str([atk for atk in el[1]]))
     elapsed_time = time.time() - start_time
     print("elapsed_time for attack multiversing is:"+str(elapsed_time))
 
