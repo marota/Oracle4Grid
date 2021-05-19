@@ -14,7 +14,7 @@ from oracle4grid.core.reward_computation.run_many import make_df_from_res, get_a
 def multiverse_simulation(env, actions, reward_df, debug, env_seed=None, agent_seed=None):
     runs, windows = compute_all_multiverses(env, actions, reward_df, debug, env_seed, agent_seed)
     if len(runs) == 0:
-        return reward_df
+        return reward_df, windows
     multiverse_df = make_df_from_res(runs, debug, multiverse=True)
     return pd.concat([reward_df, multiverse_df], ignore_index=True, sort=False), windows
 
