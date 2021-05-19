@@ -81,7 +81,7 @@ def serie(env, actions, max_iter, agent_seed=None, env_seed=None):
     all_res = []
     with tqdm(total=len(actions)) as pbar:
         for action in actions:
-            all_res.append(run_one(action, env, max_iter, agent_seed, env_seed))
+            all_res.append(run_one(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed))
             pbar.update(1)
     return all_res
 
@@ -91,7 +91,7 @@ def parallel(env, actions, max_iter, nb_process, agent_seed=None, env_seed=None)
     with tqdm(total=len(actions)) as pbar:
         with Pool(nb_process) as p:
             runs = p.starmap(run_one,
-                             [(action, env, max_iter, agent_seed, env_seed) for action in actions])
+                             [(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed) for action in actions])
             for run in runs:
                 all_res.append(run)
             pbar.update(1)

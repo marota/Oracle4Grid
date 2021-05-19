@@ -180,7 +180,7 @@ class GraphValidation(unittest.TestCase):
 
         #Compute one of the runs with runner :
         test_action = actions[1]
-        run_runner = run_many.run_one(test_action, env, int(config[MAX_ITER]), env_seed=[16101991], agent_seed=[16101991])
+        run_runner = run_many.run_one(test_action, env.get_params_for_runner(), int(config[MAX_ITER]), env_seed=[16101991], agent_seed=[16101991])
         #make df and retreive window of attack
         df_runner = make_df_from_res([run_runner], False)
         windows = get_windows_from_df(df_runner)
