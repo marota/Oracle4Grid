@@ -21,7 +21,7 @@ def replay(action_path: list, max_iter: int,
     param.init_from_dict(constants.DICT_GAME_PARAMETERS_REPLAY)
     env = prepare_env(grid_path, chronic_id, param, constants=constants)
     init_topo_vect, init_line_status = get_initial_configuration(env)
-    #env.set_id(chronic_id)
+    env.set_id(chronic_id)
 
 
     # Run replay
@@ -41,24 +41,32 @@ def replay(action_path: list, max_iter: int,
     if env_seed is not None:
         env_seed=[env_seed]
     runner = Runner(**env.get_params_for_runner(), agentClass=None,agentInstance=agent)
-    res = runner.run(nb_episode=1,
-                     nb_process=1,
-                     max_iter=max_iter, add_detailed_output=True,
-                     env_seeds=env_seed,  # ENV_SEEDS,
-                     agent_seeds=agent_seed,  # AGENT_SEEDS,
-                     path_save=path_logs
-                     )
-    id_chron, name_chron, agent_reward, t, max_ts, episode_data = res.pop()
+    name_chron, agent_reward, nb_time_step, episode_data =runner.run_one_episode(path_save=path_logs,
+                             indx=chronic_id,
+                             env_seeds=env_seed,  # ENV_SEEDS,
+                             agent_seeds=agent_seed,  # AGENT_SEEDS,
+                             max_iter=max_iter,
+                             pbar=True,
+                             detailed_output=True)
+    #res = runner.run(nb_episode=1,
+    #                 nb_process=1,
+    #                 max_iter=max_iter, add_detailed_output=True,
+    #                 env_seeds=env_seed,  # ENV_SEEDS,
+    #                 agent_seeds=agent_seed,  # AGENT_SEEDS,
+    #                 path_save=path_logs
+    #                 )
+    #id_chron, name_chron, agent_reward, t, max_ts, episode_data = res.pop()
+
 
     # Check reward as expected
     expected_reward = extract_expected_reward(kpis)
     if (not isclose(expected_reward, agent_reward, rel_tol=rel_tol)) and t==max_iter:
         warnings.warn("During replay - oracle agent does not retrieve the expected reward. Some timestep may have break some game rules in real condition. Expected reward: "+str(expected_reward)+" Reward obtained: "+str(agent_reward))
-    elif t==max_iter: # if pas de game over
+    elif nb_time_step==max_iter: # if pas de game over
         print("Expected reward of "+str(expected_reward)+" has been correctly obtained in replay conditions")
     else:
         warnings.warn("During replay - oracle agent has game over before max iter (timestep " + str(t) + ")")
-    return t
+    return nb_time_step
 
 def extract_expected_reward(kpis):
     return kpis.loc[kpis['Indicator name']=="Best possible path with game rules", "Reward value"].values[0]
