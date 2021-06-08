@@ -32,7 +32,7 @@ https://oracle4grid.readthedocs.io/en/latest/
 
 ## Run
 
-Run example
+Run example (from the root folder)
 
 ``
 pipenv run python -m oracle4grid.main -d 1 -f oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json -e data/rte_case14_realistic -c 0

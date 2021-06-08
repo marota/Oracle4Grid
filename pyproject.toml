@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "oracle4grid"
-version = "1.0.1"
+version = "1.0.3"
 description = "Oracle agent that finds the best course of actions aposteriori, within a given perimeter of actions"
 authors = ["Mario Jothy <mariojothy@gmail.com>", "Nicolas Megel <nico.megel@gmail.com>"]
 license = "Mozilla Public License 2.0 (MPL 2.0)"
