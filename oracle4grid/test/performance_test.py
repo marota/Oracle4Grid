@@ -63,7 +63,7 @@ class PerformanceTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
         parser = OracleParser(atomic_actions, env.action_space)
         atomic_actions = parser.parse()
         # 0 - Preparation : Get initial topo and line status

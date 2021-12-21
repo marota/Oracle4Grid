@@ -15,7 +15,7 @@ ASSET_MAPPING = {"line (origin)":"lines_id_bus",
                  "load":"loads_id_bus"}
 
 def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config, constants=EnvConstants()):
-    atomic_actions, env, debug_directory = load(env_dir, chronic, action_file, debug, constants=constants, config = config)
+    atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, action_file, debug, constants=constants, config = config)
     # Parse atomic_actions format
     # atomic_actions = parse(atomic_actions,env)
     parser = OracleParser(atomic_actions, env.action_space)
@@ -23,13 +23,13 @@ def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, confi
 
     # Run all steps
     return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
-                  grid_path=env_dir, chronic_id=chronic, constants=constants)
+                  grid_path=env_dir, chronic_scenario=chronic, constants=constants)
 
 
 def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config = None, opponent_allowed=True):
     param = Parameters()
     param.init_from_dict(constants.DICT_GAME_PARAMETERS_SIMULATION)
-    env = prepare_env(env_dir, chronic, param, opponent_allowed=opponent_allowed)
+    env, chronic_id = prepare_env(env_dir, chronic, param, opponent_allowed=opponent_allowed)
 
     # Load unitary actions
     with open(action_file) as f:
@@ -44,7 +44,7 @@ def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config 
         debug_directory = init_debug_directory(env_dir, action_file, chronic, output_path)
     else:
         debug_directory = None
-    return atomic_actions, env, debug_directory
+    return atomic_actions, env, debug_directory, chronic_id
 
 
 def init_debug_directory(env_dir, action_file, chronic, output_path = None):

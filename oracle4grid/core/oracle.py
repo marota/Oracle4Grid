@@ -12,7 +12,7 @@ from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df
 
 
 def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,
-           reward_significant_digit=None, grid_path=None, chronic_id=None, constants=EnvConstants()):
+           reward_significant_digit=None, grid_path=None, chronic_scenario=None, constants=EnvConstants()):
     # 0 - Preparation : Get initial topo and line status
     # init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -94,12 +94,12 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 6 - Replay of best path in real game rules condition
     replay_results = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
-                                         kpis, grid_path, chronic_id, debug=debug, constants=constants,
+                                         kpis, grid_path, chronic_scenario, debug=debug, constants=constants,
                                          env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory,oracle_action_path=best_path)
 
     if(len(grid2op_action_path_no_overload)>=1):
         replay_results_no_overload = agent_replay.replay(grid2op_action_path_no_overload, int(config[MAX_ITER]),
-                                                         kpis, grid_path, chronic_id, debug=debug, constants=constants,
+                                                         kpis, grid_path, chronic_scenario, debug=debug, constants=constants,
                                                          env_seed=env_seed, agent_seed=agent_seed,
                                                          rel_tol=float(config[REL_TOL]), path_logs=debug_directory,logs_file_name_extension="no_overload",oracle_action_path=best_path_no_overload)
 

@@ -105,7 +105,7 @@ class IntegrationTest(unittest.TestCase):
         constants = EnvConstantsTest()
         param = Parameters()
         param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
-        env = prepare_env(env_dir, chronic, param, constants)
+        env, chronic_id = prepare_env(env_dir, chronic, param, constants)
         env.set_id(chronic)
         obs = env.reset()
         agent = OracleAgent(action_path=grid2op_action_path, action_space=env.action_space,
@@ -133,7 +133,7 @@ class IntegrationTest(unittest.TestCase):
         constants = EnvConstantsTest()
         param = Parameters()
         param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
-        env = prepare_env(env_dir, chronic, param, constants)
+        env, chronic_id = prepare_env(env_dir, chronic, param, constants)
         env.set_id(chronic)
         obs = env.reset()
 
@@ -174,7 +174,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
 
         # 1 - Action generation step
         actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False)
@@ -193,7 +193,7 @@ class IntegrationTest(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
         env_dir = "./data/rte_case14_realistic"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
 
         cols_to_check = ['action', 'timestep', 'reward', 'overload_reward', 'attack_id']
 
@@ -245,7 +245,7 @@ class IntegrationTest(unittest.TestCase):
         # Load env
         param = Parameters()
         param.init_from_dict(EnvConstantsTest().DICT_GAME_PARAMETERS_SIMULATION)
-        env = prepare_env(env_dir, chronic, param)
+        env, chronic_id = prepare_env(env_dir, chronic, param)
 
         # Read and convert action
         with open(file_json) as json_file:
@@ -267,7 +267,7 @@ class IntegrationTest(unittest.TestCase):
         # Load env
         param = Parameters()
         param.init_from_dict(EnvConstantsTest().DICT_GAME_PARAMETERS_SIMULATION)
-        env = prepare_env(env_dir, chronic, param)
+        env, chronic_id = prepare_env(env_dir, chronic, param)
         # Read expected format
         with open("./oracle4grid/test_resourses/expected_actions_format2.json") as json_file_expected:
             expected_format = json.load(json_file_expected)
@@ -291,7 +291,7 @@ class IntegrationTest(unittest.TestCase):
         chronic = 0
         env_dir = "./data/wcci_test"
 
-        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False, constants=EnvConstantsTest())
+        atomic_actions_original, env, debug_directory, chronic_id = load(env_dir, chronic, file_json, debug=False, constants=EnvConstantsTest())
         parser = OracleParser(atomic_actions_original, env.action_space)
         atomic_actions = parser.parse()
 
@@ -328,7 +328,7 @@ class IntegrationTest(unittest.TestCase):
         file_json = "./oracle4grid/test_resourses/test_unitary_actions_cancelling.json"
 
         # Compute a fake Oracle action path and Oracle Agent
-        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
+        atomic_actions_original, env, debug_directory, chronic_id = load(env_dir, chronic, file_json, debug=False,
                                                              constants=EnvConstantsTest())
         obs = env.reset()
         init_topo_vect, init_line_status = get_initial_configuration(env)
@@ -379,7 +379,7 @@ class IntegrationTest(unittest.TestCase):
 
 
         # Compute a fake Oracle action path and Oracle Agent
-        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
+        atomic_actions_original, env, debug_directory, chronic_id = load(env_dir, chronic, file_json, debug=False,
                                                              constants=EnvConstantsTest())
         init_topo_vect, init_line_status = get_initial_configuration(env)
         obs = env.reset()
@@ -422,7 +422,7 @@ class IntegrationTest(unittest.TestCase):
         max_timestep = 100
 
         # Compute a fake Oracle action path and Oracle Agent
-        atomic_actions_original, env, debug_directory = load(env_dir, chronic, file_json, debug=False,
+        atomic_actions_original, env, debug_directory, chronic_id = load(env_dir, chronic, file_json, debug=False,
                                                              constants=EnvConstantsTest())
         init_topo_vect, init_line_status = get_initial_configuration(env)
         obs = env.reset()

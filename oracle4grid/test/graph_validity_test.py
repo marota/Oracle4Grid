@@ -57,7 +57,7 @@ def init_test_env():
     file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
     chronic = "000"
     env_dir = "./data/l2rpn_neurips_2020_track1"
-    atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+    atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
     parser = OracleParser(atomic_actions, env.action_space)
     atomic_actions = parser.parse()
 
@@ -86,7 +86,7 @@ class GraphValidation(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
         chronic = "000"
         env_dir = "./data/l2rpn_neurips_2020_track1"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        atomic_actions, env, debug_directory,chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
         parser = OracleParser(atomic_actions, env.action_space)
         atomic_actions = parser.parse()
         env.chronics_handler.tell_id(0)
@@ -171,7 +171,7 @@ class GraphValidation(unittest.TestCase):
         file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
         chronic = "000"
         env_dir = "./data/l2rpn_neurips_2020_track1"
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
+        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest())
         parser = OracleParser(atomic_actions, env.action_space)
         atomic_actions = parser.parse()
 
@@ -185,7 +185,7 @@ class GraphValidation(unittest.TestCase):
         df_runner = make_df_from_res([run_runner], False)
         windows = get_windows_from_df(df_runner)
         # multiverse needs a different environment
-        atomic_actions, env, debug_directory = load(env_dir, chronic, file, False, constants=EnvConstantsTest(), opponent_allowed=False)
+        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest(), opponent_allowed=False)
         #compute same action with multiverse
         for window in windows:
             begin = int(window.split("_")[0])
