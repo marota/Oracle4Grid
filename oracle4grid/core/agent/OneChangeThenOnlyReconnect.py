@@ -1,5 +1,5 @@
 import numpy
-from grid2op.Agent.BaseAgent import BaseAgent
+from grid2op.Agent import BaseAgent
 
 
 class OneChangeThenOnlyReconnect(BaseAgent):
