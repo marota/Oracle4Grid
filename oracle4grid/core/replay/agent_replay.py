@@ -11,7 +11,7 @@ from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 
 def replay(action_path: list, max_iter: int,
-           kpis, grid_path, chronic_id, debug = False, constants=EnvConstants(), env_seed = None, agent_seed = None,
+           kpis, grid_path, chronic_scenario, debug = False, constants=EnvConstants(), env_seed = None, agent_seed = None,
            rel_tol = 1e7, path_logs = None, logs_file_name_extension=None,oracle_action_path=None):
     if debug:
         print('\n')
@@ -19,7 +19,7 @@ def replay(action_path: list, max_iter: int,
     # Environment settings for replay
     param = Parameters()
     param.init_from_dict(constants.DICT_GAME_PARAMETERS_REPLAY)
-    env = prepare_env(grid_path, chronic_id, param, constants=constants)
+    env, chronic_id = prepare_env(grid_path, chronic_scenario, param, constants=constants)
     init_topo_vect, init_line_status = get_initial_configuration(env)
     env.set_id(chronic_id)
 
@@ -41,12 +41,13 @@ def replay(action_path: list, max_iter: int,
     if env_seed is not None:
         env_seed=[env_seed]
     runner = Runner(**env.get_params_for_runner(), agentClass=None,agentInstance=agent)
-    name_chron, agent_reward, nb_time_step, episode_data =runner.run_one_episode(path_save=path_logs,
-                             indx=chronic_id,
-                             env_seeds=env_seed,  # ENV_SEEDS,
-                             agent_seeds=agent_seed,  # AGENT_SEEDS,
-                             max_iter=max_iter,
+
+    name_chron, agent_reward, nb_time_step, episode_data =runner.run_one_episode(indx=chronic_id,
+                             path_save=path_logs,
                              pbar=True,
+                             env_seed=env_seed,  # ENV_SEEDS,
+                             max_iter=max_iter,
+                             agent_seed=agent_seed,  # AGENT_SEEDS,
                              detailed_output=True)
     #res = runner.run(nb_episode=1,
     #                 nb_process=1,
@@ -65,7 +66,7 @@ def replay(action_path: list, max_iter: int,
     elif nb_time_step==max_iter: # if pas de game over
         print("Expected reward of "+str(expected_reward)+" has been correctly obtained in replay conditions")
     else:
-        warnings.warn("During replay - oracle agent has game over before max iter (timestep " + str(t) + ")")
+        warnings.warn("During replay - oracle agent has game over before max iter (timestep " + str(nb_time_step) + ")")
     return nb_time_step
 
 def extract_expected_reward(kpis):

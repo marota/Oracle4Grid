@@ -64,7 +64,7 @@ def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants(), opp
             env.reset()
         else:  # if name not found
             raise ValueError("Chronic scenario name: " + str(chronic_scenario) + " not found in folder")
-    return env
+    return env,found_id
 
 
 def search_chronic_name_from_num(num, env):
