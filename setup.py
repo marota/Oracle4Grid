@@ -4,7 +4,7 @@ from setuptools import setup
 pkgs = {
     "required": [
         "numba==0.53.1",
-        "grid2op>1.5.1",
+        "grid2op==1.6.4",
         "pandas==1.2.4",
         "psutil==5.7.2",
         "matplotlib==3.3.2",
@@ -13,6 +13,7 @@ pkgs = {
         "ipywidgets==7.5.1",
         "numpy==1.19.3",
         "pytest==6.2.2",
+        "lightsim2grid==0.6.0",
         # We don't need these
         "scipy<=1.6.0"
     ]

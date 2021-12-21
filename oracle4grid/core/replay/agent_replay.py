@@ -61,7 +61,7 @@ def replay(action_path: list, max_iter: int,
 
     # Check reward as expected
     expected_reward = extract_expected_reward(kpis)
-    if (not isclose(expected_reward, agent_reward, rel_tol=rel_tol)) and t==max_iter:
+    if (not isclose(expected_reward, agent_reward, rel_tol=rel_tol)) and nb_time_step==max_iter:
         warnings.warn("During replay - oracle agent does not retrieve the expected reward. Some timestep may have break some game rules in real condition. Expected reward: "+str(expected_reward)+" Reward obtained: "+str(agent_reward))
     elif nb_time_step==max_iter: # if pas de game over
         print("Expected reward of "+str(expected_reward)+" has been correctly obtained in replay conditions")
