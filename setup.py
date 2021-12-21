@@ -20,7 +20,7 @@ pkgs = {
 }
 
 setup(name='Oracle4Grid',
-      version='1.0.3',
+      version='1.0.4',
       description='Oracle agent that finds the best course of actions aposteriori, within a given perimeter of actions',
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -36,6 +36,7 @@ setup(name='Oracle4Grid',
       author='Nicolas Megel, Mario Jothy',
       author_email='nico.megel@gmail.com; mariojothy@gmail.com',
       url="https://github.com/marota/Oracle4Grid/",
+      download_url = 'https://github.com/marota/Oracle4Grid/archive/refs/tags/1.0.4.tar.gz',
       license='Mozilla Public License 2.0 (MPL 2.0)',
       packages=setuptools.find_packages(),
       include_package_data=True,
