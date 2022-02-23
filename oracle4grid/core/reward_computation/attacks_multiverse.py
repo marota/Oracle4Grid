@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from multiprocessing import Pool
 
 from grid2op.Episode import EpisodeData
 from grid2op.dtypes import dt_float, dt_bool
@@ -9,19 +10,22 @@ from oracle4grid.core.agent.OneChangeThenOnlyReconnect import OneChangeThenOnlyR
 from oracle4grid.core.graph.attack_graph_module import get_windows_from_df
 from oracle4grid.core.reward_computation.Run import Run
 from oracle4grid.core.reward_computation.run_many import make_df_from_res, get_action_name
+from oracle4grid.core.utils.prepare_environment import create_env_late_start_multivers
+from oracle4grid.core.reward_computation.run_one import run_one,run_one_multiverse
 
 
-def multiverse_simulation(env, actions, reward_df, debug, env_seed=None, agent_seed=None):
-    runs, windows = compute_all_multiverses(env, actions, reward_df, debug, env_seed, agent_seed)
+def multiverse_simulation(env, actions, reward_df, debug, nb_process=1, env_seed=None, agent_seed=None):
+    runs, windows = compute_all_multiverses(env, actions, reward_df,nb_process, debug, env_seed, agent_seed)
     if len(runs) == 0:
         return reward_df, windows
     multiverse_df = make_df_from_res(runs, debug, multiverse=True)
     return pd.concat([reward_df, multiverse_df], ignore_index=True, sort=False), windows
 
 
-def compute_all_multiverses(env, actions, reward_df, debug=False, env_seed=None, agent_seed=None):
+def compute_all_multiverses(env_ref, actions, reward_df,nb_process=1, debug=False, env_seed=None, agent_seed=None):
     runs = []
     windows = get_windows_from_df(reward_df)
+    to_runs = []
     for window in windows:
         begin = int(window.split("_")[0])
         end = int(window.split("_")[1])
@@ -35,13 +39,25 @@ def compute_all_multiverses(env, actions, reward_df, debug=False, env_seed=None,
             # for index in sorted(attack_topos, reverse=True):
             #    del universes[index]
             for universe in universes:
-                run = compute_one_multiverse(env, universe, attack, begin, end, env_seed, agent_seed)
-                runs.append(run)
+                #env_universe = create_env_late_start_multivers(env_ref, begin + 1, end + 1)
+                if(nb_process==1):
+                    #be careful because episode output in run_multiverse should possibly be initialized with nan values for timestep 0 to begin_ts
+                    run_multiverse = run_one_multiverse(env_ref, universe, attack, begin, end, [agent_seed], [env_seed])
+                    runs.append(run_multiverse)
+                else:
+                    to_runs.append((env_ref,universe,attack, begin, end, [agent_seed], [env_seed]))
+                #run = compute_one_multiverse(env, universe, attack, new_begin, new_end, env_seed, agent_seed)
+
+                #run = compute_one_multiverse(env_ref, universe, attack, begin, end, env_seed, agent_seed)
+                #runs.append(run)
+    if(nb_process>1):
+        with Pool(nb_process) as p: #parallel computation
+            runs = p.starmap(run_one_multiverse, to_runs)
     print("Number of multiverse computed :" + str(len(runs)))
     return runs, windows
 
 
-def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, agent_seed=None):
+def compute_one_multiverse(env_ref, universe, attack, begin, end, env_seed=None, agent_seed=None):
     '''
 
     :param env:
@@ -70,45 +86,51 @@ def compute_one_multiverse(env, universe, attack, begin, end, env_seed=None, age
         if action.line_ex_change_bus[line_id]:
             action.line_ex_change_bus = [line_id]
         combinated_action = action + attack
-    agent = OneChangeThenOnlyReconnect.gen_next(combinated_action)(env.action_space)
-    # set the seed
-    env.chronics_handler.tell_id(-1)
-    if env_seed is not None:
-        env.seed(env_seed)
-    obs = env.reset()
-    if agent_seed is not None:
-        agent.seed(agent_seed)
+    #agent = OneChangeThenOnlyReconnect.gen_next(combinated_action)(env_ref.action_space)
+    ## set the seed
+    #env_ref.chronics_handler.tell_id(-1)
+    #if env_seed is not None:
+    #    env_ref.seed(env_seed)
+    #obs = env_ref.reset()
+    #if agent_seed is not None:
+    #    agent.seed(agent_seed)
+#
+    env_univers = create_env_late_start_multivers(env_ref, begin+1, end+1)
+    #run=run_one(combinated_action, env.get_params_for_runner(), end-begin, [agent_seed], [env_seed])
+    run=run_one_multiverse(env_univers, universe, attack, begin, end, [agent_seed], [env_seed])
+
     # We fast forward a number of timestep from the point of vue of the chronic
     # (so begin + 1 to arrive at the correct time step to compute, since begin was already computed)
-    env.fast_forward_chronics(begin+1)
-    obs = env.current_obs
-    agent.reset(obs)
-    episode = init_episode_data(env, end - begin)
-    reward = float(env.reward_range[0])
-    done = False
-    iteration = 0
-    time_step = begin+1
-    cum_reward = dt_float(0.0)
-    while time_step <= end and not done:
-        act = agent.act(obs, reward, done)
-        obs, reward, done, info = env.step(act)
-        cum_reward += reward
-        opp_attack = attack
-        iteration += 1
-        episode.incr_store(True, iteration, 0,
-                           float(reward), env._env_modification,
-                           act, obs, None,
-                           info)
-        time_step += 1
-    max_timestep = time_step-1
-    nb_timestep = iteration
-    episode.set_meta(env, iteration, float(cum_reward), env_seed, agent_seed)
-    res = [(None, None, cum_reward, iteration, max_timestep, episode)]
-    run = Run(universe, res, begin_ts=begin + 1)
-    run.action = universe
-    run.attacks = [attack for i in range(begin,end+1)]
-    run.max_ts = end + 1
-    run.reset_attacks_id()
+    #env_ref.fast_forward_chronics(begin+1)
+    #obs = env_ref.current_obs
+    #agent.reset(obs)
+    #episode = init_episode_data(env_ref, end - begin)
+    #reward = float(env_ref.reward_range[0])
+    #done = False
+    #iteration = 0
+    #time_step = begin+1
+    #cum_reward = dt_float(0.0)
+    #while time_step <= end and not done:
+    #    act = agent.act(obs, reward, done)
+    #    obs, reward, done, info = env_ref.step(act)
+    #    cum_reward += reward
+    #    opp_attack = attack
+    #    iteration += 1
+    #    episode.incr_store(True, iteration, 0,
+    #                       float(reward), env_ref._env_modification,
+    #                       act, obs, None,
+    #                       info)
+    #    time_step += 1
+    #max_timestep = time_step-1
+    #nb_timestep = iteration
+    #episode.set_meta(env_ref, iteration, float(cum_reward), env_seed, agent_seed)
+    #res = [(None, None, cum_reward, iteration, max_timestep, episode)]
+    #run_old = Run(universe, res, begin_ts=begin + 1)
+    #run.action = universe
+    #run.attacks = [attack for i in range(begin,end+1)]
+    #run.max_ts = end + 1
+    #run.begin_ts=begin + 1
+    #run.reset_attacks_id()
     return run
 
 

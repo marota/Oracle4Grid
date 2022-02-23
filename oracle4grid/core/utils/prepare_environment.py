@@ -6,6 +6,8 @@ from grid2op.Action import PlayableAction
 import grid2op
 from grid2op.Chronics import GridStateFromFile
 from oracle4grid.core.utils.constants import EnvConstants, BACKEND
+from grid2op import make
+from grid2op.Chronics import FromNPY
 
 
 def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants(), opponent_allowed=True):
@@ -18,7 +20,7 @@ def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants(), opp
                            data_feeding_kwargs={"gridvalueClass": GridStateFromFile},
                            param=param,
                            gamerules_class=constants.game_rule,
-                           test=True,
+                           test=True,# Why test = True is used here ?
                            other_rewards=constants.other_rewards,
                            # We need the actions of the agent to be the highest base class
                            action_class=PlayableAction
@@ -65,6 +67,48 @@ def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants(), opp
         else:  # if name not found
             raise ValueError("Chronic scenario name: " + str(chronic_scenario) + " not found in folder")
     return env,found_id
+
+def create_env_late_start_multivers(env_ref, begin_time,end_time, constants=EnvConstants(), opponent_allowed=True):
+    load_p = 1.0 * env_ref.chronics_handler.real_data.data.load_p
+    load_q = 1.0 * env_ref.chronics_handler.real_data.data.load_q
+    prod_p = 1.0 * env_ref.chronics_handler.real_data.data.prod_p
+    prod_v = 1.0 * env_ref.chronics_handler.real_data.data.prod_v
+    maintenance = env_ref.chronics_handler.real_data.data.maintenance
+
+    backend = BACKEND()
+
+    # now create an environment with these chronics:
+    #no opponent for multiverse, we play attacks by "hand"
+    env = make(env_ref.get_path_env(),#env_ref.name +"_"+ str(begin_time),
+               reward_class=constants.reward_class,
+               backend=backend,
+               param=env_ref.parameters,
+               gamerules_class=constants.game_rule,
+               #test=True,
+               other_rewards=constants.other_rewards,
+               # We need the actions of the agent to be the highest base class
+               action_class=PlayableAction,
+               opponent_init_budget=0,
+               opponent_action_class=DontAct,
+               chronics_class=FromNPY,
+               data_feeding_kwargs={"i_start": begin_time,
+                                    # start at the "step" 5 NB first step is first observation, available with `obs = env.reset()`
+                                    "i_end": end_time,
+                                    # end index: data after that will not be considered (excluded as per python convention)
+                                    "load_p": load_p,
+                                    "load_q": load_q,
+                                    "prod_p": prod_p,
+                                    "prod_v": prod_v,
+                                    # other parameters includes
+                                    "maintenance": maintenance,
+                                    # load_p_forecast
+                                    # load_q_forecast
+                                    # prod_p_forecast
+                                    # prod_v_forecast
+                                    "gridvalueClass": GridStateFromFile
+                                    })
+
+    return env
 
 
 def search_chronic_name_from_num(num, env):

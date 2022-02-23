@@ -35,7 +35,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
-    reward_df, windows = multiverse_simulation(env, actions, reward_df, debug, env_seed=env_seed, agent_seed=agent_seed)
+    reward_df, windows = multiverse_simulation(env, actions, reward_df, debug,int(config[NB_PROCESS]), env_seed=env_seed, agent_seed=agent_seed)
 
     print("Windows of attack are :")
     for el in windows.items():

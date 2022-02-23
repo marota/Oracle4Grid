@@ -7,6 +7,7 @@ from pandas import notnull
 from tqdm import tqdm
 
 from oracle4grid.core.reward_computation.run_one import run_one
+from oracle4grid.core.utils.Action import OracleAction
 
 
 def run_all(actions, env, max_iter=1, nb_process=1, debug=False, agent_seed=None, env_seed=None):
@@ -69,7 +70,14 @@ def to_json(run, t, n, debug, multiverse):
 
 
 def get_action_name(action, debug):
-    return str(action) if debug else action.name
+    if(debug):
+        return str(action)
+    else:
+        if(type(action)==OracleAction):
+            return action.name
+        else:
+            return str(action)
+    #return str(action) if debug else action.name
 
 
 def get_node_name(name, t, attack_id):
@@ -92,7 +100,7 @@ def parallel(env, actions, max_iter, nb_process, agent_seed=None, env_seed=None)
         with Pool(nb_process) as p:
             runs = p.starmap(run_one,
                              [(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed) for action in actions])
-            for run in runs:
-                all_res.append(run)
             pbar.update(1)
+    for run in runs:
+        all_res.append(run)
     return all_res
