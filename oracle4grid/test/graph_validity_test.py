@@ -18,6 +18,11 @@ from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_I
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.launch_utils import OracleParser
 from oracle4grid.core.utils.launch_utils import load
+from oracle4grid.core.agent.OneChangeThenOnlyReconnect import OneChangeThenOnlyReconnect
+from oracle4grid.core.reward_computation.run_one import run_one_multiverse
+from oracle4grid.core.utils.prepare_environment import create_env_late_start_multivers
+from multiprocessing import Pool
+from tqdm import tqdm
 
 
 BEST_PATH_NAME = "Best possible path with game rules"
@@ -74,7 +79,8 @@ def with_multiverse():
     reward_df, env, actions = init_test_env()
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
-    reward_df, windows = multiverse_simulation(env, actions, reward_df, False, env_seed=16101991, agent_seed=16101991)
+    reward_df, windows = multiverse_simulation(env, actions, reward_df, False,nb_process=int(config[NB_PROCESS]), env_seed=16101991, agent_seed=16101991)
+    #reward_df, windows = multiverse_simulation(env, actions, reward_df, False,nb_process=int(config[NB_PROCESS]), env_seed=16101991, agent_seed=16101991)
     elapsed_time = time.time() - start_time
     print("elapsed_time for attack multiversing is:" + str(elapsed_time))
     return reward_df, env, actions
@@ -119,7 +125,7 @@ class GraphValidation(unittest.TestCase):
         g_und = graph.to_undirected()
         assert nx.number_connected_components(g_und) == 1
 
-    def test_graph_duration(self):
+    def test_graph_connectivity_with_attacks(self):
         reward_df, env, actions = with_multiverse()
 
         # 3 - Graph generation
@@ -167,6 +173,10 @@ class GraphValidation(unittest.TestCase):
                 assert [len(c) for c in sorted(nx.connected_components(subg2), key=len, reverse=True)] == [368,368]
         return 1
 
+    def test_multiverse_with_parallel_computation(self):
+        config[NB_PROCESS]="2"
+        self.test_graph_connectivity_with_attacks()
+
     def test_multiverse_with_initial_computation(self):
         file = "./oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4_reduite.json"
         chronic = "000"
@@ -185,7 +195,7 @@ class GraphValidation(unittest.TestCase):
         df_runner = make_df_from_res([run_runner], False)
         windows = get_windows_from_df(df_runner)
         # multiverse needs a different environment
-        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest(), opponent_allowed=False)
+        atomic_actions, env_ref, debug_directory, chronic_id = load(env_dir, chronic, file, False, constants=EnvConstantsTest(), opponent_allowed=False)
         #compute same action with multiverse
         for window in windows:
             begin = int(window.split("_")[0])
@@ -193,7 +203,9 @@ class GraphValidation(unittest.TestCase):
             attacks = windows[window]
             for attack_id in attacks:
                 attack = attacks[attack_id]["attack"]
-                run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
+                #run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
+                #env_universe = create_env_late_start_multivers(env_ref, begin + 1, end + 1)
+                run_multiverse=run_one_multiverse(env_ref,test_action,attack, begin, end, [16101991], [16101991])
                 #test expected values for rewards
                 expected = run_runner.rewards[begin+1:end+1]
                 actual = run_multiverse.rewards
