@@ -12,7 +12,7 @@ from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df
 
 
 def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,
-           reward_significant_digit=None, grid_path=None, chronic_scenario=None, constants=EnvConstants()):
+           reward_significant_digit=None, grid_path=None, chronic_scenario=None,chronic_id=None, constants=EnvConstants()):
     # 0 - Preparation : Get initial topo and line status
     # init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -24,8 +24,9 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 2 - Actions rewards simulation
     start_time = time.time()
-    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]), debug=debug,
+    reward_df = run_many.run_all(actions, env, int(config[MAX_ITER]), int(config[NB_PROCESS]), debug=debug,chronic_id=chronic_id,
                                  agent_seed=agent_seed,env_seed=env_seed)
+    #env.chronics_handler.real_data.get_id()
     elapsed_time = time.time() - start_time
     print("elapsed_time for simulation is:"+str(elapsed_time))
 
@@ -35,7 +36,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
-    reward_df, windows = multiverse_simulation(env, actions, reward_df, debug,int(config[NB_PROCESS]), env_seed=env_seed, agent_seed=agent_seed)
+    reward_df, windows = multiverse_simulation(env, actions, reward_df, debug,int(config[NB_PROCESS]),chronic_id=chronic_id, env_seed=env_seed, agent_seed=agent_seed)
 
     print("Windows of attack are :")
     for el in windows.items():

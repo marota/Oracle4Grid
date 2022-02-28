@@ -14,15 +14,15 @@ from oracle4grid.core.utils.prepare_environment import create_env_late_start_mul
 from oracle4grid.core.reward_computation.run_one import run_one,run_one_multiverse
 
 
-def multiverse_simulation(env, actions, reward_df, debug, nb_process=1, env_seed=None, agent_seed=None):
-    runs, windows = compute_all_multiverses(env, actions, reward_df,nb_process, debug, env_seed, agent_seed)
+def multiverse_simulation(env, actions, reward_df, debug, nb_process=1,chronic_id=None, env_seed=None, agent_seed=None):
+    runs, windows = compute_all_multiverses(env, actions, reward_df,nb_process, debug,chronic_id, env_seed, agent_seed)
     if len(runs) == 0:
         return reward_df, windows
     multiverse_df = make_df_from_res(runs, debug, multiverse=True)
     return pd.concat([reward_df, multiverse_df], ignore_index=True, sort=False), windows
 
 
-def compute_all_multiverses(env_ref, actions, reward_df,nb_process=1, debug=False, env_seed=None, agent_seed=None):
+def compute_all_multiverses(env_ref, actions, reward_df,nb_process=1, debug=False,chronic_id=None, env_seed=None, agent_seed=None):
     runs = []
     windows = get_windows_from_df(reward_df)
     to_runs = []
@@ -35,6 +35,7 @@ def compute_all_multiverses(env_ref, actions, reward_df,nb_process=1, debug=Fals
             # get the list of topologies that where not computed [all_topo] - windows[u,v][A]
             universes = actions.copy()
             universes = filter(lambda x: get_action_name(x, debug) not in attack_topos, actions)
+
             # Remove indexes from already computed topologies, need to sort and reverse the indices to not messup the positions
             # for index in sorted(attack_topos, reverse=True):
             #    del universes[index]
@@ -42,10 +43,10 @@ def compute_all_multiverses(env_ref, actions, reward_df,nb_process=1, debug=Fals
                 #env_universe = create_env_late_start_multivers(env_ref, begin + 1, end + 1)
                 if(nb_process==1):
                     #be careful because episode output in run_multiverse should possibly be initialized with nan values for timestep 0 to begin_ts
-                    run_multiverse = run_one_multiverse(env_ref, universe, attack, begin, end, [agent_seed], [env_seed])
+                    run_multiverse = run_one_multiverse(env_ref, universe, attack, begin, end, [agent_seed], [env_seed],chronic_id)
                     runs.append(run_multiverse)
                 else:
-                    to_runs.append((env_ref,universe,attack, begin, end, [agent_seed], [env_seed]))
+                    to_runs.append((env_ref,universe,attack, begin, end, [agent_seed], [env_seed],chronic_id))
                 #run = compute_one_multiverse(env, universe, attack, new_begin, new_end, env_seed, agent_seed)
 
                 #run = compute_one_multiverse(env_ref, universe, attack, begin, end, env_seed, agent_seed)

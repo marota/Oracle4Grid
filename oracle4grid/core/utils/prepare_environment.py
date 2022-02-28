@@ -68,7 +68,11 @@ def prepare_env(env_path, chronic_scenario, param, constants=EnvConstants(), opp
             raise ValueError("Chronic scenario name: " + str(chronic_scenario) + " not found in folder")
     return env,found_id
 
-def create_env_late_start_multivers(env_ref, begin_time,end_time, constants=EnvConstants(), opponent_allowed=True):
+def create_env_late_start_multivers(env_ref, begin_time,end_time,chronic_id=None, constants=EnvConstants(), opponent_allowed=True):
+    if chronic_id is not None:
+        env_ref.set_id(chronic_id)
+        env_ref.reset()
+
     load_p = 1.0 * env_ref.chronics_handler.real_data.data.load_p
     load_q = 1.0 * env_ref.chronics_handler.real_data.data.load_q
     prod_p = 1.0 * env_ref.chronics_handler.real_data.data.prod_p

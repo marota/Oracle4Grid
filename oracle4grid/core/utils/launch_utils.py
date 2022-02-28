@@ -23,7 +23,7 @@ def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, confi
 
     # Run all steps
     return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
-                  grid_path=env_dir, chronic_scenario=chronic, constants=constants)
+                  grid_path=env_dir, chronic_scenario=chronic,chronic_id=chronic_id, constants=constants)
 
 
 def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config = None, opponent_allowed=True):

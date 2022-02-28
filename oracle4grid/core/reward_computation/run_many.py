@@ -10,7 +10,7 @@ from oracle4grid.core.reward_computation.run_one import run_one
 from oracle4grid.core.utils.Action import OracleAction
 
 
-def run_all(actions, env, max_iter=1, nb_process=1, debug=False, agent_seed=None, env_seed=None):
+def run_all(actions, env, max_iter=1, nb_process=1, debug=False,chronic_id=None, agent_seed=None, env_seed=None):
     if debug:
         print('\n')
         print("============== 2 - Rewards simulation ==============")
@@ -19,9 +19,9 @@ def run_all(actions, env, max_iter=1, nb_process=1, debug=False, agent_seed=None
     if env_seed is not None:
         env_seed=[env_seed]
     if nb_process is 1:
-        all_res = serie(env, actions, max_iter, agent_seed, env_seed)
+        all_res = serie(env, actions, max_iter,chronic_id, agent_seed, env_seed)
     else:
-        all_res = parallel(env, actions, max_iter, nb_process, agent_seed, env_seed)
+        all_res = parallel(env, actions, max_iter, nb_process,chronic_id, agent_seed, env_seed)
     return make_df_from_res(all_res, debug)
 
 
@@ -85,21 +85,21 @@ def get_node_name(name, t, attack_id):
     return str(name) + "_t" + str(t) + attack_label
 
 
-def serie(env, actions, max_iter, agent_seed=None, env_seed=None):
+def serie(env, actions, max_iter,chronic_id=None, agent_seed=None, env_seed=None):
     all_res = []
     with tqdm(total=len(actions)) as pbar:
         for action in actions:
-            all_res.append(run_one(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed))
+            all_res.append(run_one(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed,chronic_id))
             pbar.update(1)
     return all_res
 
 
-def parallel(env, actions, max_iter, nb_process, agent_seed=None, env_seed=None):
+def parallel(env, actions, max_iter, nb_process,chronic_id=None, agent_seed=None, env_seed=None):
     all_res = []
     with tqdm(total=len(actions)) as pbar:
         with Pool(nb_process) as p:
             runs = p.starmap(run_one,
-                             [(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed) for action in actions])
+                             [(action, env.get_params_for_runner(), max_iter, agent_seed, env_seed,chronic_id) for action in actions])
             pbar.update(1)
     for run in runs:
         all_res.append(run)
