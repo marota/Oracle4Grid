@@ -200,7 +200,7 @@ class IntegrationTest(unittest.TestCase):
         # 1 - Action generation step
         actions = combinator.generate(atomic_actions, int(CONFIG[MAX_DEPTH]), env, False)
         # 2 - Actions rewards simulation
-        reward_df = run_many.run_all(actions, env, int(CONFIG[MAX_ITER]), int(CONFIG[NB_PROCESS]), debug=False)
+        reward_df = run_many.run_all(actions, env, int(CONFIG[MAX_ITER]), int(CONFIG[NB_PROCESS]), debug=False,chronic_id=chronic_id)
         reward_df["action"] = reward_df["action"].astype(str)
         expected = pd.read_csv('./oracle4grid/test_resourses/test_reward.csv', sep=',', index_col=0)
         expected['attack_id'] = expected['attack_id'].astype(float)
