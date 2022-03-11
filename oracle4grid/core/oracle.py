@@ -36,6 +36,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
+    ##WARNING: should not allow for opponent attacks when running those "multiverse"
+    # this is parametrized in create_env_late_start_multivers
     reward_df, windows = multiverse_simulation(env, actions, reward_df, debug,int(config[NB_PROCESS]),chronic_id=chronic_id, env_seed=env_seed, agent_seed=agent_seed)
 
     print("Windows of attack are :")
@@ -94,16 +96,16 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
         kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
 
     # 6 - Replay of best path in real game rules condition
-    replay_results = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
+    replay_nb_timestep,replay_reward = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
                                          kpis, grid_path, chronic_scenario, debug=debug, constants=constants,
                                          env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory,oracle_action_path=best_path)
 
     if(len(grid2op_action_path_no_overload)>=1):
-        replay_results_no_overload = agent_replay.replay(grid2op_action_path_no_overload, int(config[MAX_ITER]),
+        replay_no_ov_nb_timestep,replay_no_ov_reward= agent_replay.replay(grid2op_action_path_no_overload, int(config[MAX_ITER]),
                                                          kpis, grid_path, chronic_scenario, debug=debug, constants=constants,
                                                          env_seed=env_seed, agent_seed=agent_seed,
                                                          rel_tol=float(config[REL_TOL]), path_logs=debug_directory,logs_file_name_extension="no_overload",oracle_action_path=best_path_no_overload)
 
     if debug:
-        print("Number of survived timestep in replay: "+str(replay_results))
+        print("Number of survived timestep in replay: "+str(replay_nb_timestep))
     return best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis
