@@ -79,7 +79,7 @@ def with_multiverse():
     reward_df, env, actions = init_test_env()
     # 2.A Adding attacks node, a subgraph for each attack to allow topological actions within an action
     start_time = time.time()
-    reward_df, windows = multiverse_simulation(env, actions, reward_df, False,nb_process=int(config[NB_PROCESS]), env_seed=16101991, agent_seed=16101991)
+    reward_df, windows = multiverse_simulation(env, actions, reward_df, False,nb_process=int(config[NB_PROCESS]),chronic_id=0, env_seed=16101991, agent_seed=16101991)
     #reward_df, windows = multiverse_simulation(env, actions, reward_df, False,nb_process=int(config[NB_PROCESS]), env_seed=16101991, agent_seed=16101991)
     elapsed_time = time.time() - start_time
     print("elapsed_time for attack multiversing is:" + str(elapsed_time))
@@ -205,7 +205,7 @@ class GraphValidation(unittest.TestCase):
                 attack = attacks[attack_id]["attack"]
                 #run_multiverse = compute_one_multiverse(env, test_action, attack, begin, end, env_seed=16101991, agent_seed=16101991)
                 #env_universe = create_env_late_start_multivers(env_ref, begin + 1, end + 1)
-                run_multiverse=run_one_multiverse(env_ref,test_action,attack, begin, end, [16101991], [16101991])
+                run_multiverse=run_one_multiverse(env_ref,test_action,attack, begin, end, [16101991], [16101991],chronic_id=0)
                 #test expected values for rewards
                 expected = run_runner.rewards[begin+1:end+1]
                 actual = run_multiverse.rewards

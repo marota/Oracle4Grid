@@ -36,10 +36,10 @@ def replay(action_path: list, max_iter: int,
     #agent_class = OracleAgent(env.action_space, oracle_action_path).gen_next(action_path)
     agent = OracleAgent(env.action_space,action_path, oracle_action_path,
                         init_topo_vect=init_topo_vect,init_line_status=init_line_status)#.gen_next(action_path)
-    if agent_seed is not None:  # Grid2op runner expect a list of seeds
-        agent_seed=[agent_seed]
-    if env_seed is not None:
-        env_seed=[env_seed]
+    if (agent_seed is not None) and (type(agent_seed)==list):  # Grid2op runner expect a list of seeds
+        agent_seed=agent_seed[0]
+    if (env_seed is not None) and (type(agent_seed)==list):
+        env_seed=env_seed[0]
     runner = Runner(**env.get_params_for_runner(), agentClass=None,agentInstance=agent)
 
     name_chron, agent_reward, nb_time_step, episode_data =runner.run_one_episode(indx=chronic_id,
@@ -67,7 +67,7 @@ def replay(action_path: list, max_iter: int,
         print("Expected reward of "+str(expected_reward)+" has been correctly obtained in replay conditions")
     else:
         warnings.warn("During replay - oracle agent has game over before max iter (timestep " + str(nb_time_step) + ")")
-    return nb_time_step
+    return nb_time_step,agent_reward
 
 def extract_expected_reward(kpis):
     return kpis.loc[kpis['Indicator name']=="Best possible path with game rules", "Reward value"].values[0]
