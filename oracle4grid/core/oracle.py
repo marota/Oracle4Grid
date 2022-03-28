@@ -61,6 +61,10 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
 
     # 4 - Best path computation (returns actions.npz + a list of atomic action dicts??)
+
+    ##WARNING:
+    #grid2op_action_path are not really well computed as of now: they add but don't substract actions
+    #Prefer using the OracleActionPath directly within the OracleAgent
     start_time = time.time()
     raw_path, best_path, grid2op_action_path = compute_trajectory.best_path(graph, config["best_path_type"], actions,
                                                                   debug=debug)
@@ -96,6 +100,8 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
         kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
 
     # 6 - Replay of best path in real game rules condition
+    ##see WARNING above:
+    # Prefer using within the OracleAgent the OracleActionPath directly when available. In that case,  grid2op_action_path is ignored
     replay_nb_timestep,replay_reward = agent_replay.replay(grid2op_action_path, int(config[MAX_ITER]),
                                          kpis, grid_path, chronic_scenario, debug=debug, constants=constants,
                                          env_seed=env_seed, agent_seed=agent_seed, rel_tol=float(config[REL_TOL]), path_logs=debug_directory,oracle_action_path=best_path)
