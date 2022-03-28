@@ -23,18 +23,26 @@ class OracleAgent(BaseAgent):
         else:
             self.oracle_action_path=None
         # Initialize memory
-        self.previous_action = None
-        self.current_action = None
+        self.previous_action = None #of OracleAction type
+        self.current_action = None #of OracleAction type
         self.init_topo_vect = init_topo_vect
         self.init_line_status = init_line_status
         self.previous_was_legal = True
 
     def act(self, observation, reward, done):
-        action = self.action_path.pop(0)
 
         # check line reco in addition if some were deconnected not on purpose
         # check if previous atomic_actions has to be canceled thanks to memory
         self.update_memory()
+        if(self.oracle_action_path is not None):
+            action = self.current_action.grid2op_action
+        else:
+            action = self.action_path.pop(0)
+
+        if((self.previous_action is not None) and (self.current_action==self.previous_action)):
+            # no need to make an "action" in that case, since actions are of type set for now, and replying an identical set action does not change anything
+            action=self.action_space({})
+
         action_line_reco=self.check_reconnect_line(observation)
         cancelling_action = self.compare_with_previous()
         self.previous_was_legal = True
@@ -61,7 +69,7 @@ class OracleAgent(BaseAgent):
         if self.oracle_action_path is not None:
             if self.previous_was_legal:
                 self.previous_action = self.current_action
-            self.current_action = self.oracle_action_path[0]
+            self.current_action = self.oracle_action_path.pop(0)#[0]
 
     def check_reconnect_line(self,observation):
 
@@ -72,7 +80,7 @@ class OracleAgent(BaseAgent):
 
         # don't reconnect lines on which we played on purpose
         if(self.oracle_action_path is not None):
-            oracle_action=self.oracle_action_path.pop(0)
+            oracle_action=self.current_action#self.oracle_action_path.pop(0)
             lines_oracle_action=oracle_action.lines
             if(len(lines_oracle_action)>=1):
                 for l in lines_oracle_action:

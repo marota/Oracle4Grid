@@ -82,10 +82,13 @@ class OracleAction:
             action_grid2op += action_space(formated_atomic_action)
         return action_grid2op
 
-    def transition_action_to(self, action):
+    def transition_action_to(self, action): #ideally we need to make the diff between actions through atomic actions
         action_g2op_1 = self.grid2op_action
         action_g2op_2 = action.grid2op_action
-        return action_g2op_1 + action_g2op_2
+
+        #let's just keep for now the new resulting grid2op action configuration
+        #return action_g2op_1 + action_g2op_2 #this does not seem to make sense
+        return action_g2op_2
 
     def number_of_modified_subs_to(self, action):
         subs_1=set(self.subs.keys())

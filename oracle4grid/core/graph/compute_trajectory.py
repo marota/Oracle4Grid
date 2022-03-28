@@ -73,7 +73,7 @@ def return_action_path(path, actions, debug=False):
         action_path.append(actions[pos])
     return action_path
 
-def get_grid2op_action_path(action_path):
+def get_grid2op_action_path(action_path,do_nothing_action=None):
     """
     Compute the grid2op actions equivalent to a given list of OracleAction
     :param action_path: list of OracleAction that define path
