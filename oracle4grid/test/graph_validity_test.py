@@ -125,6 +125,20 @@ class GraphValidation(unittest.TestCase):
         g_und = graph.to_undirected()
         assert nx.number_connected_components(g_und) == 1
 
+    def test_end_graph_connectivity_with_attacks(self):
+        #to test if graph is well connected at the end even if we end in the middle of an attack
+
+        config["max_iter"]=60 #this will end in the middle of an attack
+
+        reward_df, env, actions = with_multiverse()
+
+        # 3 - Graph generation
+        start_time = time.time()
+        graph = graph_generator.generate(reward_df, int(config[MAX_ITER]), debug=False, reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT],
+                                         constants=EnvConstantsTest())
+        g_und = graph.to_undirected()
+        assert(nx.number_connected_components(g_und)==1)
+
     def test_graph_connectivity_with_attacks(self):
         reward_df, env, actions = with_multiverse()
 

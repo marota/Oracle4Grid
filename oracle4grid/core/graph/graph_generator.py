@@ -174,7 +174,10 @@ def build_transition_graph(reachable_topologies, ordered_names, reward_df, max_i
     print(elapsed_time)
 
     # Symbolic end node
-    edges_ex_t = [str(name) + '_t' + str(max_iter - 1) for name in ordered_names]
+    #should check if last timestep was an attack: in that case we need to create edges from attack multiverse to end node
+    #find all nodes in last iter
+
+    edges_ex_t = [node for node in edges_ex if '_t' + str(max_iter - 1) in node] #[str(name) + '_t' + str(max_iter - 1) for name in ordered_names]
     or_end, ex_end, weights_end = create_end_nodes(edges_ex_t, fake_reward=END_NODE_REWARD)
     edges_or += or_end
     edges_ex += ex_end
