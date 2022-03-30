@@ -3,6 +3,7 @@ import unittest
 
 import networkx as nx
 import numpy as np
+#import pdb
 
 from grid2op.Reward import L2RPNReward
 from grid2op.Rules import AlwaysLegal
@@ -181,14 +182,17 @@ class GraphValidation(unittest.TestCase):
             # is the same than the number of attacks. This is needed for all attacks to be disconnected from each others
             subg2 = graph.subgraph(nodes_in_all_attacks_inner)
             subg2 = subg2.to_undirected()
-            assert nx.number_connected_components(subg2) == len(all_windows[window])
+            #pdb.set_trace()
+            nb_connected_components=nx.number_connected_components(subg2)
+            print("nb conneceted components: "+str(nb_connected_components))
+            assert nb_connected_components == len(all_windows[window])
             # check size of connected components
             if window == '400_447':
                 assert [len(c) for c in sorted(nx.connected_components(subg2), key=len, reverse=True)] == [368,368]
         return 1
 
     def test_multiverse_with_parallel_computation(self):
-        config[NB_PROCESS]="2"
+        config[NB_PROCESS]="4"#"2"
         self.test_graph_connectivity_with_attacks()
 
     def test_multiverse_with_initial_computation(self):

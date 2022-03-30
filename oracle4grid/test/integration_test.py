@@ -11,10 +11,11 @@ from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_ITER
 from oracle4grid.core.utils.constants import EnvConstants
-from oracle4grid.core.utils.launch_utils import load_and_run, load
+from oracle4grid.core.utils.launch_utils import load_and_run, load, load_oracle_action_path, save_oracle_action_path
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 from oracle4grid.core.utils.launch_utils import OracleParser
+from grid2op.Runner import Runner
 
 
 from pandas.testing import assert_frame_equal
@@ -58,6 +59,28 @@ class EnvConstantsTest(EnvConstants):
 
 
 class IntegrationTest(unittest.TestCase):
+    def test_load_oracle_action_path(self):
+        action_file_path = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
+        chronic = "000"
+        env_dir = "./data/rte_case14_realistic"
+        oracle_action_path_saved="./oracle4grid/test_resourses"
+        oracle_action_file_name="oracle_action_path_rte_case14.csv"
+        oracle_action_file_path=os.path.join(oracle_action_path_saved,oracle_action_file_name)
+
+        action_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, indicators = load_and_run(env_dir, chronic, action_file_path, False, None, None, CONFIG, constants=EnvConstantsTest())
+
+        save_oracle_action_path(action_path, oracle_action_path_saved,oracle_action_file_name)
+
+        constants = EnvConstantsTest()
+        param = Parameters()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_GRAPH)
+        env, chronic_id = prepare_env(env_dir, chronic, param, constants)
+        oracle_action_path=load_oracle_action_path(env,action_file_path,oracle_action_file_path,nb_process=1)
+
+        assert(oracle_action_path[0].__dict__==action_path[0].__dict__)
+
+
+
     def test_base_run(self):
         file = "./oracle4grid/ressources/actions/rte_case14_realistic/test_unitary_actions.json"
         chronic = "000"
@@ -460,6 +483,70 @@ class IntegrationTest(unittest.TestCase):
 
         self.assertListEqual(end_topo_vect, expected_end_topo_vect)
         self.assertListEqual(end_line_status, expected_end_line_status)
+
+    def test_run_oracleagent_defined_path(self):
+        #check that topology distance is never above 1
+        #check that it always goes back to reference topology when switching substations
+        nb_timesteps = 800
+        #max_action_combination_depth = 1
+        episode_name = 'Scenario_august_dummy'  # episode.name
+        action_file_path = 'oracle4grid/ressources/actions/neurips_track1/ExpertActions_Track1_action_list_score4.json'
+        #path_save_and_load = 'oracle4grid/output/l2rpn_neurips_2020_track1/scenario_Scenario_august_dummy/ExpertActions_Track1_action_list_score4/grid2op_action_path_no_overload_t_800'
+        path_save_replay = './oracle4grid/output/l2rpn_neurips_2020_track1/Scenario_august_dummy/replay_test'
+        env_dir = './data/l2rpn_neurips_2020_track1'
+        oracle_action_path_saved="./oracle4grid/test_resourses"
+        oracle_action_file_name="oracle_action_path_neurips.csv"
+        oracle_action_file_path = os.path.join(oracle_action_path_saved, oracle_action_file_name)
+
+        if not os.path.exists(path_save_replay):
+            os.makedirs(path_save_replay)
+
+        env_seed = 16101991
+        agent_seed = 16101991
+        chronic_id = 0
+
+        param = Parameters()
+        constants = EnvConstants()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_SIMULATION)
+        env, chronic_id = prepare_env(env_dir, episode_name, param, opponent_allowed=True)
+
+        # load data for replay
+        init_topo_vect, init_line_status = get_initial_configuration(env)
+        oracle_action_path = load_oracle_action_path(env, action_file_path, oracle_action_file_path, nb_process=1)
+        action_list_reloaded=[]#depreciated in OracleAgent, so empty
+
+        # run agent
+        agent = OracleAgent(env.action_space, action_path=action_list_reloaded,
+                            oracle_action_path=oracle_action_path,
+                            init_topo_vect=init_topo_vect, init_line_status=init_line_status)  # .gen_next(action_path)
+
+        runner = Runner(**env.get_params_for_runner(), agentClass=None, agentInstance=agent)
+
+
+        name_chron, agent_reward, nb_time_step, episode_data = runner.run_one_episode(indx=chronic_id,
+                                                                                      path_save=path_save_replay,
+                                                                                      pbar=True,
+                                                                                      env_seed=env_seed,  # ENV_SEEDS,
+                                                                                      max_iter=nb_timesteps,
+                                                                                      agent_seed=agent_seed,
+                                                                                      # AGENT_SEEDS,
+
+                                                                                detailed_output=True)
+        assert(np.round(agent_reward,1)==41763.5)
+
+        #build topological distance
+        distance=[]
+        for obs in episode_data.observations:
+            diff_indices_sub = [i for i in range(len(init_topo_vect)) if
+                                init_topo_vect[i] != obs.topo_vect[i] and obs.topo_vect[i]!=-1]
+            change_subs_from_ref=list(np.unique(obs._topo_vect_to_sub[diff_indices_sub]))
+            distance.append(len(change_subs_from_ref))
+
+        assert(np.max(distance)==1)#as the combinatorial depth was 1, this should be 1 and not above
+        assert(np.sum(distance)==783)#number of timestep it is not in reference topology
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,7 @@
 import json
 import os
 import numpy as np
+import pandas as pd
 
 from grid2op.Parameters import Parameters
 from oracle4grid.core.utils.config_ini_utils import MAX_ITER
@@ -8,6 +9,7 @@ from oracle4grid.core.utils.config_ini_utils import MAX_ITER
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import prepare_env
 from oracle4grid.core.oracle import oracle
+from oracle4grid.core.actions_utils import combinator
 
 ASSET_MAPPING = {"line (origin)":"lines_id_bus",
                  "line (extremity)":"lines_id_bus",
@@ -212,3 +214,36 @@ def get_unitary_action_dict(asset_types, asset_ids, asset_actions, line_or_sub):
     elif line_or_sub == "line":
         d = {"set_line":-1}
     return d
+
+def save_oracle_action_path(oracle_action_list,path_save,file_name="oracle_actions_path.csv"):
+
+    # save oracle-action-path by names
+    oracle_action_names = [oracle_action.repr for oracle_action in oracle_action_list]
+    pd.DataFrame(data=oracle_action_names).to_csv(os.path.join(path_save, file_name), header=False,
+                                                          index=False, sep=";")
+
+
+def load_oracle_action_path(env,action_file_path,oracle_action_file_path,nb_process=1):
+
+    oracle_actions_name_in_path = pd.read_csv(oracle_action_file_path, header=None)[0]
+    # find necessary depth in oracle action name in path
+    action_depths=[len(oracle_action_name.split("_")) for oracle_action_name in oracle_actions_name_in_path]
+    max_action_depth=np.max(action_depths)
+    ###########
+    with open(action_file_path) as f:
+        atomic_actions = json.load(f)
+
+    parser = OracleParser(atomic_actions, env.action_space)
+    atomic_actions = parser.parse()
+
+
+
+    oracle_actions = combinator.generate(atomic_actions, max_action_depth, env, debug=False,
+                                  nb_process=nb_process)
+
+    oracle_actions_map = dict({oracle_action.repr: oracle_action for oracle_action in oracle_actions})
+
+
+    oracle_action_path=[oracle_actions_map[name_oracle_action] for name_oracle_action in oracle_actions_name_in_path]
+
+    return oracle_action_path
