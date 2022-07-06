@@ -87,7 +87,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
             print(topo_count)
 
     # 5 - Indicators computation
-    kpis = indicators.generate(raw_path, raw_path_no_overload, best_path, best_path_no_overload, reward_df, config["best_path_type"], int(config[N_TOPOS]), debug=debug)
+    kpis = indicators.generate(raw_path, raw_path_no_overload, best_path, best_path_no_overload, reward_df, config["best_path_type"], int(config[N_TOPOS]),int(config['reward_significant_digit']), debug=debug)
     if debug:
         print(kpis)
         kpis.to_csv(os.path.join(debug_directory, "kpis.csv"), sep=';', index=False)
