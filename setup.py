@@ -21,8 +21,9 @@ pkgs = {
 }
 
 setup(name='Oracle4Grid',
-      version='1.0.4',
+      version='1.0.5.post1',
       description='Oracle agent that finds the best course of actions aposteriori, within a given perimeter of actions',
+      long_description_content_type="text/markdown",
       classifiers=[
           'Development Status :: 4 - Beta',
           'Programming Language :: Python :: 3.6',
@@ -45,5 +46,5 @@ setup(name='Oracle4Grid',
                                   "oracle4grid/ressources/rte_case14_realistic/test_unitary_actions.json"]},
       install_requires=pkgs["required"],
       zip_safe=False,
-      entry_points={'console_scripts': ['oracle4grid=oracle4grid.main:main']}
+      entry_points={'console_scripts': ['oracle4grid=oracle4grid.main:main']},
 )
