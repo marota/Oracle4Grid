@@ -21,7 +21,7 @@ pkgs = {
 }
 
 setup(name='Oracle4Grid',
-      version='1.0.5.post3',
+      version='1.0.5.post4',
       description='Oracle agent that finds the best course of actions aposteriori, within a given perimeter of actions',
       long_description_content_type="text/markdown",
       classifiers=[
