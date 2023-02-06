@@ -5,7 +5,7 @@ pkgs = {
     "required": [
         "numba>=0.53.1",
         "grid2op>=1.6.4",
-        "lightsim2grd>=0.5.5",
+        "lightsim2grid>=0.5.5",
         "pandas>=1.2.4",
         "psutil>=5.7.2",
         "matplotlib>=3.3.2",
