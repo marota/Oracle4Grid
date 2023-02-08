@@ -19,7 +19,47 @@ from oracle4grid.core.utils.serialization import draw_graph, serialize_reward_df
 
 
 def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=None,env_seed=None,
-           reward_significant_digit=None, grid_path=None, chronic_scenario=None, constants=EnvConstants()):
+           grid_path=None, chronic_scenario=None, constants=EnvConstants()):
+    """
+    Compute best oracle path on scenario given set of topological unitary actions to consider and maximum combinatorial depth of those unitary actions
+
+    Parameters
+    ----------
+    atomic_actions: :class:`dictionnary`
+        dictionnary of possible atomic actions - keys: substations - values: grid2op action description
+    env: :class:`grid2op.Environment`
+        Represents the environment for the agent
+    debug: :class:`bool`
+        True if wants more logs
+    config: :class:`dictionary`
+        dictionary giving possible config for Oracle such as max_depth. See config.ini
+    debug_directory: :class:`str`
+        path where to save debug files for inspection
+    agent_seed: :class:`int`
+        agent seed on scenario when running grid2op
+    env_seed :class:`int`
+        env seed on scenario when running grid2op
+    grid_path: :class:`str`
+        path to the grid Grid2op environment
+    chronic_scenario: :class:`str`
+        name of scenario of interest
+
+
+    Returns
+    -------
+    best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis
+    grid2op_action_path: :class:`Grid2op Action`
+        list of grid2op actions from best computation path
+    best_path: :class:`Oracle Action`
+        list of oracle actions from best computation path
+    grid2op_action_path_no_overload: :class:`Grid2op Action`
+        list of grid2op actions from computation path that has no overload at all (but possibly less optimal)
+    best_path_no_overload: :class:`Oracle Action`
+        list of oracle actions from best computation path that has no overload at all (but possibly less optimal)
+    kpis: :class: 'Pandas Dataframe'
+        dataframe of reward value of several baseline paths:  (donothing, best_ref_topo, best_path_no_overload,best_path,best_without_transitions)
+
+    """
     # 0 - Preparation : Get initial topo and line status
     # init_topo_vect, init_line_status = get_initial_configuration(env)
 
@@ -122,6 +162,17 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
 
 def save_oracle_data_for_replay(oracle_action_list,path_save):#(env,episode_name,grid2op_action_list,oracle_action_list,path_save):
+    """
+    Save oracle action list of best path by oracle action names in order to be easily reloaded after this heavy computation
+
+    Parameters
+    ----------
+    scenario_folder: :class:`OracleAction`
+        oracle action list of best path
+    path_save: :class:`str`
+        file path to save in
+
+    """
     #nb_timesteps=len(oracle_action_list)
     #episode=init_episode_data(env,episode_name,nb_timesteps,path_save)
     #timestep=0
@@ -190,7 +241,34 @@ def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, confi
                   grid_path=env_dir, chronic_scenario=chronic, constants=constants)
 
 def load_oracle_data_for_replay(env,action_file,path_save,action_depth=1,nb_process=1):
+    """
+    Save oracle action list of best path by oracle action names
 
+    Parameters
+    ----------
+    scenario_folder: :class:`OracleAction`
+        oracle action list of best path
+    action_file: :class:`str`
+        file path where possible unitary actions are described
+    path_save: :class:`str`
+        file path to save in
+    action_depth: :class:`int`
+        maximum possible combinatorial depth of unitary actions
+    nb_process: :class:`int`
+        number of cores to generate all possible comnbined actions in parallel
+
+
+    Returns
+    -------
+    action_list_reloaded: :class:`Grid2op Action`
+        list of grid2op actions reloaded from best computation path
+    oracle_actions_in_path: :class:`Oracle Action`
+        list of oracle actions reloaded from best computation path
+    init_topo_vect: class:`numpy.ndarray`, dtype:int
+        topo vect at start time
+    init_line_status: class:`numpy.ndarray`, dtype:bool
+        line status at start time
+    """
     #episode_reload=EpisodeData.from_disk(path_save,episode_name)
     #action_list_reloaded=episode_reload.actions.objects
     init_topo_vect, init_line_status = get_initial_configuration(env)
