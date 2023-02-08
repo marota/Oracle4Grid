@@ -11,11 +11,11 @@ from oracle4grid.core.agent.OracleOverloadReward import OracleOverloadReward
 from oracle4grid.core.reward_computation import run_many
 from oracle4grid.core.utils.config_ini_utils import MAX_DEPTH, NB_PROCESS, MAX_ITER
 from oracle4grid.core.utils.constants import EnvConstants
-from oracle4grid.core.utils.launch_utils import load_and_run, load
+from oracle4grid.core.utils.launch_utils import load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 from oracle4grid.core.utils.launch_utils import OracleParser
-
+from oracle4grid.oracle import load_and_run
 
 from pandas.testing import assert_frame_equal
 import pandas as pd
