@@ -1,10 +1,16 @@
 import os
 import time
+import pandas as pd
+import numpy as np
 
+from grid2op.Episode import EpisodeData
+from grid2op.dtypes import dt_float, dt_bool
 from oracle4grid.core.actions_utils import combinator
 from oracle4grid.core.graph import graph_generator, compute_trajectory, indicators
 from oracle4grid.core.replay import agent_replay
 from oracle4grid.core.reward_computation import run_many
+from oracle4grid.core.utils.launch_utils import OracleParser, load
+from oracle4grid.core.utils.prepare_environment import get_initial_configuration
 from oracle4grid.core.reward_computation.attacks_multiverse import multiverse_simulation
 from oracle4grid.core.utils.config_ini_utils import MAX_ITER, MAX_DEPTH, NB_PROCESS, N_TOPOS, REWARD_SIGNIFICANT_DIGIT, REL_TOL
 from oracle4grid.core.utils.constants import EnvConstants
@@ -45,6 +51,9 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
 
     # 3 - Graph generation
     start_time = time.time()
+    if config[REWARD_SIGNIFICANT_DIGIT] is None:
+        config[REWARD_SIGNIFICANT_DIGIT]='5' #already a large number of significant digit by default, and avoiding None problems
+
     graph = graph_generator.generate(reward_df, int(config[MAX_ITER])
                                      , debug=debug,reward_significant_digit=config[REWARD_SIGNIFICANT_DIGIT], constants=constants)
     elapsed_time = time.time() - start_time
@@ -87,6 +96,7 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
             print(topo_count)
 
     # 5 - Indicators computation
+
     kpis = indicators.generate(raw_path, raw_path_no_overload, best_path, best_path_no_overload, reward_df, config["best_path_type"], int(config[N_TOPOS]),int(config['reward_significant_digit']), debug=debug)
     if debug:
         print(kpis)
@@ -106,3 +116,96 @@ def oracle(atomic_actions, env, debug, config, debug_directory=None,agent_seed=N
     if debug:
         print("Number of survived timestep in replay: "+str(replay_results))
     return best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis
+
+
+
+
+def save_oracle_data_for_replay(env,episode_name,grid2op_action_list,oracle_action_list,path_save):
+    nb_timesteps=len(oracle_action_list)
+    episode=init_episode_data(env,episode_name,nb_timesteps,path_save)
+    timestep=0
+    efficient_storing=True
+    for action in grid2op_action_list:
+        episode.actions.update(timestep, action, efficient_storing)
+        timestep+=1
+
+    episode.to_disk()
+
+    # save oracle-action-path by names
+    best_path_no_overload_names = [oracle_action.repr for oracle_action in oracle_action_list]
+    pd.DataFrame(data=best_path_no_overload_names).to_csv(os.path.join(path_save, "oracle_actions.csv"), header=False,
+                                                          index=False, sep=";")
+
+def init_episode_data(env,episode_name, nb_timestep_max,path_save):
+    disc_lines_templ = np.full(
+        (1, env.backend.n_line), fill_value=False, dtype=dt_bool)
+
+    attack_templ = np.full(
+        (1, env._oppSpace.action_space.size()), fill_value=0., dtype=dt_float)
+    times = np.full(nb_timestep_max, fill_value=np.NaN, dtype=dt_float)
+    rewards = np.full(nb_timestep_max, fill_value=np.NaN, dtype=dt_float)
+    actions = np.full((nb_timestep_max, env.action_space.n),
+                      fill_value=np.NaN, dtype=dt_float)
+    env_actions = np.full(
+        (nb_timestep_max, env._helper_action_env.n), fill_value=np.NaN, dtype=dt_float)
+    observations = np.full(
+        (nb_timestep_max + 1, env.observation_space.n), fill_value=np.NaN, dtype=dt_float)
+    disc_lines = np.full(
+        (nb_timestep_max, env.backend.n_line), fill_value=np.NaN, dtype=dt_bool)
+    attack = np.full((nb_timestep_max, env._opponent_action_space.n), fill_value=0., dtype=dt_float)
+
+    import logging
+    logger = logging.getLogger(__name__)
+    episode = EpisodeData(actions=actions,
+                          env_actions=env_actions,
+                          observations=observations,
+                          rewards=rewards,
+                          disc_lines=disc_lines,
+                          times=times,
+                          observation_space=env.observation_space,
+                          action_space=env.action_space,
+                          helper_action_env=env._helper_action_env,
+                          path_save=path_save,
+                          disc_lines_templ=disc_lines_templ,
+                          attack_templ=attack_templ,
+                          attack=attack,
+                          attack_space=env._opponent_action_space,
+                          logger=logger,
+                          name=episode_name,#env.chronics_handler.get_name(),
+                          force_detail=True,
+                          other_rewards=[])
+    episode.set_parameters(env)
+    return episode
+
+def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config, constants=EnvConstants()):
+    atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, action_file, debug, constants=constants, config = config)
+    # Parse atomic_actions format
+    # atomic_actions = parse(atomic_actions,env)
+    parser = OracleParser(atomic_actions, env.action_space)
+    atomic_actions = parser.parse()
+
+    # Run all steps
+    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
+                  grid_path=env_dir, chronic_scenario=chronic, constants=constants)
+
+def load_oracle_data_for_replay(env,episode_name,action_file,path_save,action_depth=1,nb_process=1):
+
+    episode_reload=EpisodeData.from_disk(path_save,episode_name)
+    action_list_reloaded=episode_reload.actions.objects
+    init_topo_vect, init_line_status = get_initial_configuration(env)
+
+    with open(action_file) as f:
+        atomic_actions = json.load(f)
+
+    parser = OracleParser(atomic_actions, env.action_space)
+    atomic_actions = parser.parse()
+
+    oracle_actions = combinator.generate(atomic_actions, action_depth, env, debug=False,
+                                  nb_process=nb_process)
+
+    oracle_actions_map = dict({oracle_action.repr: oracle_action for oracle_action in oracle_actions})
+
+    oracle_actions_name_in_path = pd.read_csv(os.path.join(path_save, "oracle_actions.csv"), header=None)
+    oracle_actions_in_path=[oracle_actions_map[name_oracle_action] for name_oracle_action in oracle_actions_name_in_path[0]]
+
+    return action_list_reloaded, init_topo_vect, init_line_status, oracle_actions_in_path
