@@ -5,7 +5,7 @@ import os
 import argparse
 import configparser
 
-from oracle4grid.core.utils.launch_utils import load_and_run
+from oracle4grid.core.oracle import load_and_run
 
 
 def main():
@@ -27,10 +27,23 @@ def main():
     parser.add_argument("-es", "--env_seed", type=int,
                         help="Environment seed to be used by the grid2op runner",
                         default=None)
-
+    parser.add_argument(
+        "--config-path",
+        default=None,
+        required=False,
+        type=str,
+        help="Path to the configuration file config.ini.",
+    )
     args = parser.parse_args()
+
+    pkg_root_dir = os.path.dirname(os.path.abspath(__file__))
+    default_config_path = os.path.join(pkg_root_dir,"ressources/config.ini")
     config = configparser.ConfigParser(allow_no_value=True)
-    config.read("oracle4grid/ressources/config.ini")
+    if args.config_path is not None:
+        config.read(args.config_path)
+    else:
+        config.read(default_config_path)
+
     print("#### PARAMETERS #####")
     for key in config["DEFAULT"]:
         print("key: {} = {}".format(key, config['DEFAULT'][key]))
