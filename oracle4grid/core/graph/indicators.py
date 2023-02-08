@@ -54,30 +54,38 @@ def check_indicators_order(donothing, best, best_no_ol, best_without_transitions
     check = True
     message = ""
 
+    if significant_digit is not None:
+        donothing = np.round(donothing, significant_digit).astype('float32')
+        best = np.round(best, significant_digit).astype('float32')
+        best_without_transitions = np.round(best_without_transitions, significant_digit).astype('float32')
+        if pd.notnull(best_no_ol):
+            best_no_ol = np.round(best_no_ol, significant_digit).astype('float32')
+
     if best_path_type == SHORTEST:
         # Check if best path better than donothing
-        if np.round(donothing,significant_digit).astype('float32') < np.round(best,significant_digit).astype('float32'):
+
+        if donothing < best:
             check = False
             message = "Indicator '" + MSG_DONOTHING + "' is better than indicator '" + MSG_GAMERULES
         # Check if best without game rule better than best with game rules
-        if np.round(best,significant_digit).astype('float32') < np.round(best_without_transitions,significant_digit).astype('float32'):
+        if best < best_without_transitions:
             check = False
             message = "Indicator '" + MSG_GAMERULES + "' is better than indicator '" + MSG_NOGAMERULE
         # Check if best path better than best without overload
-        if pd.notnull(best_no_ol) and np.round(best_no_ol,significant_digit).astype('float32') < np.round(best,significant_digit).astype('float32'):
+        if pd.notnull(best_no_ol) and best_no_ol < best:
             check = False
             message = "Indicator '" + MSG_GAMERULES_NO_OL + "' is better than indicator '" + MSG_GAMERULES
     elif best_path_type == LONGEST:
         # Check if best path better than donothing
-        if np.round(donothing,significant_digit).astype('float32') > np.round(best,significant_digit).astype('float32'):
+        if donothing > best:
             check = False
             message = "Indicator '" + MSG_DONOTHING + "' is better than indicator '" + MSG_GAMERULES + " which should not be possible"
         # Check if best without game rule better than best with game rules
-        if np.round(best,significant_digit).astype('float32') > np.round(best_without_transitions,significant_digit).astype('float32'):
+        if best > best_without_transitions:
             check = False
             message = "Indicator '" + MSG_GAMERULES + "' is better than indicator '" + MSG_NOGAMERULE + " which should not be possible"
         # Check if best path better than best without overload
-        if pd.notnull(best_no_ol) and np.round(best_no_ol,significant_digit).astype('float32') > np.round(best,significant_digit).astype('float32'):
+        if pd.notnull(best_no_ol) and best_no_ol > best:
             check = False
             message = "Indicator '" + MSG_GAMERULES_NO_OL + "' is better than indicator '" + MSG_GAMERULES
     return check, message
