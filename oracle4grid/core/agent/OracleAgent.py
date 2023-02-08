@@ -30,7 +30,11 @@ class OracleAgent(BaseAgent):
         self.previous_was_legal = True
 
     def act(self, observation, reward, done):
-        action = self.action_path.pop(0)
+        if len(self.action_path)>=1:
+            action = self.action_path.pop(0)
+        else:#in case the length of episode is longer than the list of provided action path
+            action=self.action_space({})
+
 
         # check line reco in addition if some were deconnected not on purpose
         # check if previous atomic_actions has to be canceled thanks to memory
@@ -61,7 +65,8 @@ class OracleAgent(BaseAgent):
         if self.oracle_action_path is not None:
             if self.previous_was_legal:
                 self.previous_action = self.current_action
-            self.current_action = self.oracle_action_path[0]
+            if len(self.oracle_action_path)>=1:
+                self.current_action = self.oracle_action_path[0]
 
     def check_reconnect_line(self,observation):
 
@@ -71,7 +76,7 @@ class OracleAgent(BaseAgent):
         can_be_reco = ~line_stat_s & (cooldown == 0)
 
         # don't reconnect lines on which we played on purpose
-        if(self.oracle_action_path is not None):
+        if(self.oracle_action_path is not None) and (len(self.oracle_action_path)>=1):
             oracle_action=self.oracle_action_path.pop(0)
             lines_oracle_action=oracle_action.lines
             if(len(lines_oracle_action)>=1):
