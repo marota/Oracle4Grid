@@ -7,23 +7,23 @@ from oracle4grid.core.utils.config_ini_utils import MAX_ITER
 
 from oracle4grid.core.utils.constants import EnvConstants
 from oracle4grid.core.utils.prepare_environment import prepare_env
-from oracle4grid.core.oracle import oracle
+#from oracle4grid.core.oracle import oracle
 
 ASSET_MAPPING = {"line (origin)":"lines_id_bus",
                  "line (extremity)":"lines_id_bus",
                  "generator":"gens_id_bus",
                  "load":"loads_id_bus"}
 
-def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config, constants=EnvConstants()):
-    atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, action_file, debug, constants=constants, config = config)
-    # Parse atomic_actions format
-    # atomic_actions = parse(atomic_actions,env)
-    parser = OracleParser(atomic_actions, env.action_space)
-    atomic_actions = parser.parse()
-
-    # Run all steps
-    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
-                  grid_path=env_dir, chronic_scenario=chronic, constants=constants)
+#def load_and_run(env_dir, chronic, action_file, debug,agent_seed,env_seed, config, constants=EnvConstants()):
+#    atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, action_file, debug, constants=constants, config = config)
+#    # Parse atomic_actions format
+#    # atomic_actions = parse(atomic_actions,env)
+#    parser = OracleParser(atomic_actions, env.action_space)
+#    atomic_actions = parser.parse()
+#
+#    # Run all steps
+#    return oracle(atomic_actions, env, debug, config, debug_directory=debug_directory,agent_seed=agent_seed,env_seed=env_seed,
+#                  grid_path=env_dir, chronic_scenario=chronic, constants=constants)
 
 
 def load(env_dir, chronic, action_file, debug, constants=EnvConstants(), config = None, opponent_allowed=True):
