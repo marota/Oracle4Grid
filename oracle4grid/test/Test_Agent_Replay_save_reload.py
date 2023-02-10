@@ -77,7 +77,7 @@ class PerformanceTest(unittest.TestCase):
 
         res = oracle(atomic_actions, env, False, config=CONFIG, debug_directory=None,
                      agent_seed=agent_seed, env_seed=env_seed,
-                     grid_path=env_dir, chronic_scenario=chronic_id, constants=constants)
+                     grid_path=env_dir, chronic_scenario=chronic_id, constants=constants)#
 
         best_path, grid2op_action_path, best_path_no_overload, grid2op_action_path_no_overload, kpis = res
 
@@ -88,3 +88,42 @@ class PerformanceTest(unittest.TestCase):
         action_list_reloaded, init_topo_vect, init_line_status, oracle_actions_in_path=load_oracle_data_for_replay(env,action_file,path_save,action_depth=CONFIG["max_depth"])
         assert([action_list_reloaded[i]==grid2op_action_list[i] for i in range(len(action_list_reloaded))])
         assert ([oracle_actions_in_path[i].repr == oracle_action_list[i].repr for i in range(len(oracle_action_list))])
+
+    def test_oracle_agent_with_action_path_reload(self):
+        action_file = "./oracle4grid/test_resourses/test_unitary_actions.json"
+        chronic = "000"
+        env_dir = "./data/rte_case14_realistic"
+        path_save = 'oracle4grid/output/rte_case14_realistic/scenario_0/replay_test'
+
+        env_seed = 16101991
+        agent_seed = 16101991
+
+        param = Parameters()
+        constants = EnvConstants()
+        param.init_from_dict(constants.DICT_GAME_PARAMETERS_SIMULATION)
+
+
+        # Load unitary actions
+        # Compute a fake Oracle action path and Oracle Agent
+        atomic_actions, env, debug_directory, chronic_id = load(env_dir, chronic, action_file, debug=False,
+                                                                         constants=EnvConstantsTest())
+        
+        action_list_reloaded, init_topo_vect, init_line_status, oracle_actions_in_path = load_oracle_data_for_replay(
+            env, action_file, path_save, action_depth=CONFIG["max_depth"])
+        
+        agent = OracleAgent(env.action_space, action_path=action_list_reloaded,
+                            oracle_action_path=oracle_actions_in_path,
+                            init_topo_vect=init_topo_vect, init_line_status=init_line_status)  # .gen_next(action_path)
+
+        runner = Runner(**env.get_params_for_runner(), agentClass=None, agentInstance=agent)
+        scenario_name,rewrad,timesteps,episode=runner.run_one_episode(indx=chronic_id,
+                                               path_save=path_save,
+                                               pbar=True,
+                                               env_seed=env_seed,  # ENV_SEEDS,
+                                               max_iter=CONFIG["max_iter"],
+                                               agent_seed=agent_seed,
+                                               # AGENT_SEEDS,
+                                               detailed_output=True)
+
+        #check that actions from initial action path and after replay are the same
+        assert(all([all(episode.actions[i].to_vect()==action_list_reloaded[i].to_vect()) for i in range(len(action_list_reloaded))]))
