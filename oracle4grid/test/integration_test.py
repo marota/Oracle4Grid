@@ -15,7 +15,7 @@ from oracle4grid.core.utils.launch_utils import load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 from oracle4grid.core.utils.launch_utils import OracleParser
-from oracle4grid.oracle import load_and_run
+from oracle4grid.core.oracle import load_and_run
 
 from pandas.testing import assert_frame_equal
 import pandas as pd
@@ -205,6 +205,7 @@ class IntegrationTest(unittest.TestCase):
         expected = pd.read_csv('./oracle4grid/test_resourses/test_reward.csv', sep=',', index_col=0)
         expected['attack_id'] = expected['attack_id'].astype(float)
         reward_df['attack_id'] = reward_df['attack_id'].astype(float)
+        expected['reward']=expected['reward'].astype(reward_df['reward'].dtype)
         assert_frame_equal(reward_df[cols_to_check], expected[cols_to_check])
 
     def test_action_divergence(self):

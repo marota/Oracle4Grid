@@ -17,7 +17,7 @@ from oracle4grid.core.utils.launch_utils import load
 from oracle4grid.core.agent.OracleAgent import OracleAgent
 from oracle4grid.core.utils.prepare_environment import prepare_env, get_initial_configuration
 from oracle4grid.core.utils.launch_utils import OracleParser
-from oracle4grid.oracle import load_and_run
+from oracle4grid.core.oracle import load_and_run
 
 
 from pandas.testing import assert_frame_equal
