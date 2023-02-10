@@ -3,7 +3,6 @@ from setuptools import setup
 
 pkgs = {
     "required": [
-        "numba>=0.53.1",
         "grid2op>=1.6.4",
         "lightsim2grid>=0.5.5",
         "pandas>=1.2.4",
